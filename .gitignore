@@ -1,0 +1,34 @@
+# ============================================================
+# CodeBrainzX — Root .gitignore
+# ============================================================
+
+# --- Python / Django Backend ---
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.env
+backend/db.sqlite3
+backend/staticfiles/
+
+# --- Node / React Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# --- Logs ---
+*.log
+logs/
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- Editor ---
+.vscode/
+.idea/
+*.suo
+*.sw?
