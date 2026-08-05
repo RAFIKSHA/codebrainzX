@@ -51,7 +51,9 @@ interface Team {
   leader_mobile: string;
   leader_roll_number: string;
   registration_number: string;
-  payment_status: 'success' | 'pending';
+  payment_status: 'success' | 'pending' | 'none';
+  utr_number?: string;
+  payment_record_id?: number;
   application_status: 'pending' | 'approved' | 'rejected' | 'waitlisted';
   hackathon: number;
   members: TeamMember[];
@@ -1503,7 +1505,7 @@ const HackathonAdminPanel: React.FC = () => {
                               <span>{app.team_details?.leader_name}</span>
                               <span className="text-[10px] text-slate-400 block mt-0.5">{app.team_details?.leader_email}</span>
                             </td>
-                            <td className="px-6 py-3.5">{(app.team_details?.members?.length || 0) + 1} / {hackathons.find(h=>h.id===app.app_details?.hackathon || h.id===app.hackathon)?.max_team_members || 5}</td>
+                            <td className="px-6 py-3.5">{(app.team_details?.members?.length || 0) + 1} / {hackathons.find(h=>h.id===app.hackathon)?.max_team_members || 5}</td>
                              <td className="px-6 py-3.5 space-y-1">
                               <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded ${
                                 app.team_details?.payment_status === 'success' 
@@ -1521,7 +1523,7 @@ const HackathonAdminPanel: React.FC = () => {
                                   </span>
                                   {app.team_details?.payment_record_id && (
                                     <button
-                                      onClick={() => handleApprovePayment(app.team_details.payment_record_id)}
+                                      onClick={() => handleApprovePayment(app.team_details.payment_record_id!)}
                                       className="text-[9px] text-emerald-650 dark:text-emerald-400 hover:underline font-black cursor-pointer block text-left"
                                     >
                                       Approve Payment

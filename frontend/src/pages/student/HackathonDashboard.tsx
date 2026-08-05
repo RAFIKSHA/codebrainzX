@@ -43,7 +43,8 @@ interface Team {
   leader_mobile: string;
   leader_roll_number: string;
   registration_number: string;
-  payment_status: 'success' | 'pending';
+  payment_status: 'success' | 'pending' | 'none';
+  utr_number?: string;
   application_status: 'pending' | 'approved' | 'rejected' | 'waitlisted';
   hackathon: number;
   members: TeamMember[];

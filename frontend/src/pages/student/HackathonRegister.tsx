@@ -834,7 +834,7 @@ const HackathonRegister: React.FC = () => {
                 <input 
                   type="url"
                   value={linkedinUrl}
-                  onChange={(e) => setlinkedinUrl(e.target.value)}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
                   placeholder="https://linkedin.com/in/username"
                   className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-808 focus:outline-none"
                 />
