@@ -1,14 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Sun, Moon, Menu, X, CodeXml, LogOut, LayoutDashboard } from 'lucide-react';
+import { Sun, Moon, Menu, X, CodeXml, LogOut, LayoutDashboard, Bell } from 'lucide-react';
+import api from '../../services/api';
 
 const Navbar: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Notification system
+  interface HackathonNotification {
+    id: number;
+    title: string;
+    message: string;
+    type: string;
+    is_read: boolean;
+    created_at: string;
+  }
+  const [notifications, setNotifications] = useState<HackathonNotification[]>([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const res = await api.get('/hackathon-notifications/');
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Error fetching notifications", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 20000);
+      return () => clearInterval(interval);
+    } else {
+      setNotifications([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const clickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", clickOutside);
+    return () => document.removeEventListener("mousedown", clickOutside);
+  }, []);
+
+  const markAsRead = async (id: number) => {
+    try {
+      await api.post(`/hackathon-notifications/${id}/mark_as_read/`);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await api.post('/hackathon-notifications/mark_all_as_read/');
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleLogout = () => {
     logout();
@@ -34,6 +98,9 @@ const Navbar: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
+            <Link to="/tutorials" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              Tutorials
+            </Link>
             {user && (
               <Link to="/dashboard" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Dashboard
@@ -45,6 +112,82 @@ const Navbar: React.FC = () => {
                 <LayoutDashboard size={16} />
                 Admin Panel
               </Link>
+            )}
+
+            {/* Notification Center */}
+            {user && (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setNotifOpen(!notifOpen)}
+                  className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-850 transition-all relative cursor-pointer"
+                  aria-label="Notifications"
+                >
+                  <Bell size={18} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center animate-bounce">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {notifOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden transition-all duration-200">
+                    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-850/50">
+                      <span className="text-sm font-bold text-slate-850 dark:text-white flex items-center gap-1.5">
+                        <Bell size={15} className="text-blue-600 dark:text-blue-400" /> Notifications
+                      </span>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-[10px] text-blue-600 hover:text-blue-700 dark:text-blue-450 dark:hover:text-blue-350 font-semibold cursor-pointer"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                          No notifications yet.
+                        </div>
+                      ) : (
+                        notifications.map((notif) => (
+                          <div
+                            key={notif.id}
+                            onClick={() => !notif.is_read && markAsRead(notif.id)}
+                            className={`p-4 text-left transition-colors duration-150 cursor-pointer ${
+                              notif.is_read 
+                                ? 'bg-transparent hover:bg-slate-50/50 dark:hover:bg-slate-850/20' 
+                                : 'bg-blue-50/30 dark:bg-blue-950/10 hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start gap-1">
+                              <span className={`text-xs font-bold ${notif.is_read ? 'text-slate-800 dark:text-slate-350' : 'text-blue-605 dark:text-blue-400'}`}>
+                                {notif.title}
+                              </span>
+                              {!notif.is_read && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-500 shrink-0 mt-1"></span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                              {notif.message}
+                            </p>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-2">
+                              {new Date(notif.created_at).toLocaleDateString(undefined, {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Dark Mode Switcher */}
@@ -110,6 +253,13 @@ const Navbar: React.FC = () => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-200">
           <div className="px-2 pt-2 pb-4 space-y-1 sm:px-3">
+            <Link
+              to="/tutorials"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              Tutorials
+            </Link>
             {user && (
               <Link
                 to="/dashboard"

@@ -1,6 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from .models_tutorials import (
+    TutorialLanguage, TutorialChapter, TutorialLesson, TutorialLessonBlock,
+    TutorialQuiz, TutorialQuizQuestion, TutorialPracticeQuestion,
+    TutorialLessonResource, TutorialMedia, TutorialLessonAnalytics
+)
 
 class Profile(models.Model):
     ROLE_CHOICES = (
@@ -540,3 +545,228 @@ class CodingQuestionResponse(models.Model):
 
     def __str__(self):
         return f"{self.attempt.user.username} - {self.question.title} ({self.status})"
+
+
+class Hackathon(models.Model):
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+        ('closed', 'Closed'),
+        ('completed', 'Completed'),
+    )
+    MODE_CHOICES = (
+        ('online', 'Online'),
+        ('offline', 'Offline'),
+        ('hybrid', 'Hybrid'),
+    )
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    banner_url = models.URLField(max_length=1024, blank=True, null=True)
+    description = models.TextField()
+    problem_statement = models.TextField(blank=True, default='')
+    rules = models.TextField(blank=True, default='')
+    theme = models.CharField(max_length=255)
+    category = models.CharField(max_length=100, blank=True, default='')
+    difficulty = models.CharField(max_length=50, default='Medium')
+    venue = models.CharField(max_length=255, blank=True, default='')
+    mode = models.CharField(max_length=20, choices=MODE_CHOICES, default='online')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    registration_deadline = models.DateTimeField()
+    presentation_date = models.DateTimeField(null=True, blank=True)
+    prize_pool = models.CharField(max_length=100)
+    registration_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    max_teams = models.IntegerField(default=50)
+    max_team_members = models.IntegerField(default=5)
+    judging_criteria = models.TextField(blank=True, default='')
+    sponsors = models.JSONField(default=list, blank=True, help_text="List of sponsor dicts: [{'name': '...', 'logo': '...'}]")
+    faqs = models.JSONField(default=list, blank=True, help_text="List of FAQ dicts: [{'question': '...', 'answer': '...'}]")
+    attachments = models.JSONField(default=list, blank=True, help_text="List of attachment files: [{'name': '...', 'url': '...'}]")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class ProblemStatement(models.Model):
+    DIFFICULTY_CHOICES = (
+        ('easy', 'Easy'),
+        ('medium', 'Medium'),
+        ('hard', 'Hard'),
+    )
+    hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name='problem_statements')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='medium')
+    tech_stack = models.JSONField(default=list, blank=True, help_text="List of recommended tech stack tags, e.g. ['React', 'Node.js', 'Python']")
+    order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return f"{self.hackathon.title} — {self.title}"
+
+
+class ProblemApplication(models.Model):
+    hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name='problem_applications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='problem_applications')
+    problem_statement = models.ForeignKey(ProblemStatement, on_delete=models.CASCADE, related_name='applications')
+    selected_tech_stack = models.JSONField(default=list, blank=True, help_text="Tech stack tags the team intends to use")
+    team_name = models.CharField(max_length=255, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('hackathon', 'user')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} → {self.problem_statement.title} ({self.hackathon.title})"
+
+
+class Team(models.Model):
+    hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name='teams')
+    name = models.CharField(max_length=255)
+    college = models.CharField(max_length=255)
+    department = models.CharField(max_length=255)
+    year = models.CharField(max_length=10)
+    leader_name = models.CharField(max_length=255)
+    leader_email = models.EmailField()
+    leader_mobile = models.CharField(max_length=20)
+    leader_roll_number = models.CharField(max_length=50)
+    github_url = models.URLField(blank=True, null=True)
+    linkedin_url = models.URLField(blank=True, null=True)
+    resume_url = models.URLField(blank=True, null=True)
+    registration_number = models.CharField(max_length=100, unique=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.registration_number:
+            import uuid
+            self.registration_number = f"REG-{self.hackathon.id}-{uuid.uuid4().hex[:8].upper()}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} (Hackathon: {self.hackathon.title})"
+
+
+class TeamMember(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='members')
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    college = models.CharField(max_length=255, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - member of {self.team.name}"
+
+
+class Application(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('waitlisted', 'Waitlisted'),
+    )
+    hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name='applications')
+    team = models.OneToOneField(Team, on_delete=models.CASCADE, related_name='application')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Application {self.id} - {self.team.name} - {self.status}"
+
+
+class Payment(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    )
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='payments')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_id = models.CharField(max_length=100, unique=True)
+    utr_number = models.CharField(max_length=12, unique=True, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    invoice_number = models.CharField(max_length=100, unique=True, blank=True)
+    receipt_url = models.URLField(max_length=1024, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.invoice_number:
+            import random
+            self.invoice_number = f"INV-{random.randint(100000, 999999)}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Payment {self.payment_id} - Team {self.team.name} ({self.status})"
+
+
+class Certificate(models.Model):
+    TYPE_CHOICES = (
+        ('participation', 'Participation Certificate'),
+        ('winner', 'Winner Certificate'),
+        ('runner_up', 'Runner-Up Certificate'),
+    )
+    hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name='certificates')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='certificates', null=True, blank=True)
+    recipient_name = models.CharField(max_length=255)
+    recipient_email = models.EmailField()
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    certificate_id = models.CharField(max_length=100, unique=True, blank=True)
+    file_url = models.URLField(max_length=1024, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.certificate_id:
+            import uuid
+            self.certificate_id = f"CERT-{uuid.uuid4().hex[:12].upper()}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.type} - {self.recipient_name}"
+
+
+class EmailLog(models.Model):
+    hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name='email_logs')
+    recipient_email = models.EmailField()
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='sent')
+
+    def __str__(self):
+        return f"Email to {self.recipient_email} - {self.subject}"
+
+
+class HackathonNotification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hackathon_notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    type = models.CharField(max_length=50)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username} - {self.title}"
+
+
+class HackathonSetting(models.Model):
+    key = models.CharField(max_length=100, unique=True)
+    value = models.JSONField(default=dict)
+
+    def __str__(self):
+        return self.key
+

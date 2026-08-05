@@ -11,6 +11,18 @@ from .views_aptitude import (
     GamificationViewSet, AptitudeTopicViewSet, AptitudeSubTopicViewSet
 )
 from .views_coding_test import CodingTestViewSet, CodingTestAttemptViewSet
+from .views_hackathon import (
+    HackathonViewSet, TeamViewSet, ApplicationViewSet, PaymentViewSet,
+    CertificateViewSet, EmailViewSet, HackathonSettingViewSet, NotificationViewSet,
+    AnalyticsView, FileUploadView,
+    ProblemStatementViewSet, ProblemApplicationViewSet
+)
+from .views_tutorials import (
+    TutorialLanguageViewSet, TutorialChapterViewSet, TutorialLessonViewSet,
+    TutorialLessonBlockViewSet, TutorialQuizViewSet, TutorialQuizQuestionViewSet,
+    TutorialPracticeQuestionViewSet, TutorialLessonResourceViewSet,
+    TutorialMediaViewSet, TutorialAdminAnalyticsView
+)
 
 router = DefaultRouter()
 router.register('coding/tests', CodingTestViewSet, basename='coding-test')
@@ -36,6 +48,29 @@ router.register('aptitude/attempts', AptitudeTestAttemptViewSet, basename='aptit
 router.register('aptitude/bookmarks', AptitudeBookmarkViewSet, basename='aptitude-bookmark')
 router.register('aptitude/gamification', GamificationViewSet, basename='aptitude-gamification')
 
+# Hackathon Module routers
+router.register('hackathons', HackathonViewSet, basename='hackathon')
+router.register('hackathon-teams', TeamViewSet, basename='hackathon-team')
+router.register('hackathon-applications', ApplicationViewSet, basename='hackathon-application')
+router.register('hackathon-payments', PaymentViewSet, basename='hackathon-payment')
+router.register('hackathon-certificates', CertificateViewSet, basename='hackathon-certificate')
+router.register('hackathon-emails', EmailViewSet, basename='hackathon-email')
+router.register('hackathon-settings', HackathonSettingViewSet, basename='hackathon-setting')
+router.register('hackathon-notifications', NotificationViewSet, basename='hackathon-notification')
+router.register('hackathon-problem-statements', ProblemStatementViewSet, basename='hackathon-problem-statement')
+router.register('hackathon-problem-applications', ProblemApplicationViewSet, basename='hackathon-problem-application')
+
+# Tutorials Module routers
+router.register('tutorials/languages', TutorialLanguageViewSet, basename='tutorial-language')
+router.register('tutorials/chapters', TutorialChapterViewSet, basename='tutorial-chapter')
+router.register('tutorials/lessons', TutorialLessonViewSet, basename='tutorial-lesson')
+router.register('tutorials/blocks', TutorialLessonBlockViewSet, basename='tutorial-block')
+router.register('tutorials/quizzes', TutorialQuizViewSet, basename='tutorial-quiz')
+router.register('tutorials/quiz-questions', TutorialQuizQuestionViewSet, basename='tutorial-quiz-question')
+router.register('tutorials/practices', TutorialPracticeQuestionViewSet, basename='tutorial-practice')
+router.register('tutorials/resources', TutorialLessonResourceViewSet, basename='tutorial-resource')
+router.register('tutorials/media', TutorialMediaViewSet, basename='tutorial-media')
+
 urlpatterns = [
     # Auth endpoints
     path('auth/register/', RegisterView.as_view(), name='register'),
@@ -45,6 +80,14 @@ urlpatterns = [
     # Stats endpoints
     path('admin/stats/', AdminStatsView.as_view(), name='admin-stats'),
     
+    # Custom Hackathon endpoints
+    path('admin/hackathons/analytics/', AnalyticsView.as_view(), name='hackathon-analytics'),
+    path('hackathons/upload/', FileUploadView.as_view(), name='hackathon-upload'),
+    
+    # Custom Tutorials endpoints
+    path('tutorials/admin/analytics/', TutorialAdminAnalyticsView.as_view(), name='tutorial-admin-analytics'),
+    
     # Resource endpoints
     path('', include(router.urls)),
 ]
+

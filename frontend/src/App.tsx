@@ -35,6 +35,19 @@ import CodingTestEngine from './pages/student/CodingTestEngine';
 import CodingTestResultPage from './pages/student/CodingTestResultPage';
 import AptitudeQuestionCreateEditPage from './pages/admin/AptitudeQuestionCreateEditPage';
 
+// Hackathon Pages
+import HackathonDashboard from './pages/student/HackathonDashboard';
+import HackathonDetails from './pages/student/HackathonDetails';
+import HackathonRegister from './pages/student/HackathonRegister';
+import HackathonPayment from './pages/student/HackathonPayment';
+import HackathonAdminPanel from './pages/admin/HackathonAdminPanel';
+
+// Tutorials Pages
+import TutorialsHomePage from './pages/student/TutorialsHomePage';
+import TutorialLearningPage from './pages/student/TutorialLearningPage';
+import TutorialsAdminPanel from './pages/admin/TutorialsAdminPanel';
+
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -57,6 +70,30 @@ const App: React.FC = () => {
                 element={
                   <Layout>
                     <LandingPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/tutorials"
+                element={
+                  <Layout>
+                    <TutorialsHomePage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/tutorials/:langSlug"
+                element={
+                  <Layout>
+                    <TutorialLearningPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/tutorials/:langSlug/:lessonSlug"
+                element={
+                  <Layout>
+                    <TutorialLearningPage />
                   </Layout>
                 }
               />
@@ -265,6 +302,46 @@ const App: React.FC = () => {
                 }
               />
               <Route
+                path="/dashboard/hackathons"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <HackathonDashboard />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/hackathons/:slug"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <HackathonDetails />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/hackathons/:slug/register"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <HackathonRegister />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/hackathons/:slug/payment"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <HackathonPayment />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/topics/:topicId/level/:levelName"
                 element={
                   <ProtectedRoute>
@@ -297,11 +374,31 @@ const App: React.FC = () => {
                 }
               />
               <Route
+                path="/admin/tutorials"
+                element={
+                  <AdminRoute>
+                    <Layout>
+                      <TutorialsAdminPanel />
+                    </Layout>
+                  </AdminRoute>
+                }
+              />
+              <Route
                 path="/admin/aptitude"
                 element={
                   <AdminRoute>
                     <Layout>
                       <AptitudeAdminPanel />
+                    </Layout>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/hackathons"
+                element={
+                  <AdminRoute>
+                    <Layout>
+                      <HackathonAdminPanel />
                     </Layout>
                   </AdminRoute>
                 }

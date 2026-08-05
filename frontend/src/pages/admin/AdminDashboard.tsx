@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, Component } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import api from '../../services/api';
 import { setSEOMetadata } from '../../utils/seo';
@@ -11,6 +12,7 @@ import {
   Trophy, BookOpen, Bot, Settings, Brain, LayoutDashboard, Briefcase, CheckSquare
 } from 'lucide-react';
 import AptitudeAdminPanel from './AptitudeAdminPanel';
+import HackathonAdminPanel from './HackathonAdminPanel';
 
 // Error boundary to catch AptitudeAdminPanel crashes and display the error
 class AptitudeErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
@@ -219,11 +221,12 @@ const sectionConfigs: Record<string, {
 };
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { theme } = useTheme();
   
   // CMS Sidebar and view states
-  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'create-content' | 'aptitude' | 'categories' | 'topics' | 'levels' | 'users' | 'contests' | 'courses' | 'analytics' | 'settings'>('dashboard');
+  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'create-content' | 'aptitude' | 'categories' | 'topics' | 'levels' | 'users' | 'contests' | 'courses' | 'analytics' | 'settings' | 'hackathons'>('dashboard');
   const [selectedSection, setSelectedSection] = useState<string>('coding');
   
   // View states: 'list' | 'create' | 'edit-content'
@@ -2436,12 +2439,14 @@ const AdminDashboard: React.FC = () => {
             {[
               { key: 'dashboard', label: 'Dashboard', icon: <Database size={16} /> },
               { key: 'create-content', label: 'Create Content', icon: <Plus size={16} /> },
+              { key: 'tutorials-cms', label: 'Tutorials CMS', icon: <BookOpen size={16} />, path: '/admin/tutorials' },
               { key: 'aptitude', label: 'Aptitude Practice', icon: <Brain size={16} /> },
               { key: 'categories', label: 'Categories', icon: <Layers size={16} /> },
               { key: 'topics', label: 'Topics', icon: <Layers size={16} /> },
               { key: 'levels', label: 'Levels', icon: <Layers size={16} /> },
               { key: 'users', label: 'Users', icon: <Users size={16} /> },
               { key: 'contests', label: 'Contests', icon: <Trophy size={16} /> },
+              { key: 'hackathons', label: 'Hackathons', icon: <Trophy size={16} /> },
               { key: 'courses', label: 'Courses', icon: <BookOpen size={16} /> },
               { key: 'analytics', label: 'Analytics', icon: <Database size={16} /> },
               { key: 'settings', label: 'Settings', icon: <Settings size={16} /> }
@@ -2449,6 +2454,10 @@ const AdminDashboard: React.FC = () => {
               <button
                 key={item.key}
                 onClick={() => {
+                  if (item.path) {
+                    navigate(item.path);
+                    return;
+                  }
                   setActiveMenu(item.key as any);
                   setViewState('list');
                   setEditingContentId(null);
@@ -3493,6 +3502,7 @@ const AdminDashboard: React.FC = () => {
           {activeMenu === 'levels' && renderLevelsView()}
           {activeMenu === 'users' && renderUsersView()}
           {activeMenu === 'contests' && renderContestsView()}
+          {activeMenu === 'hackathons' && <HackathonAdminPanel />}
           {activeMenu === 'courses' && renderCoursesView()}
           {activeMenu === 'analytics' && renderAnalyticsView()}
           {activeMenu === 'settings' && renderSettingsView()}

@@ -145,3 +145,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Unlock all learning sections and challenge levels
 UNLOCK_ALL_SECTIONS = True
 
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Merchant UPI Settings for Option 1
+MERCHANT_UPI_ID = os.environ.get('MERCHANT_UPI_ID', '7028352298@ptyes')
+MERCHANT_UPI_NAME = os.environ.get('MERCHANT_UPI_NAME', 'codebrainzx')
+
+
+

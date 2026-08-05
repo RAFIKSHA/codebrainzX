@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { tutorialsService } from '../../services/tutorials';
+import type { TutorialLanguage } from '../../services/tutorials';
 import { 
   LayoutDashboard, CodeXml, Brain, Users, FileText, Trophy, 
   BookOpen, Bot, User, LogOut, ChevronLeft, ChevronRight 
@@ -15,6 +17,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const { logout, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [languages, setLanguages] = useState<TutorialLanguage[]>([]);
+  useEffect(() => {
+    tutorialsService.getLanguages().then(data => {
+      setLanguages(data.slice(0, 6)); // Display top 6 in the sidebar
+    }).catch(err => console.error(err));
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -64,6 +73,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       path: '/dashboard/contests',
       icon: Trophy,
       disabled: false,
+    },
+    {
+      name: 'Hackathons',
+      path: '/dashboard/hackathons',
+      icon: Trophy,
+      disabled: false,
+      match: (pathname: string) => pathname.startsWith('/dashboard/hackathons'),
     },
     {
       name: 'Courses',
@@ -154,6 +170,46 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
             );
           })}
         </nav>
+
+        {/* Programming Tutorials Section */}
+        <div className="mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-800/50">
+          {!collapsed && (
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 block mb-2">
+              Tutorials
+            </span>
+          )}
+          <NavLink
+            to="/tutorials"
+            className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all group relative cursor-pointer ${
+              isActive && location.pathname === '/tutorials'
+                ? 'bg-blue-50/80 text-blue-650 dark:bg-blue-950/30 dark:text-blue-450 border-l-4 border-blue-600 dark:border-blue-500 shadow-sm'
+                : 'text-slate-650 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
+            }`}
+          >
+            <BookOpen size={16} className="shrink-0 text-slate-450" />
+            {!collapsed && <span className="truncate flex-1 font-bold">Browse All</span>}
+            {collapsed && (
+              <div className="absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-100 text-xs font-bold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 whitespace-nowrap shadow-xl border border-slate-700/50 z-50">
+                Browse Tutorials
+              </div>
+            )}
+          </NavLink>
+
+          {!collapsed && languages.map(lang => (
+            <NavLink
+              key={lang.id}
+              to={`/tutorials/${lang.slug}`}
+              className={() => `flex items-center gap-2.5 px-6 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                location.pathname.startsWith(`/tutorials/${lang.slug}`)
+                  ? 'text-blue-605 dark:text-blue-400 font-bold bg-blue-50/40 dark:bg-blue-950/10'
+                  : 'text-slate-550 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-900/30'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+              <span className="truncate">{lang.name}</span>
+            </NavLink>
+          ))}
+        </div>
       </div>
 
       {/* Sidebar Footer */}
