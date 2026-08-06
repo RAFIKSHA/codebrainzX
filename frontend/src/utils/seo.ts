@@ -13,6 +13,7 @@ interface SEOProps {
 
 export const setSEOMetadata = ({
   title,
+  description,
   keywords = 'coding practice, learn programming, codexpetra, python practice, java compiler, online ide',
   canonicalUrl,
   ogType = 'website',
