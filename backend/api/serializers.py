@@ -6,10 +6,15 @@ from .models import Profile, Topic, QuestionLevel, Question, TestCase, Language,
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.CharField(source='profile.role', read_only=True)
     avatar_url = serializers.CharField(source='profile.avatar_url', read_only=True)
+    full_name = serializers.CharField(source='profile.full_name', read_only=True)
+    google_id = serializers.CharField(source='profile.google_id', read_only=True)
+    profile_photo = serializers.CharField(source='profile.profile_photo', read_only=True)
+    login_provider = serializers.CharField(source='profile.login_provider', read_only=True)
+    email_verified = serializers.BooleanField(source='profile.email_verified', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'role', 'avatar_url')
+        fields = ('id', 'username', 'email', 'role', 'avatar_url', 'full_name', 'google_id', 'profile_photo', 'login_provider', 'email_verified')
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,6 +28,9 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'role')
+
+    def validate_password(self, value):
+        return validate_password_strength(value)
 
     def create(self, validated_data):
         role = validated_data.pop('role', 'student')
@@ -326,3 +334,55 @@ class ContentItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContentItem
         fields = ('id', 'section', 'section_name', 'section_slug', 'title', 'slug', 'data', 'created_at', 'updated_at')
+
+
+import re
+
+def validate_password_strength(password):
+    if len(password) < 8:
+        raise serializers.ValidationError("Password must be at least 8 characters long.")
+    if not re.search(r"[A-Z]", password):
+        raise serializers.ValidationError("Password must contain at least one uppercase letter.")
+    if not re.search(r"[a-z]", password):
+        raise serializers.ValidationError("Password must contain at least one lowercase letter.")
+    if not re.search(r"[0-9]", password):
+        raise serializers.ValidationError("Password must contain at least one number.")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        raise serializers.ValidationError("Password must contain at least one special character.")
+    return password
+
+class GoogleAuthSerializer(serializers.Serializer):
+    id_token = serializers.CharField(required=True)
+
+class EmailOTPSendSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    purpose = serializers.ChoiceField(choices=['login', 'forgot_password'], default='login')
+
+class EmailOTPVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    otp = serializers.CharField(required=True, min_length=6, max_length=6)
+
+class ForgotPasswordVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    otp = serializers.CharField(required=True, min_length=6, max_length=6)
+    password = serializers.CharField(required=True, min_length=8)
+
+    def validate_password(self, value):
+        return validate_password_strength(value)
+
+class RegisterSendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return value
+
+class RegisterVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    otp = serializers.CharField(required=True, min_length=6, max_length=6)
+    full_name = serializers.CharField(required=True, max_length=255)
+    password = serializers.CharField(required=True, min_length=8)
+
+    def validate_password(self, value):
+        return validate_password_strength(value)

@@ -5,15 +5,134 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db.models import Count, Q
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils import timezone
+from datetime import timedelta
+import random
+import requests
+from django.core.mail import send_mail
 
-from .models import Profile, Topic, QuestionLevel, Question, TestCase, Language, Submission, UserProgress, Section, ContentItem
+from .models import Profile, EmailOTP, Topic, QuestionLevel, Question, TestCase, Language, Submission, UserProgress, Section, ContentItem
 from .serializers import (
     UserSerializer, RegisterSerializer, TopicSerializer, QuestionLevelSerializer,
     QuestionListSerializer, QuestionDetailSerializer, TestCaseSerializer,
-    LanguageSerializer, SubmissionSerializer, SectionSerializer, ContentItemSerializer
+    LanguageSerializer, SubmissionSerializer, SectionSerializer, ContentItemSerializer,
+    GoogleAuthSerializer, EmailOTPSendSerializer, EmailOTPVerifySerializer, ForgotPasswordVerifySerializer
 )
 from .permissions import IsAdminUser, IsStudentUser
 from .services import Judge0Service
+from django.contrib.auth.hashers import make_password, check_password
+
+def send_otp_email(email, otp, purpose_text="Verify your sign-in"):
+    subject = f"Your Verification Code: {otp}"
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>CodeBrainzX Verification Code</title>
+        <style>
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                background-color: #f4f6fa;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                margin-top: 40px;
+                border: 1px solid #e1e8ed;
+            }}
+            .header {{
+                background-color: #0b0d19;
+                padding: 30px;
+                text-align: center;
+                border-bottom: 2px solid #3b82f6;
+            }}
+            .logo {{
+                font-size: 24px;
+                font-weight: 800;
+                color: #ffffff;
+                text-decoration: none;
+            }}
+            .logo-x {{
+                color: #3b82f6;
+            }}
+            .content {{
+                padding: 40px;
+                text-align: center;
+            }}
+            .title {{
+                font-size: 20px;
+                font-weight: 700;
+                color: #0f172a;
+                margin-bottom: 12px;
+            }}
+            .desc {{
+                font-size: 14px;
+                color: #64748b;
+                line-height: 1.6;
+                margin-bottom: 30px;
+            }}
+            .code-box {{
+                display: inline-block;
+                background-color: #f1f5f9;
+                border: 2px dashed #cbd5e1;
+                border-radius: 12px;
+                padding: 16px 32px;
+                font-size: 32px;
+                font-weight: 800;
+                color: #2563eb;
+                letter-spacing: 6px;
+                margin-bottom: 30px;
+            }}
+            .footer {{
+                background-color: #f8fafc;
+                padding: 24px;
+                text-align: center;
+                font-size: 12px;
+                color: #94a3b8;
+                border-top: 1px solid #f1f5f9;
+            }}
+            .alert-text {{
+                color: #ef4444;
+                font-size: 11px;
+                margin-top: 12px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <span class="logo">CodeBrainz<span class="logo-x">X</span></span>
+            </div>
+            <div class="content">
+                <div class="title">{purpose_text}</div>
+                <p class="desc">Please use the verification code below to complete your action. This code is valid for 5 minutes and can only be used once.</p>
+                <div class="code-box">{otp}</div>
+                <p class="desc">If you did not request this code, please ignore this email.</p>
+                <p class="alert-text">For security reasons, never share this code with anyone.</p>
+            </div>
+            <div class="footer">
+                &copy; 2026 CodeBrainzX. All rights reserved.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    text_content = f"Your verification code is: {otp}. This code is valid for 5 minutes."
+    send_mail(
+        subject=subject,
+        message=text_content,
+        from_email=None,
+        recipient_list=[email],
+        html_message=html_content,
+        fail_silently=False
+    )
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -24,6 +143,14 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        
+        # Explicitly set full_name to username and email_verified to false for email signups
+        profile = user.profile
+        profile.full_name = user.username
+        profile.login_provider = 'email'
+        profile.email_verified = False
+        profile.save()
+        
         refresh = RefreshToken.for_user(user)
         return Response({
             'user': UserSerializer(user).data,
@@ -38,9 +165,109 @@ class LoginView(generics.GenericAPIView):
         username = request.data.get('username')
         password = request.data.get('password')
         
-        user = authenticate(username=username, password=password)
-        if not user:
+        # 1. Lookup user by username or email
+        user_obj = User.objects.filter(Q(username=username) | Q(email=username)).first()
+        if user_obj and hasattr(user_obj, 'profile'):
+            profile = user_obj.profile
+            # Check lockout status
+            if profile.locked_until and profile.locked_until > timezone.now():
+                diff_sec = int((profile.locked_until - timezone.now()).total_seconds())
+                minutes = (diff_sec // 60) + 1
+                return Response(
+                    {'error': f'Account temporarily locked due to repeated failures. Try again in {minutes} minute(s).'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        # 2. Authenticate
+        auth_user = None
+        if user_obj:
+            auth_user = authenticate(username=user_obj.username, password=password)
+            
+        if not auth_user:
+            # Increment failure counter if user exists
+            if user_obj and hasattr(user_obj, 'profile'):
+                profile = user_obj.profile
+                profile.login_failures += 1
+                if profile.login_failures >= 5:
+                    profile.locked_until = timezone.now() + timedelta(minutes=15)
+                profile.save()
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        # Authentication succeeded! Reset failures
+        profile = auth_user.profile
+        profile.login_failures = 0
+        profile.locked_until = None
+        profile.save()
+        
+        refresh = RefreshToken.for_user(auth_user)
+        return Response({
+            'user': UserSerializer(auth_user).data,
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+        })
+
+class GoogleLoginView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = GoogleAuthSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        id_token = serializer.validated_data['id_token']
+        
+        # Call Google TokenInfo endpoint
+        try:
+            res = requests.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}", timeout=8)
+            if res.status_code != 200:
+                return Response({'error': 'Invalid Google OAuth token'}, status=status.HTTP_400_BAD_REQUEST)
+            payload = res.json()
+        except Exception as e:
+            return Response({'error': f'Failed to contact Google: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        email = payload.get('email')
+        google_id = payload.get('sub')
+        name = payload.get('name', '')
+        picture = payload.get('picture', '')
+        email_verified = payload.get('email_verified') == 'true' or payload.get('email_verified') is True
+        
+        if not email:
+            return Response({'error': 'Google token did not provide email address.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Check if user exists by google_id or email
+        user = User.objects.filter(profile__google_id=google_id).first()
+        if not user:
+            user = User.objects.filter(email=email).first()
+            
+        if user:
+            # Sync / link google account properties
+            profile = user.profile
+            profile.google_id = google_id
+            profile.profile_photo = picture
+            profile.login_provider = 'google'
+            if email_verified:
+                profile.email_verified = True
+            profile.save()
+        else:
+            # Create user and profile
+            username_base = email.split('@')[0]
+            username = username_base
+            count = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{username_base}_{count}"
+                count += 1
+                
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=User.objects.make_random_password()
+            )
+            profile = user.profile
+            profile.full_name = name
+            profile.google_id = google_id
+            profile.profile_photo = picture
+            profile.login_provider = 'google'
+            profile.email_verified = email_verified
+            profile.save()
             
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -48,6 +275,224 @@ class LoginView(generics.GenericAPIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         })
+
+class EmailOTPSendView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = EmailOTPSendSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        purpose = serializer.validated_data['purpose']
+        
+        # Exists check for forgot_password
+        if purpose == 'forgot_password' and not User.objects.filter(email=email).exists():
+            return Response({'message': 'If an account is associated with this email, an OTP has been sent.'})
+            
+        # Throttling resend limits (30 seconds)
+        existing = EmailOTP.objects.filter(email=email, purpose=purpose).first()
+        if existing:
+            time_passed = timezone.now() - existing.created_at
+            if time_passed < timedelta(seconds=30):
+                seconds_left = int(30 - time_passed.total_seconds())
+                return Response(
+                    {'error': f'Please wait {seconds_left} second(s) before requesting another OTP.'},
+                    status=status.HTTP_429_TOO_MANY_REQUESTS
+                )
+                
+        # Generate 6-digit random code
+        otp = f"{random.randint(100000, 999999)}"
+        otp_hash = make_password(otp)
+        expires_at = timezone.now() + timedelta(minutes=5)
+        
+        # Save OTP hash in DB
+        EmailOTP.objects.update_or_create(
+            email=email,
+            purpose=purpose,
+            defaults={
+                'otp_hash': otp_hash,
+                'expires_at': expires_at,
+                'attempts': 0,
+                'created_at': timezone.now()
+            }
+        )
+        
+        # Send Email
+        purpose_text = "Reset your password" if purpose == 'forgot_password' else "Verify your sign-in"
+        try:
+            send_otp_email(email, otp, purpose_text)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to send email. Please check your configuration. Detail: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
+        return Response({'message': 'OTP sent successfully.'})
+
+class RegisterSendOTPView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = RegisterSendOTPSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        # Throttling resend limits (30 seconds)
+        existing = EmailOTP.objects.filter(email=email, purpose='register').first()
+        if existing:
+            time_passed = timezone.now() - existing.created_at
+            if time_passed < timedelta(seconds=30):
+                seconds_left = int(30 - time_passed.total_seconds())
+                return Response(
+                    {'error': f'Please wait {seconds_left} second(s) before requesting another OTP.'},
+                    status=status.HTTP_429_TOO_MANY_REQUESTS
+                )
+
+        # Generate 6-digit random code
+        otp = f"{random.randint(100000, 999999)}"
+        otp_hash = make_password(otp)
+        expires_at = timezone.now() + timedelta(minutes=5)
+
+        # Save OTP hash in DB
+        EmailOTP.objects.update_or_create(
+            email=email,
+            purpose='register',
+            defaults={
+                'otp_hash': otp_hash,
+                'expires_at': expires_at,
+                'attempts': 0,
+                'created_at': timezone.now()
+            }
+        )
+
+        # Send Email
+        try:
+            send_otp_email(email, otp, "Verify your email to register")
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to send email. Please check your configuration. Detail: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({'message': 'OTP sent successfully.'})
+
+class RegisterVerifyView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = RegisterVerifySerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        otp = serializer.validated_data['otp']
+        full_name = serializer.validated_data['full_name']
+        password = serializer.validated_data['password']
+
+        # Double check if user exists
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'An account with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_record = EmailOTP.objects.filter(email=email, purpose='register').first()
+        if not otp_record:
+            return Response({'error': 'No verification code requested for this email.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if otp_record.is_expired():
+            otp_record.delete()
+            return Response({'error': 'Verification code has expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if otp_record.attempts >= 3:
+            otp_record.delete()
+            return Response({'error': 'Max verification attempts exceeded. Please request a new code.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if check_password(otp, otp_record.otp_hash):
+            # Success! Delete OTP record
+            otp_record.delete()
+
+            # Create User
+            username_base = email.split('@')[0]
+            username = username_base
+            count = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{username_base}_{count}"
+                count += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            profile = user.profile
+            profile.full_name = full_name
+            profile.login_provider = 'email'
+            profile.email_verified = True
+            profile.save()
+
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user': UserSerializer(user).data,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }, status=status.HTTP_201_CREATED)
+        else:
+            otp_record.attempts += 1
+            otp_record.save()
+            remaining = 3 - otp_record.attempts
+            return Response(
+                {'error': f'Invalid code. Remaining attempts: {remaining}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class ForgotPasswordVerifyView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = ForgotPasswordVerifySerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        otp = serializer.validated_data['otp']
+        password = serializer.validated_data['password']
+        
+        otp_record = EmailOTP.objects.filter(email=email, purpose='forgot_password').first()
+        if not otp_record:
+            return Response({'error': 'No OTP requested for resetting password.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if otp_record.is_expired():
+            otp_record.delete()
+            return Response({'error': 'OTP has expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if otp_record.attempts >= 3:
+            otp_record.delete()
+            return Response({'error': 'Max verification attempts exceeded. Please request a new OTP.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if check_password(otp, otp_record.otp_hash):
+            user = User.objects.filter(email=email).first()
+            if not user:
+                return Response({'error': 'No user found associated with this email.'}, status=status.HTTP_404_NOT_FOUND)
+                
+            # OTP correct! Invalidate OTP and reset password
+            otp_record.delete()
+            
+            user.set_password(password)
+            user.save()
+            
+            # Reset lockout stats
+            profile = user.profile
+            profile.login_failures = 0
+            profile.locked_until = None
+            profile.save()
+            
+            return Response({'message': 'Password has been reset successfully. You can now sign in.'})
+        else:
+            otp_record.attempts += 1
+            otp_record.save()
+            remaining = 3 - otp_record.attempts
+            return Response(
+                {'error': f'Invalid code. Remaining attempts: {remaining}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class UserMeView(generics.RetrieveAPIView):
     permission_classes = (permissions.IsAuthenticated,)

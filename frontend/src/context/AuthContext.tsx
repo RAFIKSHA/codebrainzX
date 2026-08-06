@@ -13,9 +13,13 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<User>;
-  register: (username: string, email: string, password: string) => Promise<User>;
   logout: () => void;
   isAdmin: boolean;
+  loginWithGoogle: (idToken: string) => Promise<User>;
+  sendOtp: (email: string, purpose: 'login' | 'forgot_password') => Promise<void>;
+  resetPassword: (email: string, otp: string, password: string) => Promise<void>;
+  sendRegisterOtp: (email: string) => Promise<void>;
+  verifyRegisterOtp: (email: string, otp: string, fullName: string, password: string) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,12 +71,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (username: string, email: string, password: string): Promise<User> => {
+
+
+
+  const logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    setUser(null);
+  };
+
+  const loginWithGoogle = async (idToken: string): Promise<User> => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/register/', { username, email, password });
+      const response = await api.post('/auth/google/', { id_token: idToken });
       const { access, refresh, user: userData } = response.data;
-      
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
       setUser(userData);
@@ -85,16 +97,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    setUser(null);
+  const sendOtp = async (email: string, purpose: 'login' | 'forgot_password'): Promise<void> => {
+    setLoading(true);
+    try {
+      await api.post('/auth/otp/send/', { email, purpose });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendRegisterOtp = async (email: string): Promise<void> => {
+    setLoading(true);
+    try {
+      await api.post('/auth/register/send-otp/', { email });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyRegisterOtp = async (email: string, otp: string, fullName: string, password: string): Promise<User> => {
+    setLoading(true);
+    try {
+      const response = await api.post('/auth/register/verify/', { email, otp, full_name: fullName, password });
+      const { access, refresh, user: userData } = response.data;
+      localStorage.setItem('access_token', access);
+      localStorage.setItem('refresh_token', refresh);
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      setUser(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (email: string, otp: string, password: string): Promise<void> => {
+    setLoading(true);
+    try {
+      await api.post('/auth/forgot-password/reset/', { email, otp, password });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin }}>
+    <AuthContext.Provider value={{
+      user, loading, login, logout, isAdmin,
+      loginWithGoogle, sendOtp, resetPassword,
+      sendRegisterOtp, verifyRegisterOtp
+    }}>
       {children}
     </AuthContext.Provider>
   );

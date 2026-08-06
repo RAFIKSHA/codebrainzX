@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     RegisterView, LoginView, UserMeView, TopicViewSet, QuestionLevelViewSet,
     QuestionViewSet, TestCaseViewSet, LanguageViewSet, SubmissionViewSet, AdminStatsView,
-    SectionViewSet, ContentItemViewSet, UserViewSet
+    SectionViewSet, ContentItemViewSet, UserViewSet,
+    GoogleLoginView, EmailOTPSendView, RegisterSendOTPView, RegisterVerifyView, ForgotPasswordVerifyView
 )
 from .views_aptitude import (
     AptitudeDashboardViewSet, AptitudeCategoryViewSet, AptitudeQuestionViewSet,
@@ -73,9 +74,13 @@ router.register('tutorials/media', TutorialMediaViewSet, basename='tutorial-medi
 
 urlpatterns = [
     # Auth endpoints
-    path('auth/register/', RegisterView.as_view(), name='register'),
+    path('auth/register/send-otp/', RegisterSendOTPView.as_view(), name='register-send-otp'),
+    path('auth/register/verify/', RegisterVerifyView.as_view(), name='register-verify'),
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/me/', UserMeView.as_view(), name='me'),
+    path('auth/google/', GoogleLoginView.as_view(), name='google-login'),
+    path('auth/otp/send/', EmailOTPSendView.as_view(), name='otp-send'),
+    path('auth/forgot-password/reset/', ForgotPasswordVerifyView.as_view(), name='forgot-password-reset'),
     
     # Stats endpoints
     path('admin/stats/', AdminStatsView.as_view(), name='admin-stats'),

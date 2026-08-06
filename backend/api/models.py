@@ -15,10 +15,43 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
     avatar_url = models.URLField(blank=True, null=True)
+    
+    # New production-ready auth fields
+    full_name = models.CharField(max_length=255, blank=True, default='')
+    google_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    profile_photo = models.URLField(max_length=1024, blank=True, null=True)
+    login_provider = models.CharField(max_length=20, default='email')  # 'email', 'google', 'otp'
+    email_verified = models.BooleanField(default=False)
+    login_failures = models.IntegerField(default=0)
+    locked_until = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
+
+class EmailOTP(models.Model):
+    PURPOSE_CHOICES = (
+        ('login', 'Login/Signup'),
+        ('forgot_password', 'Forgot Password'),
+    )
+    email = models.EmailField()
+    otp_hash = models.CharField(max_length=128)
+    attempts = models.IntegerField(default=0)
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES, default='login')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        verbose_name = "Email OTP"
+        verbose_name_plural = "Email OTPs"
+
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"OTP for {self.email} - Purpose: {self.purpose}"
 
 class Section(models.Model):
     name = models.CharField(max_length=255, unique=True)

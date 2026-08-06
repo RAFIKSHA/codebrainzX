@@ -153,5 +153,18 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MERCHANT_UPI_ID = os.environ.get('MERCHANT_UPI_ID', '7028352298@ptyes')
 MERCHANT_UPI_NAME = os.environ.get('MERCHANT_UPI_NAME', 'codebrainzx')
 
+# Email SMTP Settings (Production-ready & Free-tier compliant)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.resend.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')
+
+# Fallback to Console Email Backend if in DEBUG mode and SMTP is not fully configured
+if DEBUG and not EMAIL_HOST_USER:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 
