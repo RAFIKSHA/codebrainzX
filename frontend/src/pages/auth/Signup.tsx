@@ -61,13 +61,17 @@ const Signup: React.FC = () => {
 
     const initializeGoogle = () => {
       if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "102839218392-dummyclientid.apps.googleusercontent.com",
-          callback: handleGoogleCredentialResponse,
-        });
+        const win = window as any;
+        if (!win.googleAccountsInitialized) {
+          window.google.accounts.id.initialize({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "153134546344-5vm50570c1sfakftk67pnq8f9do0kli2.apps.googleusercontent.com",
+            callback: handleGoogleCredentialResponse,
+          });
+          win.googleAccountsInitialized = true;
+        }
         window.google.accounts.id.renderButton(
           document.getElementById("google-signup-btn"),
-          { theme: "outline", size: "large", width: "100%", text: "signup_with" }
+          { theme: "outline", size: "large", width: "350", text: "signup_with" }
         );
       }
     };
