@@ -46,6 +46,7 @@ import HackathonAdminPanel from './pages/admin/HackathonAdminPanel';
 import TutorialsHomePage from './pages/student/TutorialsHomePage';
 import TutorialLearningPage from './pages/student/TutorialLearningPage';
 import TutorialsAdminPanel from './pages/admin/TutorialsAdminPanel';
+import AnalyticsTracker from './components/analytics/AnalyticsTracker';
 
 
 const queryClient = new QueryClient({
@@ -63,6 +64,7 @@ const App: React.FC = () => {
       <ThemeProvider>
         <AuthProvider>
           <BrowserRouter>
+            <AnalyticsTracker />
             <Routes>
               {/* Public Routes */}
               <Route
@@ -137,9 +139,7 @@ const App: React.FC = () => {
                 path="/dashboard/coding"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <CodingDashboard />
-                    </DashboardLayout>
+                    <CodingDashboard />
                   </ProtectedRoute>
                 }
               />
@@ -345,9 +345,7 @@ const App: React.FC = () => {
                 path="/topics/:topicId/level/:levelName"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <LevelQuestions />
-                    </DashboardLayout>
+                    <LevelQuestions />
                   </ProtectedRoute>
                 }
               />
