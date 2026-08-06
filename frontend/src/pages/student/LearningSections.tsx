@@ -40,7 +40,7 @@ const LearningSections: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Learning Hub | CodeBrainzX',
+      title: 'Learning Hub | CodexPetra',
       description: 'Select your learning section: Coding algorithms, logical aptitude, interview prep sheets, and CS core subject MCQs.',
     });
   }, []);

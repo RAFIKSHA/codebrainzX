@@ -1,4 +1,4 @@
--- CodeBrainzX Supabase PostgreSQL Database Schema Reference
+-- CodexPetra Supabase PostgreSQL Database Schema Reference
 -- You can run these DDL queries in the Supabase SQL Editor if you wish to initialize tables manually.
 -- NOTE: If you run migrations through Django (using python manage.py migrate), 
 -- Django will automatically generate all these tables for you without requiring manual SQL.

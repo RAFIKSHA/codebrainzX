@@ -134,7 +134,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             )
             # Simulated Email Blaster logs
             try:
-                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codebrainzx.edu', [email], fail_silently=True)
+                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codexpetra.com', [email], fail_silently=True)
                 EmailLog.objects.create(hackathon=app.hackathon, recipient_email=email, subject=subject, body=body, status='sent')
             except Exception:
                 EmailLog.objects.create(hackathon=app.hackathon, recipient_email=email, subject=subject, body=body, status='failed')
@@ -172,7 +172,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
                 f"Best regards,\nOrganizing Team"
             )
             try:
-                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codebrainzx.edu', [email], fail_silently=True)
+                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codexpetra.com', [email], fail_silently=True)
                 EmailLog.objects.create(hackathon=app.hackathon, recipient_email=email, subject=subject, body=body, status='sent')
             except Exception:
                 EmailLog.objects.create(hackathon=app.hackathon, recipient_email=email, subject=subject, body=body, status='failed')
@@ -242,7 +242,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         from django.conf import settings
         return Response({
             "upi_id": getattr(settings, 'MERCHANT_UPI_ID', 'upi-id@bank'),
-            "merchant_name": getattr(settings, 'MERCHANT_UPI_NAME', 'CodeBrainzx')
+            "merchant_name": getattr(settings, 'MERCHANT_UPI_NAME', 'CodexPetra')
         })
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
@@ -282,7 +282,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     f"Best regards,\nOrganizing Committee"
                 )
                 try:
-                    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codebrainzx.edu', [email], fail_silently=True)
+                    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codexpetra.com', [email], fail_silently=True)
                     EmailLog.objects.create(hackathon=team.hackathon, recipient_email=email, subject=subject, body=body, status='sent')
                 except Exception:
                     EmailLog.objects.create(hackathon=team.hackathon, recipient_email=email, subject=subject, body=body, status='failed')
@@ -364,7 +364,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
             amount=fee,
             payment_id=payment_id,
             status='success',
-            receipt_url=f"https://codebrainzx-receipts.s3.amazonaws.com/{payment_id}.pdf"
+            receipt_url=f"https://codexpetra-receipts.s3.amazonaws.com/{payment_id}.pdf"
         )
 
         # Automatically approve Team Application upon successful payment
@@ -395,7 +395,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 f"Best regards,\nOrganizing Committee"
             )
             try:
-                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codebrainzx.edu', [email], fail_silently=True)
+                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codexpetra.com', [email], fail_silently=True)
                 EmailLog.objects.create(hackathon=team.hackathon, recipient_email=email, subject=subject, body=body, status='sent')
             except Exception:
                 EmailLog.objects.create(hackathon=team.hackathon, recipient_email=email, subject=subject, body=body, status='failed')
@@ -563,7 +563,7 @@ class CertificateViewSet(viewsets.ModelViewSet):
             # Build content
             content = []
             content.append(Spacer(1, 0.5*cm))
-            content.append(Paragraph("CODEBRAINZX", heading_style))
+            content.append(Paragraph("CODEXPETRA", heading_style))
             content.append(Paragraph("Certificate of Achievement", heading_style))
             content.append(Spacer(1, 0.6*cm))
             content.append(Paragraph(f"CERTIFICATE OF<br/>{cert_type_label}", cert_type_style))
@@ -652,7 +652,7 @@ class EmailViewSet(viewsets.ModelViewSet):
 
         for email in recipients:
             try:
-                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codebrainzx.edu', [email], fail_silently=True)
+                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codexpetra.com', [email], fail_silently=True)
                 EmailLog.objects.create(hackathon=hackathon, recipient_email=email, subject=subject, body=body, status='sent')
                 dispatch_count += 1
             except Exception:

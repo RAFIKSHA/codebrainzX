@@ -127,7 +127,7 @@ const LevelQuestions: React.FC = () => {
     if (topic && levelName) {
       const displayLevel = levelName.charAt(0).toUpperCase() + levelName.slice(1);
       setSEOMetadata({
-        title: `${topic.name} (${displayLevel}) | CodeBrainzX`,
+        title: `${topic.name} (${displayLevel}) | CodexPetra`,
         description: `Practice ${displayLevel} coding challenges in ${topic.name}. Learn algorithms, write code in Python, Java, JavaScript, C++, C and check execution test cases.`,
         canonicalUrl: window.location.href,
         structuredData: getCourseSchema(

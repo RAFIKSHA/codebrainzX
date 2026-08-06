@@ -73,7 +73,7 @@ const ComingSoonWrapper: React.FC<{
                 Module Locked
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed">
-                We are currently finalizing the mock contents, databases, and evaluation APIs for this section. Unlock with CodeBrainzX Premium soon!
+                We are currently finalizing the mock contents, databases, and evaluation APIs for this section. Unlock with CodexPetra Premium soon!
               </p>
             </div>
           </div>

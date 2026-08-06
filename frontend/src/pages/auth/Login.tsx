@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { setSEOMetadata } from '../../utils/seo';
-import { KeyRound, Mail, AlertCircle, CodeXml, Loader2, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Mail, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import Logo from '../../components/brand/Logo';
 
 declare global {
   interface Window {
@@ -29,8 +30,8 @@ const Login: React.FC = () => {
   // Load Remembered email
   useEffect(() => {
     setSEOMetadata({
-      title: 'Sign In | CodeBrainzX',
-      description: 'Log in to your CodeBrainzX account to continue solving coding problems and tracking topic progressions.',
+      title: 'Sign In | CodexPetra',
+      description: 'Log in to your CodexPetra account to continue solving coding problems and tracking topic progressions.',
     });
     
     const savedEmail = localStorage.getItem('remember_email');
@@ -138,11 +139,9 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-8 relative z-10">
         
         {/* Header Block */}
-        <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-2xl mb-3 shadow-inner">
-            <CodeXml size={24} />
-          </div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Welcome to CodeBrainzX</h2>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Logo showText={false} iconSize={36} className="mb-3" />
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Welcome to CodexPetra</h2>
           <p className="text-xs text-slate-500 mt-1.5 font-medium">Sign in to solve coding problems and track progression</p>
         </div>
 
@@ -255,7 +254,7 @@ const Login: React.FC = () => {
         </div>
 
         <div className="mt-8 border-t border-slate-100 dark:border-slate-850 pt-6 text-center text-xs text-slate-500 font-semibold">
-          New to CodeBrainzX?{' '}
+          New to CodexPetra?{' '}
           <Link to="/signup" className="font-black text-blue-600 dark:text-blue-400 hover:underline uppercase tracking-wider text-[10px] ml-1">
             Create an account
           </Link>

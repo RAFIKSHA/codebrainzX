@@ -163,7 +163,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Premium FAANG Coding Portal | CodeBrainzX',
+      title: 'Premium FAANG Coding Portal | CodexPetra',
       description: 'Master the coding interview. Solve challenges by topic, company sheets, or curated sheets like Blind 75.',
     });
   }, []);
@@ -1581,7 +1581,7 @@ const Dashboard: React.FC = () => {
                               <span className="text-[9px] font-black bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded uppercase">Biweekly Arena</span>
                               <span className="text-[10px] font-mono text-slate-500 font-bold">Starts in 3h 15m</span>
                             </div>
-                            <h4 className="text-sm font-black text-slate-200 mt-3">CodeBrainzX Weekly Contest 405</h4>
+                            <h4 className="text-sm font-black text-slate-200 mt-3">CodexPetra Weekly Contest 405</h4>
                             <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">Solve 4 algorithm problems in 90 minutes. Earn platform rank credits.</p>
                           </div>
                           <div className="flex justify-between items-center mt-4">

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Sun, Moon, Menu, X, CodeXml, LogOut, LayoutDashboard, Bell } from 'lucide-react';
 import api from '../../services/api';
+import Logo from '../brand/Logo';
 
 const Navbar: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
@@ -86,13 +87,8 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="p-2 bg-blue-600 rounded-lg text-white group-hover:scale-105 transition-transform duration-200">
-                <CodeXml size={22} />
-              </div>
-              <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                CodeBrainz<span className="text-slate-950 dark:text-white">X</span>
-              </span>
+            <Link to="/" className="flex items-center group">
+              <Logo />
             </Link>
           </div>
 

@@ -38,7 +38,7 @@ const HackathonLandingSection: React.FC = () => {
     title: "National Mega Hackathon 2026",
     slug: "national-mega-hackathon-2026",
     banner_url: "",
-    description: "CodeBrainzX hosts the ultimate 36-hour code sprint. Join thousands of innovators to build solutions for real-world problems in AI, healthcare, and sustainable engineering.",
+    description: "CodexPetra hosts the ultimate 36-hour code sprint. Join thousands of innovators to build solutions for real-world problems in AI, healthcare, and sustainable engineering.",
     theme: "AI & Global Innovation",
     difficulty: "Medium-Hard",
     mode: "hybrid",
@@ -124,7 +124,7 @@ const HackathonLandingSection: React.FC = () => {
   ];
 
   const winners = [
-    { team: "Team NullPointer", place: "1st Place (₹1,50,000)", project: "AI Health Diagnostics", hackathon: "CodeBrainzX Hack 2025" },
+    { team: "Team NullPointer", place: "1st Place (₹1,50,000)", project: "AI Health Diagnostics", hackathon: "CodexPetra Hack 2025" },
     { team: "Cyber Knights", place: "Runner-Up (₹75,000)", project: "Blockchain Supply Chain Tracker", hackathon: "Smart Campus Hack 2025" },
     { team: "Quantum Coders", place: "2nd Runner-Up (₹25,000)", project: "Carbon Footprint Analytics app", hackathon: "Eco-Tech Hack 2024" }
   ];

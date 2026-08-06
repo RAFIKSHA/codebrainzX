@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { setSEOMetadata } from '../../utils/seo';
-import { Mail, CheckCircle, ArrowLeft, CodeXml, Loader2, KeyRound, Check, X, AlertCircle } from 'lucide-react';
+import { Mail, CheckCircle, ArrowLeft, Loader2, KeyRound, Check, X, AlertCircle } from 'lucide-react';
+import Logo from '../../components/brand/Logo';
 
 const ForgotPassword: React.FC = () => {
   const { sendOtp, resetPassword } = useAuth();
@@ -34,8 +35,8 @@ const ForgotPassword: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Reset Password | CodeBrainzX',
-      description: 'Request a password reset link to regain access to your CodeBrainzX account.',
+      title: 'Reset Password | CodexPetra',
+      description: 'Request a password reset link to regain access to your CodexPetra account.',
     });
   }, []);
 
@@ -174,10 +175,8 @@ const ForgotPassword: React.FC = () => {
       <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-8 relative z-10">
         
         {/* Header Block */}
-        <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-2xl mb-3 shadow-inner">
-            <CodeXml size={24} />
-          </div>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Logo showText={false} iconSize={36} className="mb-3" />
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Reset Password</h2>
           <p className="text-xs text-slate-500 mt-1.5 font-medium">
             {success

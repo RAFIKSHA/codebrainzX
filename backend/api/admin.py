@@ -48,7 +48,7 @@ class PaymentAdmin(admin.ModelAdmin):
                     f"Best regards,\nOrganizing Committee"
                 )
                 try:
-                    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codebrainzx.edu', recipients, fail_silently=True)
+                    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL or 'noreply@codexpetra.com', recipients, fail_silently=True)
                     for email in recipients:
                         EmailLog.objects.create(hackathon=team.hackathon, recipient_email=email, subject=subject, body=body, status='sent')
                 except Exception:

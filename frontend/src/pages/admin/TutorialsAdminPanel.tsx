@@ -55,7 +55,7 @@ const TutorialsAdminPanel: React.FC = () => {
 
   // Settings mock states
   const [settings, setSettings] = useState({
-    siteName: 'CodeBrainzX',
+    siteName: 'CodexPetra',
     seoDefaultKeywords: 'tutorials, learn python, coding free',
     enableSandbox: true,
     showEstDuration: true,

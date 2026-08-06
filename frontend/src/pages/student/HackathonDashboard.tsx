@@ -383,7 +383,7 @@ const HackathonDashboard: React.FC = () => {
                           ) : (
                             <div className="flex flex-col items-center justify-center p-4 text-center">
                               <Trophy size={28} className="text-blue-500/80 mb-1" />
-                              <span className="text-[10px] font-black text-blue-600/50 uppercase tracking-widest">CodeBrainzX</span>
+                              <span className="text-[10px] font-black text-blue-600/50 uppercase tracking-widest">CodexPetra</span>
                             </div>
                           )}
                           
@@ -803,7 +803,7 @@ const HackathonDashboard: React.FC = () => {
               <p className="text-xs sm:text-sm text-slate-650 dark:text-slate-400 max-w-lg mx-auto leading-relaxed">
                 for outstanding dedication and active contribution as a participant during the event
                 <span className="font-bold text-slate-950 dark:text-white block mt-1 text-sm">{viewingCert.hackathon_title}</span>
-                organized by the CodeBrainzX Technical Portal.
+                organized by the CodexPetra Technical Portal.
               </p>
 
               <div className="grid grid-cols-2 gap-10 max-w-md mx-auto pt-8">

@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from api.models import Profile, Topic, QuestionLevel, Question, TestCase as ModelTestCase, UserProgress
 
-class CodeBrainzXTests(TestCase):
+class CodexPetraTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         

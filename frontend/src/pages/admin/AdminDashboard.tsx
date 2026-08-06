@@ -319,7 +319,7 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Admin Control Center | CodeBrainzX',
+      title: 'Admin Control Center | CodexPetra',
       description: 'Manage topic pathways, create coding challenges, set execution limits, and update grading test suites.',
     });
   }, []);
@@ -2377,7 +2377,7 @@ const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Platform Title</label>
-            <input type="text" defaultValue="CodeBrainzX IDE" className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl" />
+            <input type="text" defaultValue="CodexPetra IDE" className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl" />
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Global Compile Time Limit (s)</label>

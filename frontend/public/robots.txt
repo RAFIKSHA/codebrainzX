@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://codebrainzx.vercel.app/sitemap.xml
+Sitemap: https://codexpetra.vercel.app/sitemap.xml

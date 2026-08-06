@@ -12,14 +12,14 @@ class Command(BaseCommand):
         # 1. Create Default Users
         self.stdout.write("Creating default users...")
         if not User.objects.filter(username='admin').exists():
-            admin_user = User.objects.create_superuser('admin', 'admin@codebrainzx.com', 'admin123')
+            admin_user = User.objects.create_superuser('admin', 'admin@codexpetra.com', 'admin123')
             Profile.objects.create(user=admin_user, role='admin')
             self.stdout.write("Created Admin: admin / admin123")
         else:
             self.stdout.write("Admin user already exists")
 
         if not User.objects.filter(username='student').exists():
-            student_user = User.objects.create_user('student', 'student@codebrainzx.com', 'student123')
+            student_user = User.objects.create_user('student', 'student@codexpetra.com', 'student123')
             Profile.objects.create(user=student_user, role='student')
             self.stdout.write("Created Student: student / student123")
         else:
@@ -176,7 +176,7 @@ class Command(BaseCommand):
         if created:
             self.stdout.write("Created question: Reverse String")
             TestCase.objects.create(question=q3, input_data="hello", expected_output="olleh", is_hidden=False)
-            TestCase.objects.create(question=q3, input_data="codebrainzx", expected_output="xzniarbedoc", is_hidden=False)
+            TestCase.objects.create(question=q3, input_data="codexpetra", expected_output="artepxedoc", is_hidden=False)
             TestCase.objects.create(question=q3, input_data="racecar", expected_output="racecar", is_hidden=True)
 
         self.stdout.write("Database seeded successfully!")

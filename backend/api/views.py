@@ -16,7 +16,8 @@ from .serializers import (
     UserSerializer, RegisterSerializer, TopicSerializer, QuestionLevelSerializer,
     QuestionListSerializer, QuestionDetailSerializer, TestCaseSerializer,
     LanguageSerializer, SubmissionSerializer, SectionSerializer, ContentItemSerializer,
-    GoogleAuthSerializer, EmailOTPSendSerializer, EmailOTPVerifySerializer, ForgotPasswordVerifySerializer
+    GoogleAuthSerializer, EmailOTPSendSerializer, EmailOTPVerifySerializer, ForgotPasswordVerifySerializer,
+    RegisterSendOTPSerializer, RegisterVerifySerializer
 )
 from .permissions import IsAdminUser, IsStudentUser
 from .services import Judge0Service
@@ -29,7 +30,7 @@ def send_otp_email(email, otp, purpose_text="Verify your sign-in"):
     <html>
     <head>
         <meta charset="utf-8">
-        <title>CodeBrainzX Verification Code</title>
+        <title>CodexPetra Verification Code</title>
         <style>
             body {{
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -108,7 +109,7 @@ def send_otp_email(email, otp, purpose_text="Verify your sign-in"):
     <body>
         <div class="container">
             <div class="header">
-                <span class="logo">CodeBrainz<span class="logo-x">X</span></span>
+                <span class="logo">Codex<span class="logo-x">Petra</span></span>
             </div>
             <div class="content">
                 <div class="title">{purpose_text}</div>
@@ -118,7 +119,7 @@ def send_otp_email(email, otp, purpose_text="Verify your sign-in"):
                 <p class="alert-text">For security reasons, never share this code with anyone.</p>
             </div>
             <div class="footer">
-                &copy; 2026 CodeBrainzX. All rights reserved.
+                &copy; 2026 CodexPetra. All rights reserved.
             </div>
         </div>
     </body>

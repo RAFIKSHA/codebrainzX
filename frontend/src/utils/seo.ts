@@ -13,14 +13,13 @@ interface SEOProps {
 
 export const setSEOMetadata = ({
   title,
-  description,
-  keywords = 'coding practice, learn programming, code brainz, python practice, java compiler, online ide',
+  keywords = 'coding practice, learn programming, codexpetra, python practice, java compiler, online ide',
   canonicalUrl,
   ogType = 'website',
   structuredData,
 }: SEOProps) => {
   // 1. Set Title
-  document.title = `${title} | CodeBrainzX`;
+  document.title = `${title} | CodexPetra`;
 
   // 2. Set Meta Description
   let metaDesc = document.querySelector('meta[name="description"]');
@@ -107,7 +106,7 @@ export const getCourseSchema = (topicName: string, description: string, url: str
     'description': description,
     'provider': {
       '@type': 'Organization',
-      'name': 'CodeBrainzX',
+      'name': 'CodexPetra',
       'sameAs': window.location.origin,
     },
     'url': url,

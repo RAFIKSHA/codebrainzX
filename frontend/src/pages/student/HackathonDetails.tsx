@@ -689,9 +689,9 @@ const HackathonDetails: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
                   <h3 className="text-sm font-black text-slate-900 dark:text-white">Still have questions?</h3>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <a href="mailto:portal-hackathons@codebrainzx.edu"
+                    <a href="mailto:portal-hackathons@codexpetra.com"
                       className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-950/40 transition-colors">
-                      <Mail size={13}/> portal-hackathons@codebrainzx.edu
+                      <Mail size={13}/> portal-hackathons@codexpetra.com
                     </a>
                     <a href="tel:+919876543210"
                       className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors">

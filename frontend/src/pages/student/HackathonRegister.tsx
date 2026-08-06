@@ -86,7 +86,7 @@ const HackathonRegister: React.FC = () => {
   const [cardName, setCardName] = useState('');
   const [utrNumber, setUtrNumber] = useState('');
   const [merchantUpiId, setMerchantUpiId] = useState('upi-id@bank');
-  const [merchantName, setMerchantName] = useState('CodeBrainzx');
+  const [merchantName, setMerchantName] = useState('CodexPetra');
   const [copiedUpi, setCopiedUpi] = useState(false);
 
   // Success Info - Step 7
