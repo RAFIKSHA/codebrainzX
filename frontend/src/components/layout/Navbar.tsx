@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Sun, Moon, Menu, X, CodeXml, LogOut, LayoutDashboard, Bell } from 'lucide-react';
+import { Sun, Moon, Menu, X, LogOut, LayoutDashboard, Bell, Search, User } from 'lucide-react';
 import api from '../../services/api';
 import Logo from '../brand/Logo';
 
@@ -82,67 +82,151 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
+    <nav className="sticky top-0 z-50 w-full bg-white/75 dark:bg-slate-950/75 backdrop-blur-md border-b border-slate-100 dark:border-slate-900/60 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center">
+          
+          {/* Left Side: Brand Logo */}
+          <div className="flex items-center shrink-0">
             <Link to="/" className="flex items-center group">
-              <Logo />
+              <Logo showText={true} iconSize={20} />
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link to="/tutorials" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-              Tutorials
-            </Link>
-            {user && (
-              <Link to="/dashboard" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                Dashboard
-              </Link>
-            )}
+          {/* Center Navigation & Search Bar */}
+          <div className="hidden md:flex items-center gap-6 flex-1 justify-center px-4">
             
-            {isAdmin && (
-              <Link to="/admin/dashboard" className="flex items-center gap-1.5 text-sm font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
-                <LayoutDashboard size={16} />
-                Admin Panel
-              </Link>
-            )}
+            {/* Premium SaaS Mock Search Bar */}
+            <div className="relative w-64 max-w-xs xl:w-72">
+              <button 
+                onClick={() => navigate(user ? '/dashboard/coding' : '/login')}
+                className="flex items-center justify-between w-full px-3 py-1.5 text-xs text-slate-400 dark:text-slate-500 border border-slate-200/80 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-900/40 hover:bg-slate-100/50 dark:hover:bg-slate-900/80 transition-all text-left shadow-sm hover:border-slate-350 dark:hover:border-slate-700 cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Search size={13} className="text-slate-400 dark:text-slate-500" />
+                  <span className="truncate">Search tutorials, topics...</span>
+                </div>
+                <kbd className="px-1.5 py-0.5 text-[9px] font-mono border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded text-slate-400 dark:text-slate-500 shadow-sm leading-none shrink-0 select-none">
+                  Ctrl K
+                </kbd>
+              </button>
+            </div>
 
-            {/* Notification Center */}
+            {/* Navigation Links */}
+            <div className="flex items-center gap-5 lg:gap-6">
+              <NavLink 
+                to="/tutorials" 
+                className={({ isActive }) => 
+                  `text-[13px] font-semibold transition-colors ${
+                    isActive 
+                      ? 'text-blue-600 dark:text-blue-400 font-bold' 
+                      : 'text-slate-650 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`
+                }
+              >
+                Tutorials
+              </NavLink>
+              <NavLink 
+                to="/dashboard/coding" 
+                className={({ isActive }) => 
+                  `text-[13px] font-semibold transition-colors ${
+                    isActive 
+                      ? 'text-blue-600 dark:text-blue-400 font-bold' 
+                      : 'text-slate-650 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`
+                }
+              >
+                Practice
+              </NavLink>
+              <NavLink 
+                to="/dashboard/aptitude" 
+                className={({ isActive }) => 
+                  `text-[13px] font-semibold transition-colors ${
+                    isActive 
+                      ? 'text-blue-600 dark:text-blue-400 font-bold' 
+                      : 'text-slate-650 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`
+                }
+              >
+                Aptitude
+              </NavLink>
+              <NavLink 
+                to="/dashboard/hackathons" 
+                className={({ isActive }) => 
+                  `text-[13px] font-semibold transition-colors ${
+                    isActive 
+                      ? 'text-blue-600 dark:text-blue-400 font-bold' 
+                      : 'text-slate-650 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`
+                }
+              >
+                Hackathons
+              </NavLink>
+              <NavLink 
+                to="/dashboard/coding?tab=companies" 
+                className={({ isActive }) => 
+                  `text-[13px] font-semibold transition-colors ${
+                    isActive 
+                      ? 'text-blue-600 dark:text-blue-405 font-bold' 
+                      : 'text-slate-655 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`
+                }
+              >
+                Companies
+              </NavLink>
+              <a 
+                href="#" 
+                onClick={(e) => e.preventDefault()}
+                className="text-[13px] font-semibold text-slate-655 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                Blog
+              </a>
+            </div>
+          </div>
+
+          {/* Right Side Action Buttons */}
+          <div className="hidden md:flex items-center gap-4 shrink-0">
+            
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-905 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all cursor-pointer"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+
+            {/* Notification Dropdown */}
             {user && (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setNotifOpen(!notifOpen)}
-                  className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-850 transition-all relative cursor-pointer"
+                  className="p-1.5 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-905 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all relative cursor-pointer"
                   aria-label="Notifications"
                 >
-                  <Bell size={18} />
+                  <Bell size={17} />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center animate-bounce">
-                      {unreadCount}
-                    </span>
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
                   )}
                 </button>
 
                 {notifOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden transition-all duration-200">
-                    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-850/50">
-                      <span className="text-sm font-bold text-slate-850 dark:text-white flex items-center gap-1.5">
-                        <Bell size={15} className="text-blue-600 dark:text-blue-400" /> Notifications
+                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-900 shadow-xl z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-900 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+                      <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                        <Bell size={14} className="text-blue-600 dark:text-blue-400" /> Notifications
                       </span>
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
-                          className="text-[10px] text-blue-600 hover:text-blue-700 dark:text-blue-450 dark:hover:text-blue-350 font-semibold cursor-pointer"
+                          className="text-[10px] text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold cursor-pointer"
                         >
                           Mark all read
                         </button>
                       )}
                     </div>
 
-                    <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                    <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-905">
                       {notifications.length === 0 ? (
                         <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-500">
                           No notifications yet.
@@ -154,29 +238,21 @@ const Navbar: React.FC = () => {
                             onClick={() => !notif.is_read && markAsRead(notif.id)}
                             className={`p-4 text-left transition-colors duration-150 cursor-pointer ${
                               notif.is_read 
-                                ? 'bg-transparent hover:bg-slate-50/50 dark:hover:bg-slate-850/20' 
+                                ? 'bg-transparent hover:bg-slate-50/50 dark:hover:bg-slate-900/20' 
                                 : 'bg-blue-50/30 dark:bg-blue-950/10 hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
                             }`}
                           >
                             <div className="flex justify-between items-start gap-1">
-                              <span className={`text-xs font-bold ${notif.is_read ? 'text-slate-800 dark:text-slate-350' : 'text-blue-605 dark:text-blue-400'}`}>
+                              <span className={`text-[11px] font-bold ${notif.is_read ? 'text-slate-700 dark:text-slate-400' : 'text-blue-600 dark:text-blue-450'}`}>
                                 {notif.title}
                               </span>
                               {!notif.is_read && (
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-500 shrink-0 mt-1"></span>
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                               {notif.message}
                             </p>
-                            <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-2">
-                              {new Date(notif.created_at).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
                           </div>
                         ))
                       )}
@@ -186,39 +262,41 @@ const Navbar: React.FC = () => {
               </div>
             )}
 
-            {/* Dark Mode Switcher */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-850 transition-all"
-              aria-label="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
+            {/* Authenticated user vs Guest navigation actions */}
             {user ? (
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-3 pl-2 border-l border-slate-150 dark:border-slate-900">
+                {isAdmin && (
+                  <Link 
+                    to="/admin/dashboard" 
+                    className="flex items-center gap-1.5 text-xs font-semibold text-amber-605 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 transition-colors"
+                  >
+                    <LayoutDashboard size={14} />
+                    Admin
+                  </Link>
+                )}
+                <Link to="/dashboard" className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center font-bold text-blue-600 dark:text-blue-450 border border-blue-100 dark:border-blue-900/60 text-xs shadow-sm">
                     {user.username.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm font-semibold text-slate-850 dark:text-slate-200">{user.username}</span>
-                </div>
+                </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-red-600 dark:text-slate-350 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all"
+                  className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-red-650 dark:text-slate-350 dark:hover:text-red-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all cursor-pointer"
                 >
-                  <LogOut size={15} />
-                  Logout
+                  Sign Out
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <Link to="/login" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <Link 
+                  to="/login" 
+                  className="text-[13px] font-semibold text-slate-655 dark:text-slate-350 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg shadow-sm hover:shadow transition-all"
+                  className="px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg shadow-sm transition-all border border-blue-700/10"
                 >
                   Sign Up
                 </Link>
@@ -226,93 +304,113 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="flex items-center gap-3 md:hidden">
+          {/* Mobile Drawer Menu Toggle */}
+          <div className="flex items-center gap-2.5 md:hidden">
             <button
               onClick={toggleTheme}
-              className="p-2 text-slate-500 dark:text-slate-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              className="p-1.5 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer"
               aria-label="Toggle Theme"
             >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              className="p-1.5 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer"
             >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
+
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-200">
-          <div className="px-2 pt-2 pb-4 space-y-1 sm:px-3">
+        <div className="md:hidden border-t border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950 shadow-lg px-4 py-4 space-y-3">
+          <div className="space-y-1">
             <Link
               to="/tutorials"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
             >
               Tutorials
             </Link>
-            {user && (
-              <Link
-                to="/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                Dashboard
-              </Link>
-            )}
-            {isAdmin && (
-              <Link
-                to="/admin/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-md text-base font-medium text-amber-600 dark:text-amber-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                Admin Panel
-              </Link>
-            )}
-
-            {user ? (
-              <div className="border-t border-slate-200 dark:border-slate-800 mt-3 pt-3">
-                <div className="flex items-center px-3 py-2">
-                  <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center font-bold text-blue-600 dark:text-blue-400 mr-3">
-                    {user.username.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="text-base font-medium text-slate-800 dark:text-white">{user.username}</div>
-                    <div className="text-xs text-slate-500">{user.email}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left flex items-center gap-2 px-3 py-2 mt-2 rounded-md text-base font-medium text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20"
-                >
-                  <LogOut size={18} />
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 px-3">
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/signup"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
+            <Link
+              to="/dashboard/coding"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
+            >
+              Practice
+            </Link>
+            <Link
+              to="/dashboard/aptitude"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
+            >
+              Aptitude
+            </Link>
+            <Link
+              to="/dashboard/hackathons"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
+            >
+              Hackathons
+            </Link>
+            <Link
+              to="/dashboard/coding?tab=companies"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
+            >
+              Companies
+            </Link>
           </div>
+
+          {user ? (
+            <div className="border-t border-slate-100 dark:border-slate-900 pt-3">
+              <div className="flex items-center px-3 py-2">
+                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center font-bold text-blue-600 dark:text-blue-405 mr-3 text-xs border border-blue-150 dark:border-blue-900">
+                  {user.username.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-800 dark:text-white leading-none">{user.username}</div>
+                  <div className="text-[10px] text-slate-400 mt-1">{user.email}</div>
+                </div>
+              </div>
+              {isAdmin && (
+                <Link
+                  to="/admin/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 text-sm font-semibold text-amber-600 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg"
+                >
+                  Admin Panel
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="w-full text-left flex items-center gap-2 px-3 py-2 mt-2 rounded-lg text-sm font-semibold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20"
+              >
+                <LogOut size={16} />
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 pt-3 border-t border-slate-100 dark:border-slate-900">
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </nav>
