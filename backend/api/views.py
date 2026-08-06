@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 from datetime import timedelta
 import random
+import os
 import requests
 from django.core.mail import send_mail
 
@@ -195,7 +196,7 @@ class LoginView(generics.GenericAPIView):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
             
         # Authentication succeeded! Reset failures
-        profile = auth_user.profile
+        profile, _ = Profile.objects.get_or_create(user=auth_user)
         profile.login_failures = 0
         profile.locked_until = None
         profile.save()
@@ -225,6 +226,11 @@ class GoogleLoginView(generics.GenericAPIView):
         except Exception as e:
             return Response({'error': f'Failed to contact Google: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
+        # Verify audience claim matches our backend configured GOOGLE_CLIENT_ID for security
+        google_client_id = os.environ.get('GOOGLE_CLIENT_ID')
+        if google_client_id and payload.get('aud') != google_client_id:
+            return Response({'error': 'Audience claim mismatch: token was not issued for this application.'}, status=status.HTTP_400_BAD_REQUEST)
+            
         email = payload.get('email')
         google_id = payload.get('sub')
         name = payload.get('name', '')
@@ -241,7 +247,7 @@ class GoogleLoginView(generics.GenericAPIView):
             
         if user:
             # Sync / link google account properties
-            profile = user.profile
+            profile, _ = Profile.objects.get_or_create(user=user)
             profile.google_id = google_id
             profile.profile_photo = picture
             profile.login_provider = 'google'
@@ -262,13 +268,14 @@ class GoogleLoginView(generics.GenericAPIView):
                 email=email,
                 password=User.objects.make_random_password()
             )
-            profile = user.profile
-            profile.full_name = name
-            profile.google_id = google_id
-            profile.profile_photo = picture
-            profile.login_provider = 'google'
-            profile.email_verified = email_verified
-            profile.save()
+            profile = Profile.objects.create(
+                user=user,
+                full_name=name,
+                google_id=google_id,
+                profile_photo=picture,
+                login_provider='google',
+                email_verified=email_verified
+            )
             
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -424,11 +431,12 @@ class RegisterVerifyView(generics.GenericAPIView):
                 email=email,
                 password=password
             )
-            profile = user.profile
-            profile.full_name = full_name
-            profile.login_provider = 'email'
-            profile.email_verified = True
-            profile.save()
+            profile = Profile.objects.create(
+                user=user,
+                full_name=full_name,
+                login_provider='email',
+                email_verified=True
+            )
 
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -480,7 +488,7 @@ class ForgotPasswordVerifyView(generics.GenericAPIView):
             user.save()
             
             # Reset lockout stats
-            profile = user.profile
+            profile, _ = Profile.objects.get_or_create(user=user)
             profile.login_failures = 0
             profile.locked_until = None
             profile.save()
@@ -775,7 +783,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         role = request.data.get('role')
         if role in ['student', 'admin']:
-            profile = user.profile
+            profile, _ = Profile.objects.get_or_create(user=user)
             profile.role = role
             profile.save()
         return super().partial_update(request, *args, **kwargs)
