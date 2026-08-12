@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Brain, Calculator, ChevronLeft, ChevronRight, Maximize2, ShieldAlert, Clock, RefreshCw
+  Brain, Calculator, ChevronLeft, ChevronRight, Maximize2, ShieldAlert, Clock, RefreshCw, LayoutGrid, X
 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
 import type { AptitudeAttemptPayload, AptitudeQuestion } from '../../services/aptitude';
@@ -32,6 +32,7 @@ const AptitudeTestEngine: React.FC = () => {
   // Warning Counter for full-screen escapes/tab switches
   const [warnings, setWarnings] = useState<number>(0);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [showMobilePalette, setShowMobilePalette] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<any>(null);
@@ -393,12 +394,12 @@ const AptitudeTestEngine: React.FC = () => {
       )}
 
       {/* 2. Top Header Navigation */}
-      <header className="h-14 border-b border-[#E5E7EB] bg-white px-6 flex items-center justify-between shrink-0 shadow-sm">
-        <div className="flex items-center gap-3">
-          <Brain className="text-[#2563EB]" size={20} />
-          <div>
-            <h1 className="text-xs font-bold tracking-wide text-slate-800 block">{attempt?.test_title}</h1>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-50 border border-[#E5E7EB] text-slate-500 uppercase tracking-widest font-bold mt-0.5">
+      <header className="h-14 border-b border-[#E5E7EB] bg-white px-3 sm:px-6 flex items-center justify-between shrink-0 shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Brain className="text-[#2563EB] shrink-0" size={20} />
+          <div className="min-w-0">
+            <h1 className="text-xs font-bold tracking-wide text-slate-800 truncate max-w-[140px] sm:max-w-xs">{attempt?.test_title}</h1>
+            <span className="hidden sm:inline-block text-[9px] px-1.5 py-0.5 rounded bg-slate-50 border border-[#E5E7EB] text-slate-500 uppercase tracking-widest font-bold mt-0.5">
               Candidate Attempt Session
             </span>
           </div>
@@ -406,13 +407,22 @@ const AptitudeTestEngine: React.FC = () => {
 
         {/* Dynamic warning bar */}
         {warnings > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-[10px] font-bold animate-pulse">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-[10px] font-bold animate-pulse">
             <ShieldAlert size={12} />
-            Cheat Warnings: {warnings} / 3
+            Warnings: {warnings}/3
           </div>
         )}
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Mobile Palette Toggle Button (< lg screens) */}
+          <button
+            onClick={() => setShowMobilePalette(!showMobilePalette)}
+            className="lg:hidden p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-[#E5E7EB] text-[#2563EB] transition-colors cursor-pointer"
+            title="Question Palette"
+          >
+            <LayoutGrid size={16} />
+          </button>
+
           {(attempt as any)?.calculator_enabled && (
             <button 
               onClick={() => setShowCalculator(!showCalculator)}
@@ -424,16 +434,16 @@ const AptitudeTestEngine: React.FC = () => {
           )}
 
           {/* Countdown Clock */}
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 border border-[#E5E7EB] text-slate-700 font-mono text-sm">
-            <Clock size={16} className="text-[#2563EB] animate-pulse" />
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-slate-50 border border-[#E5E7EB] text-slate-700 font-mono text-xs sm:text-sm">
+            <Clock size={15} className="text-[#2563EB] animate-pulse shrink-0" />
             <span className="font-bold">{formatTime(timeLeft)}</span>
           </div>
 
           <button 
             onClick={() => handleSubmitTest(false)}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg cursor-pointer"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg cursor-pointer shrink-0"
           >
-            Submit Test
+            Submit
           </button>
         </div>
       </header>      {/* 3. Main Assessment Workspace Panel */}
@@ -747,6 +757,60 @@ const AptitudeTestEngine: React.FC = () => {
             {['0', '.', '=', '+'].map(btn => (
               <button key={btn} onClick={() => handleCalcPress(btn)} className={`p-2.5 rounded-lg cursor-pointer ${btn === '=' ? 'bg-[#2563EB] text-white hover:bg-[#1D4ED8]' : 'bg-slate-50 border border-[#E5E7EB] hover:bg-slate-100'}`}>{btn}</button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* 5. Mobile Palette Drawer Modal */}
+      {showMobilePalette && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[9999] lg:hidden flex justify-end">
+          <div className="w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between p-5 space-y-4 overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                <LayoutGrid size={16} className="text-blue-600" /> Question Palette
+              </span>
+              <button
+                onClick={() => setShowMobilePalette(false)}
+                className="p-1 rounded-md text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2.5">
+              {questions.map((q, idx) => {
+                const status = getQuestionStatus(q.id);
+                const isCurrent = idx === activeIdx;
+
+                let colorClass = 'bg-slate-200 border-slate-300 text-slate-600';
+                if (status === 'answered') colorClass = 'bg-emerald-600 border-emerald-700 text-white';
+                else if (status === 'not_answered') colorClass = 'bg-red-500 border-red-650 text-white';
+                else if (status === 'marked') colorClass = 'bg-purple-600 border-purple-700 text-white';
+                else if (status === 'answered_marked') colorClass = 'bg-purple-800 border-purple-900 text-white';
+
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => {
+                      setActiveIdx(idx);
+                      setShowMobilePalette(false);
+                    }}
+                    className={`w-10 h-10 rounded-lg border flex items-center justify-center font-bold text-xs transition-colors cursor-pointer ${colorClass} ${
+                      isCurrent ? 'ring-2 ring-[#2563EB] ring-offset-2 ring-offset-white scale-105 shadow-sm' : ''
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setShowMobilePalette(false)}
+              className="w-full py-2.5 bg-blue-600 text-white font-bold text-xs rounded-lg mt-auto cursor-pointer"
+            >
+              Close Palette
+            </button>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
@@ -6,50 +6,58 @@ import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ProtectedRoute, AdminRoute } from './components/layout/ProtectedRoute';
+import AnalyticsTracker from './components/analytics/AnalyticsTracker';
 
-// Pages
-import LandingPage from './pages/landing/LandingPage';
-import Login from './pages/auth/Login';
-import Signup from './pages/auth/Signup';
-import ForgotPassword from './pages/auth/ForgotPassword';
-import LearningSections from './pages/student/LearningSections';
-import CodingDashboard from './pages/student/Dashboard';
-import LevelQuestions from './pages/student/LevelQuestions';
-import QuestionPage from './pages/question/QuestionPage';
-import AdminDashboard from './pages/admin/AdminDashboard';
+// Lazy Loaded Pages for Fast Bundle Chunks
+const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Signup = lazy(() => import('./pages/auth/Signup'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const LearningSections = lazy(() => import('./pages/student/LearningSections'));
+const CodingDashboard = lazy(() => import('./pages/student/Dashboard'));
+const LevelQuestions = lazy(() => import('./pages/student/LevelQuestions'));
+const QuestionPage = lazy(() => import('./pages/question/QuestionPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AptitudeDashboard = lazy(() => import('./pages/student/AptitudeDashboard'));
+const AptitudePracticeSelection = lazy(() => import('./pages/student/AptitudePracticeSelection'));
+const AptitudeTestEngine = lazy(() => import('./pages/student/AptitudeTestEngine'));
+const AptitudeResultPage = lazy(() => import('./pages/student/AptitudeResultPage'));
+const AptitudeAdminPanel = lazy(() => import('./pages/admin/AptitudeAdminPanel'));
+const AptitudeCategoriesPage = lazy(() => import('./pages/student/AptitudeCategoriesPage'));
+const AptitudeTopicsPage = lazy(() => import('./pages/student/AptitudeTopicsPage'));
+const AptitudeSubTopicsPage = lazy(() => import('./pages/student/AptitudeSubTopicsPage'));
+const AptitudeMCQPracticePage = lazy(() => import('./pages/student/AptitudeMCQPracticePage'));
+const AptitudeTrainerProfilePage = lazy(() => import('./pages/student/AptitudeTrainerProfilePage'));
+const CodingTestListPage = lazy(() => import('./pages/student/CodingTestListPage'));
+const CodingTestEngine = lazy(() => import('./pages/student/CodingTestEngine'));
+const CodingTestResultPage = lazy(() => import('./pages/student/CodingTestResultPage'));
+const AptitudeQuestionCreateEditPage = lazy(() => import('./pages/admin/AptitudeQuestionCreateEditPage'));
+
+// Hackathon Pages
+const HackathonDashboard = lazy(() => import('./pages/student/HackathonDashboard'));
+const HackathonDetails = lazy(() => import('./pages/student/HackathonDetails'));
+const HackathonRegister = lazy(() => import('./pages/student/HackathonRegister'));
+const HackathonPayment = lazy(() => import('./pages/student/HackathonPayment'));
+const HackathonAdminPanel = lazy(() => import('./pages/admin/HackathonAdminPanel'));
+
+// Tutorials Pages
+const TutorialsHomePage = lazy(() => import('./pages/student/TutorialsHomePage'));
+const TutorialLearningPage = lazy(() => import('./pages/student/TutorialLearningPage'));
+const TutorialsAdminPanel = lazy(() => import('./pages/admin/TutorialsAdminPanel'));
+const ProfilePage = lazy(() => import('./pages/student/ProfilePage'));
+
+// Placeholder Pages
 import { 
   InterviewDashboard, McqDashboard, 
   CoursesDashboard, AiPracticeDashboard 
 } from './pages/student/Placeholders';
-import AptitudeDashboard from './pages/student/AptitudeDashboard';
-import AptitudePracticeSelection from './pages/student/AptitudePracticeSelection';
-import AptitudeTestEngine from './pages/student/AptitudeTestEngine';
-import AptitudeResultPage from './pages/student/AptitudeResultPage';
-import AptitudeAdminPanel from './pages/admin/AptitudeAdminPanel';
-import AptitudeCategoriesPage from './pages/student/AptitudeCategoriesPage';
-import AptitudeTopicsPage from './pages/student/AptitudeTopicsPage';
-import AptitudeSubTopicsPage from './pages/student/AptitudeSubTopicsPage';
-import AptitudeMCQPracticePage from './pages/student/AptitudeMCQPracticePage';
-import AptitudeTrainerProfilePage from './pages/student/AptitudeTrainerProfilePage';
-import CodingTestListPage from './pages/student/CodingTestListPage';
-import CodingTestEngine from './pages/student/CodingTestEngine';
-import CodingTestResultPage from './pages/student/CodingTestResultPage';
-import AptitudeQuestionCreateEditPage from './pages/admin/AptitudeQuestionCreateEditPage';
 
-// Hackathon Pages
-import HackathonDashboard from './pages/student/HackathonDashboard';
-import HackathonDetails from './pages/student/HackathonDetails';
-import HackathonRegister from './pages/student/HackathonRegister';
-import HackathonPayment from './pages/student/HackathonPayment';
-import HackathonAdminPanel from './pages/admin/HackathonAdminPanel';
-
-// Tutorials Pages
-import TutorialsHomePage from './pages/student/TutorialsHomePage';
-import TutorialLearningPage from './pages/student/TutorialLearningPage';
-import TutorialsAdminPanel from './pages/admin/TutorialsAdminPanel';
-import AnalyticsTracker from './components/analytics/AnalyticsTracker';
-import ProfilePage from './pages/student/ProfilePage';
-
+const PageLoadingSpinner: React.FC = () => (
+  <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
+    <div className="w-9 h-9 border-3 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+    <span className="text-xs font-semibold text-slate-400">Loading page...</span>
+  </div>
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,7 +75,8 @@ const App: React.FC = () => {
         <AuthProvider>
           <BrowserRouter>
             <AnalyticsTracker />
-            <Routes>
+            <Suspense fallback={<PageLoadingSpinner />}>
+              <Routes>
               {/* Public Routes */}
               <Route
                 path="/"
@@ -421,6 +430,7 @@ const App: React.FC = () => {
               {/* Fallback to Home */}
               <Route path="*" element={<NavigateToHome />} />
             </Routes>
+            </Suspense>
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>

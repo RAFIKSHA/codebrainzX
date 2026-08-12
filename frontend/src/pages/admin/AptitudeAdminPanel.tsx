@@ -720,7 +720,7 @@ const AptitudeAdminPanel: React.FC = () => {
         </div>
 
         {/* Studio Sub Tabs */}
-        <div className="flex bg-white p-1 rounded-xl border border-[#E5E7EB] self-start sm:self-center overflow-x-auto">
+        <div className="flex bg-white p-1 rounded-xl border border-[#E5E7EB] self-start sm:self-center w-full sm:w-auto max-w-full overflow-x-auto">
           {[
             { id: 'bank', label: 'Question Bank', icon: Database },
             { id: 'trainers', label: 'Trainer Management', icon: Users },
