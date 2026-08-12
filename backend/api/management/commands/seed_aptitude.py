@@ -3,15 +3,56 @@ from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 from django.contrib.auth.models import User
 from api.models import (
-    AptitudeCategory, AptitudeTopic, AptitudeSubTopic, AptitudeQuestion,
+    AptitudeTrainer, AptitudeCategory, AptitudeTopic, AptitudeSubTopic, AptitudeQuestion,
     AptitudeTest, AptitudeTestQuestion, AptitudeTestSection, GamificationProfile
 )
 
 class Command(BaseCommand):
-    help = 'Seeds the database with placement aptitude categories, topics, and question banks'
+    help = 'Seeds the database with placement aptitude categories, topics, trainers, and question banks'
 
     def handle(self, *args, **kwargs):
         self.stdout.write("Seeding placement aptitude content...")
+
+        # 0. Create Trainers
+        trainers_data = [
+            {
+                'name': 'Dr. Rajesh Sharma',
+                'specialization': 'Quantitative Aptitude & Speed Math',
+                'bio': '12+ years mentoring 50,000+ candidates for TCS NQT, Infosys, and CAT with mental math hacks and speed techniques.',
+                'profile_image': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+                'is_active': True
+            },
+            {
+                'name': 'Ananya Sen',
+                'specialization': 'Logical Reasoning & Critical Thinking',
+                'bio': 'Former placement cell head specializing in syllogisms, puzzle grids, seating matrices, and coding-decoding patterns.',
+                'profile_image': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
+                'is_active': True
+            },
+            {
+                'name': 'Vikram Malhotra',
+                'specialization': 'Verbal Ability & Reading Comprehension',
+                'bio': 'Corporate communication expert and author of aptitude handbooks, helping students master grammar and RC speed.',
+                'profile_image': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+                'is_active': True
+            }
+        ]
+
+        trainers = {}
+        for t_info in trainers_data:
+            trainer, created = AptitudeTrainer.objects.get_or_create(
+                name=t_info['name'],
+                defaults={
+                    'specialization': t_info['specialization'],
+                    'bio': t_info['bio'],
+                    'profile_image': t_info['profile_image'],
+                    'is_active': t_info['is_active'],
+                    'slug': slugify(t_info['name'])
+                }
+            )
+            trainers[trainer.name] = trainer
+            if created:
+                self.stdout.write(f"Added Trainer: {trainer.name}")
 
         # 1. Create Categories
         cats_data = [
@@ -99,6 +140,7 @@ class Command(BaseCommand):
         q1 = AptitudeQuestion.objects.create(
             topic=topic_objs['Percentages'],
             sub_topic=sub_objs['Percentages - Percentage basics'],
+            trainer=trainers['Dr. Rajesh Sharma'],
             title='Salary Increase Calculation',
             statement='A employee\'s salary is increased by 20% and then subsequently decreased by 20%. What is the net change in his salary?',
             difficulty='easy',
@@ -123,6 +165,7 @@ class Command(BaseCommand):
         q2 = AptitudeQuestion.objects.create(
             topic=topic_objs['Percentages'],
             sub_topic=sub_objs['Percentages - Profit margins'],
+            trainer=trainers['Dr. Rajesh Sharma'],
             title='Multiple Correct MCQ Example',
             statement='Which of the following fraction to percentage conversions are correct?',
             difficulty='medium',
@@ -146,6 +189,7 @@ class Command(BaseCommand):
         q3 = AptitudeQuestion.objects.create(
             topic=topic_objs['Profit & Loss'],
             sub_topic=sub_objs['Profit & Loss - Basic Profit/Loss'],
+            trainer=trainers['Dr. Rajesh Sharma'],
             title='Cost Price Profit Calculation',
             statement='A vendor sells an item for $180, incurring a loss of 10%. At what price should he sell it to gain 10%?',
             difficulty='medium',
@@ -164,6 +208,7 @@ class Command(BaseCommand):
         q4 = AptitudeQuestion.objects.create(
             topic=topic_objs['Blood Relations'],
             sub_topic=sub_objs['Blood Relations - Family tree diagrams'],
+            trainer=trainers['Ananya Sen'],
             title='Uncle-Aunt Relation Decode',
             statement='Pointing to a photograph, a man says, "I have no brother or sister but that man\'s father is my father\'s son." Whose photograph is it?',
             difficulty='easy',
@@ -187,6 +232,7 @@ class Command(BaseCommand):
         q5 = AptitudeQuestion.objects.create(
             topic=topic_objs['Syllogisms'],
             sub_topic=sub_objs['Syllogisms - Two statements'],
+            trainer=trainers['Ananya Sen'],
             title='Logical syllogism deduction validation',
             statement='Statement: All dogs are cats. All cats are black.\nConclusion: All dogs are black.\nIs this logical conclusion valid?',
             difficulty='easy',
@@ -204,6 +250,7 @@ class Command(BaseCommand):
         q_parent = AptitudeQuestion.objects.create(
             topic=topic_objs['Reading Comprehension'],
             sub_topic=sub_objs['Reading Comprehension - Short passages'],
+            trainer=trainers['Vikram Malhotra'],
             title='Technology Evolution Comprehension',
             statement='<p>Artificial intelligence (AI) has progressed from simple chess-playing algorithms to complex deep learning models capable of synthesizing human speech, analyzing MRI scans, and coding software. However, this explosive growth has triggered concern regarding regulatory guardrails. Proponents argue that premature regulation might stifle startup innovation, while critics emphasize that unfettered growth could compromise cybersecurity, privacy, and systemic job markets.</p>',
             difficulty='hard',
@@ -219,6 +266,7 @@ class Command(BaseCommand):
         AptitudeQuestion.objects.create(
             topic=topic_objs['Reading Comprehension'],
             sub_topic=sub_objs['Reading Comprehension - Short passages'],
+            trainer=trainers['Vikram Malhotra'],
             parent=q_parent,
             title='Core concern raised in passage',
             statement='According to the passage, what is the primary source of concern regarding artificial intelligence?',
@@ -241,6 +289,7 @@ class Command(BaseCommand):
         AptitudeQuestion.objects.create(
             topic=topic_objs['Reading Comprehension'],
             sub_topic=sub_objs['Reading Comprehension - Short passages'],
+            trainer=trainers['Vikram Malhotra'],
             parent=q_parent,
             title='Proponents argument',
             statement='What argument do proponents of unfettered AI development raise?',

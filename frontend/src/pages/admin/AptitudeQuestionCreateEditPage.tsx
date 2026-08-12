@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, Sparkles, HelpCircle } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
-import type { AptitudeCategory, AptitudeQuestion } from '../../services/aptitude';
+import type { AptitudeCategory, AptitudeQuestion, AptitudeTrainer } from '../../services/aptitude';
 
 const AptitudeQuestionCreateEditPage: React.FC = () => {
   const { questionId } = useParams<{ questionId: string }>();
@@ -10,11 +10,13 @@ const AptitudeQuestionCreateEditPage: React.FC = () => {
   const isEdit = !!questionId;
 
   const [categories, setCategories] = useState<AptitudeCategory[]>([]);
+  const [trainers, setTrainers] = useState<AptitudeTrainer[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingQ, setEditingQ] = useState<AptitudeQuestion | null>(null);
 
   // Form Fields
+  const [formTrainerId, setFormTrainerId] = useState<number | null>(null);
   const [formCategoryId, setFormCategoryId] = useState<number | null>(null);
   const [formTopicId, setFormTopicId] = useState<number | null>(null);
   const [formSubTopicId, setFormSubTopicId] = useState<number | null>(null);
@@ -44,8 +46,12 @@ const AptitudeQuestionCreateEditPage: React.FC = () => {
     const initData = async () => {
       try {
         setLoading(true);
-        const cats = await aptitudeService.getCategories();
+        const [cats, trs] = await Promise.all([
+          aptitudeService.getCategories(),
+          aptitudeService.getTrainers(true)
+        ]);
         setCategories(cats);
+        setTrainers(trs);
 
         if (isEdit) {
           const qs = await aptitudeService.getQuestions();
@@ -61,6 +67,7 @@ const AptitudeQuestionCreateEditPage: React.FC = () => {
               }
             }
 
+            setFormTrainerId(q.trainer || null);
             setFormCategoryId(resolvedCatId);
             setFormTopicId(q.topic);
             setFormSubTopicId(q.sub_topic);
@@ -108,7 +115,7 @@ const AptitudeQuestionCreateEditPage: React.FC = () => {
   }, [questionId, isEdit]);
 
   const activeCategoryObj = categories.find(c => c.id === formCategoryId);
-  const availableTopics = activeCategoryObj?.topics || [];
+  const availableTopics = activeCategoryObj ? activeCategoryObj.topics : categories.flatMap(c => c.topics);
   const availableSubTopics = availableTopics.find(t => t.id === formTopicId)?.sub_topics || [];
 
   const handleSave = async (visibility: 'public' | 'private') => {
@@ -127,6 +134,7 @@ const AptitudeQuestionCreateEditPage: React.FC = () => {
     const correct_answer = formAnswer.split(',').map(s => s.trim().toUpperCase());
 
     const payload = {
+      trainer: formTrainerId,
       topic: formTopicId,
       sub_topic: formSubTopicId,
       title: formTitle,
@@ -209,7 +217,23 @@ const AptitudeQuestionCreateEditPage: React.FC = () => {
               <h3 className="text-sm font-semibold text-[#111827] border-b border-[#E5E7EB] pb-2 uppercase tracking-wider text-[11px]">
                 1. Question Information
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-650 font-medium block">Trainer ▼</label>
+                  <select
+                    value={formTrainerId || ''}
+                    onChange={(e) => setFormTrainerId(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full h-10 border border-[#D1D5DB] rounded-lg px-2 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-slate-800"
+                  >
+                    <option value="">No Trainer Assigned</option>
+                    {trainers.map(t => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.specialization})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-[11px] text-slate-650 font-medium block">Category</label>
                   <select
@@ -237,12 +261,19 @@ const AptitudeQuestionCreateEditPage: React.FC = () => {
                   <select
                     value={formTopicId || ''}
                     onChange={(e) => {
-                      setFormTopicId(Number(e.target.value));
+                      const tid = e.target.value ? Number(e.target.value) : null;
+                      setFormTopicId(tid);
+                      if (tid) {
+                        const parentCat = categories.find(c => c.topics.some(t => t.id === tid));
+                        if (parentCat) {
+                          setFormCategoryId(parentCat.id);
+                        }
+                      }
                       setFormSubTopicId(null);
                     }}
                     className="w-full h-10 border border-[#D1D5DB] rounded-lg px-2 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
                   >
-                    <option value="">Select Topic</option>
+                    <option value="">Select Topic ({availableTopics.length} available)</option>
                     {availableTopics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>

@@ -1,42 +1,69 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import {
-  Bookmark, ChevronLeft, ChevronRight, CheckCircle2,
-  XCircle, Lightbulb, HelpCircle, Loader2, Flag, ArrowLeft
+  Bookmark, ChevronLeft, ChevronRight, Check, X,
+  Eye, Flame, Zap, AlertCircle, Loader2, HelpCircle,
+  Lightbulb, ArrowLeft
 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
 import type { AptitudeQuestion } from '../../services/aptitude';
+import { useAuth } from '../../context/AuthContext';
 
-/* ────────────────────────────────────────────────────────────
-   Status constants – mirrors TCS NQT panel colour semantics
-   ──────────────────────────────────────────────────────────── */
 type QStatus = 'not-visited' | 'answered' | 'not-answered' | 'marked';
 
 const AptitudeMCQPracticePage: React.FC = () => {
+  const { user } = useAuth();
   const { subtopicId } = useParams<{ subtopicId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const topicId = new URLSearchParams(location.search).get('topic');
+  const searchParams = new URLSearchParams(location.search);
+  const topicId = searchParams.get('topic');
+  const trainerId = searchParams.get('trainer');
 
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<AptitudeQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [difficultyFilter, setDifficultyFilter] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
 
-  // keyed by question id
+  // Keyed by question id
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [bookmarked, setBookmarked] = useState<Record<number, boolean>>({});
   const [markedForReview, setMarkedForReview] = useState<Record<number, boolean>>({});
   const [visitedSet, setVisitedSet] = useState<Set<number>>(new Set());
+  const [reportedQuestions, setReportedQuestions] = useState<Record<number, boolean>>({});
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
-  /* ── fetch ── */
+  // User streak & score for header (Only populated for logged in user)
+  const [userGamification, setUserGamification] = useState<{ streak: number; score: number }>({
+    streak: 0,
+    score: 0
+  });
+
+  /* ── Fetch real gamification stats if logged in ── */
+  useEffect(() => {
+    if (user) {
+      aptitudeService.getDashboard()
+        .then(res => {
+          if (res?.gamification) {
+            setUserGamification({
+              streak: res.gamification.daily_streak || 0,
+              score: res.gamification.xp || 0
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  /* ── Fetch questions ── */
   const fetchQuestions = useCallback(async () => {
     try {
       setLoading(true);
       const params: Record<string, any> = { practice: 'true' };
-      if (subtopicId === 'all' && topicId) params.topic = topicId;
-      else params.sub_topic = subtopicId;
+      if (subtopicId && subtopicId !== 'all') params.sub_topic = subtopicId;
+      if (topicId) params.topic = topicId;
+      if (trainerId) params.trainer = trainerId;
 
       const qs = await aptitudeService.getQuestions(params);
       setQuestions(qs);
@@ -49,20 +76,22 @@ const AptitudeMCQPracticePage: React.FC = () => {
       setMarkedForReview({});
       setVisitedSet(new Set([qs[0]?.id ?? -1]));
     } catch (e) {
-      console.error(e);
+      console.error('Failed to load questions:', e);
     } finally {
       setLoading(false);
     }
-  }, [subtopicId, topicId]);
+  }, [subtopicId, topicId, trainerId]);
 
-  useEffect(() => { fetchQuestions(); }, [fetchQuestions]);
+  useEffect(() => {
+    fetchQuestions();
+  }, [fetchQuestions]);
 
-  /* ── derived ── */
+  /* ── Filtered Questions ── */
   const filteredQs = questions.filter(q =>
     difficultyFilter === 'all' || q.difficulty.toLowerCase() === difficultyFilter
   );
   const total = filteredQs.length;
-  const q = filteredQs[currentIndex];
+  const currentQ = filteredQs[currentIndex];
 
   const getStatus = (idx: number): QStatus => {
     const id = filteredQs[idx]?.id;
@@ -74,10 +103,10 @@ const AptitudeMCQPracticePage: React.FC = () => {
 
   const answered = filteredQs.filter(q => !!selectedAnswers[q.id]).length;
   const notAnswered = filteredQs.filter(q => visitedSet.has(q.id) && !selectedAnswers[q.id] && !markedForReview[q.id]).length;
-  const reviewCount = Object.keys(markedForReview).filter(k => markedForReview[+k]).length;
+  const reviewCount = filteredQs.filter(q => !!markedForReview[q.id]).length;
   const notVisited = filteredQs.filter(q => !visitedSet.has(q.id)).length;
 
-  /* ── handlers ── */
+  /* ── Handlers ── */
   const goTo = (idx: number) => {
     if (idx < 0 || idx >= total) return;
     setCurrentIndex(idx);
@@ -85,7 +114,6 @@ const AptitudeMCQPracticePage: React.FC = () => {
   };
 
   const handleSelect = (qId: number, key: string) => {
-    if (selectedAnswers[qId]) return;
     setSelectedAnswers(prev => ({ ...prev, [qId]: key }));
   };
 
@@ -93,341 +121,493 @@ const AptitudeMCQPracticePage: React.FC = () => {
     try {
       const res = await aptitudeService.bookmarkQuestion(qId);
       setBookmarked(prev => ({ ...prev, [qId]: res.bookmarked }));
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const toggleReview = (qId: number) => {
     setMarkedForReview(prev => ({ ...prev, [qId]: !prev[qId] }));
   };
 
-  /* ── status badge helpers ── */
-  const statusDot: Record<QStatus, string> = {
-    'not-visited': 'bg-slate-200 text-slate-600 border-slate-300',
-    'answered': 'bg-emerald-500 text-white border-emerald-500',
-    'not-answered': 'bg-red-500 text-white border-red-500',
-    'marked': 'bg-purple-500 text-white border-purple-500',
+  const handleReport = (qId: number) => {
+    setReportedQuestions(prev => ({ ...prev, [qId]: true }));
+    setShowReportDialog(true);
+    setTimeout(() => setShowReportDialog(false), 3000);
   };
-  const diffColor = (d: string) =>
-    d === 'easy' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
-    d === 'medium' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-    'bg-red-100 text-red-700 border-red-200';
 
-  /* ── loading ── */
-  if (loading) return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-slate-950 z-50">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 size={28} className="animate-spin text-blue-600" />
-        <p className="text-sm text-slate-500">Loading questions...</p>
+  /* ── Loading State ── */
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-3">
+        <Loader2 size={32} className="animate-spin text-[#6332F6]" />
+        <p className="text-sm font-semibold text-slate-500">Loading Practice Questions...</p>
       </div>
-    </div>
-  );
+    );
+  }
 
-  if (total === 0) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <HelpCircle size={36} className="text-slate-300" />
-      <p className="text-sm text-slate-500">No questions found for this filter.</p>
-      <button onClick={() => setDifficultyFilter('all')} className="text-xs font-bold text-blue-600 underline">Clear filter</button>
-    </div>
-  );
-
-  /* ══════════════════════════════════════════════════════════
-     RENDER — Full-screen TCS NQT style layout
-     ══════════════════════════════════════════════════════════ */
-  return (
-    <div className="flex flex-col min-h-screen bg-[#F1F3F5] dark:bg-slate-950 font-sans select-none">
-
-      {/* ── TOP HEADER BAR ── */}
-      <header className="bg-[#003087] dark:bg-slate-900 text-white h-12 flex items-center px-4 gap-4 shrink-0 shadow-md z-20">
+  /* ── Empty State ── */
+  if (total === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-4">
+        <HelpCircle size={40} className="text-slate-300" />
+        <h3 className="text-base font-bold text-slate-700">No questions available</h3>
+        <p className="text-xs text-slate-500 max-w-sm">
+          There are no questions matching the current difficulty filter.
+        </p>
         <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white transition-colors cursor-pointer"
+          onClick={() => setDifficultyFilter('all')}
+          className="px-4 py-2 bg-[#6332F6] text-white text-xs font-bold rounded-xl shadow-sm hover:bg-[#5225D4] transition-colors"
         >
-          <ArrowLeft size={14} /> Back
+          Clear Filters
         </button>
+      </div>
+    );
+  }
 
-        <div className="h-5 w-px bg-white/20" />
+  // Format breadcrumbs
+  const categoryName = currentQ?.category_name || 'Aptitude';
+  const topicName = currentQ?.topic_name || 'Percentages';
+  const subTopicName = currentQ?.sub_topic_name || 'Percentage Basics';
 
-        <div className="flex-1 flex items-center gap-2 min-w-0">
-          <span className="text-xs font-semibold text-blue-100 truncate">
-            {q?.topic_name || 'Aptitude Practice'}
-            {q?.sub_topic_name && <span className="text-white/60"> › {q.sub_topic_name}</span>}
-          </span>
-        </div>
+  return (
+    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-6 md:-mt-8 min-h-screen bg-[#F8FAFC] dark:bg-[#07080d] font-sans pb-12 select-none">
 
-        {/* Difficulty filter pills */}
-        <div className="flex items-center gap-1">
-          {(['all', 'easy', 'medium', 'hard'] as const).map(d => (
+      {/* ──────────────────────────────────────────────────────────
+          1. TOP PURPLE GRADIENT BREADCRUMB / STATUS BAR
+          ────────────────────────────────────────────────────────── */}
+      <div className="w-full bg-gradient-to-r from-[#180C66] via-[#3B1CC7] to-[#5527E6] text-white px-4 sm:px-8 py-3.5 shadow-md">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          
+          {/* Left: Back & Breadcrumb navigation */}
+          <div className="flex items-center gap-3 text-xs font-medium flex-wrap">
             <button
-              key={d}
-              onClick={() => { setDifficultyFilter(d); setCurrentIndex(0); }}
-              className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                difficultyFilter === d
-                  ? 'bg-white text-[#003087]'
-                  : 'text-blue-200 hover:text-white'
-              }`}
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1.5 text-white/90 hover:text-white font-semibold transition-colors bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg cursor-pointer"
             >
-              {d}
+              <ArrowLeft size={14} />
+              <span>Back</span>
             </button>
-          ))}
-        </div>
-      </header>
 
-      {/* ── MAIN BODY ── */}
-      <div className="flex flex-1 overflow-hidden">
-
-        {/* ──── LEFT: QUESTION PANEL ──── */}
-        <main className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5">
-
-          {/* Question Meta Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500">
-                Question <span className="text-slate-900 dark:text-white">{currentIndex + 1}</span> of {total}
-              </span>
-              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${diffColor(q.difficulty)}`}>
-                {q.difficulty}
-              </span>
-              <span className="text-[10px] text-slate-400 font-semibold border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded">
-                Marks: {q.marks}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Mark for Review */}
-              <button
-                onClick={() => toggleReview(q.id)}
-                title="Mark for Review"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                  markedForReview[q.id]
-                    ? 'bg-purple-50 border-purple-300 text-purple-700'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-purple-300'
-                }`}
-              >
-                <Flag size={11} /> Mark for Review
-              </button>
-
-              {/* Bookmark */}
-              <button
-                onClick={() => toggleBookmark(q.id)}
-                title="Bookmark"
-                className={`p-2 rounded-lg border transition-all cursor-pointer ${
-                  bookmarked[q.id]
-                    ? 'bg-amber-50 border-amber-300 text-amber-600'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-amber-300'
-                }`}
-              >
-                <Bookmark size={14} fill={bookmarked[q.id] ? 'currentColor' : 'none'} />
-              </button>
+            <div className="flex items-center gap-2 text-white/80">
+              <Link to="/dashboard/aptitude" className="hover:text-white transition-colors">
+                Aptitude
+              </Link>
+              <ChevronRight size={13} className="text-white/50 shrink-0" />
+              <span className="text-white/90">{topicName}</span>
+              <ChevronRight size={13} className="text-white/50 shrink-0" />
+              <span className="text-white font-bold">{subTopicName}</span>
             </div>
           </div>
 
-          {/* Question Statement */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
-            <p className="text-sm text-slate-800 dark:text-slate-100 leading-relaxed font-medium whitespace-pre-wrap">
-              {q.statement}
-            </p>
-            {q.image_url && (
-              <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-950">
-                <img src={q.image_url} alt="Question" className="max-h-64 object-contain mx-auto p-3" />
-              </div>
-            )}
-          </div>
-
-          {/* Answer Options */}
-          <div className="grid grid-cols-1 gap-2.5">
-            {q.options?.map(opt => {
-              const isSelected = selectedAnswers[q.id] === opt.key;
-              const isCorrect = q.correct_answer?.includes(opt.key);
-              const hasAnswered = !!selectedAnswers[q.id];
-
-              let style = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:bg-blue-50/30 dark:hover:bg-slate-800 cursor-pointer';
-              let labelStyle = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
-
-              if (hasAnswered) {
-                if (isCorrect) {
-                  style = 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 text-emerald-800 dark:text-emerald-300';
-                  labelStyle = 'bg-emerald-500 text-white border-emerald-500';
-                } else if (isSelected) {
-                  style = 'bg-red-50 dark:bg-red-950/30 border-red-300 text-red-800 dark:text-red-300';
-                  labelStyle = 'bg-red-500 text-white border-red-500';
-                } else {
-                  style = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 opacity-60';
-                }
-              }
-
-              return (
-                <button
-                  key={opt.key}
-                  onClick={() => handleSelect(q.id, opt.key)}
-                  disabled={hasAnswered}
-                  className={`flex items-center gap-3.5 p-3.5 rounded-xl border text-sm text-left transition-all ${style} ${!hasAnswered ? '' : 'cursor-default'}`}
-                >
-                  <span className={`w-7 h-7 shrink-0 rounded-lg border flex items-center justify-center text-xs font-black transition-all ${labelStyle}`}>
-                    {hasAnswered && isCorrect ? <CheckCircle2 size={14} /> :
-                     hasAnswered && isSelected ? <XCircle size={14} /> :
-                     opt.key}
-                  </span>
-                  <span className="leading-relaxed">{opt.text}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Solution Panel — appears after answering */}
-          {selectedAnswers[q.id] && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-sm animate-fade-in">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide pb-2 border-b border-slate-100 dark:border-slate-800">
-                <CheckCircle2 size={14} className="text-emerald-500" /> Solution
+          {/* Right: Streak & Score Stats (Only visible when user is logged in) */}
+          {user && (
+            <div className="flex items-center gap-5 shrink-0 self-end sm:self-auto">
+              {/* Streak */}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                  <Flame size={18} className="text-amber-400 fill-amber-400 animate-pulse" />
+                </div>
+                <div className="leading-tight">
+                  <p className="text-[10px] uppercase font-semibold text-white/70 tracking-wider">Streak</p>
+                  <p className="text-sm font-black text-white">{userGamification.streak} days</p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                Correct Answer: <span className="font-black">Option {q.correct_answer?.join(', ')}</span>
+              <div className="h-7 w-px bg-white/20" />
+
+              {/* Score */}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                  <Zap size={18} className="text-amber-300 fill-amber-300" />
+                </div>
+                <div className="leading-tight">
+                  <p className="text-[10px] uppercase font-semibold text-white/70 tracking-wider">Score</p>
+                  <p className="text-sm font-black text-white">{userGamification.score}</p>
+                </div>
               </div>
-
-              {q.explanation && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Explanation</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">{q.explanation}</p>
-                </div>
-              )}
-
-              {q.shortcut_trick && (
-                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3.5 space-y-1">
-                  <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
-                    <Lightbulb size={11} /> Shortcut / Trick
-                  </p>
-                  <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed whitespace-pre-wrap">{q.shortcut_trick}</p>
-                </div>
-              )}
-
-              {q.company_tags && q.company_tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {q.company_tags.map(t => (
-                    <span key={t} className="text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">{t}</span>
-                  ))}
-                </div>
-              )}
             </div>
           )}
 
-          {/* Bottom Nav Buttons */}
-          <div className="flex items-center justify-between pt-2 pb-6">
-            <button
-              onClick={() => goTo(currentIndex - 1)}
-              disabled={currentIndex === 0}
-              className="flex items-center gap-1.5 px-5 py-2.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-all cursor-pointer"
-            >
-              <ChevronLeft size={14} /> Previous
-            </button>
+        </div>
+      </div>
 
-            <span className="text-xs text-slate-400 font-medium">{currentIndex + 1} / {total}</span>
+      {/* ──────────────────────────────────────────────────────────
+          2. MAIN CONTENT AREA (2-COLUMN GRID)
+          ────────────────────────────────────────────────────────── */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-8 pt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-            <button
-              onClick={() => goTo(currentIndex + 1)}
-              disabled={currentIndex === total - 1}
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-[#003087] hover:bg-[#002070] text-white text-xs font-bold rounded-lg disabled:opacity-40 transition-all cursor-pointer shadow-sm"
-            >
-              Next <ChevronRight size={14} />
-            </button>
-          </div>
-        </main>
+          {/* ════════════════════════════════════════════════════════
+              LEFT COLUMN: QUESTION, OPTIONS & CONTROLS
+              ════════════════════════════════════════════════════════ */}
+          <div className="lg:col-span-8 space-y-4">
 
-        {/* ──── RIGHT: QUESTION NAVIGATOR PANEL ──── */}
-        <aside className="hidden md:flex flex-col w-60 lg:w-64 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shrink-0 overflow-y-auto">
+            {/* Question Sub-Header / Meta Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                  Question {currentIndex + 1} of {total}
+                </span>
 
-          {/* Summary Stats */}
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Question Summary</p>
-            <div className="grid grid-cols-2 gap-2 text-[10px] font-bold">
-              <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
-                <span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" /> Answered: {answered}
+                {/* Difficulty Badge */}
+                <span
+                  className={`text-[11px] font-black uppercase px-2.5 py-0.5 rounded-md tracking-wider ${
+                    currentQ.difficulty.toLowerCase() === 'easy'
+                      ? 'bg-[#E8F8F0] text-[#10B981] dark:bg-emerald-950/40 dark:text-emerald-400'
+                      : currentQ.difficulty.toLowerCase() === 'medium'
+                      ? 'bg-[#FEF3C7] text-[#D97706] dark:bg-amber-950/40 dark:text-amber-400'
+                      : 'bg-[#FEE2E2] text-[#EF4444] dark:bg-red-950/40 dark:text-red-400'
+                  }`}
+                >
+                  {currentQ.difficulty}
+                </span>
+
+                {/* Marks */}
+                <span className="text-xs font-semibold text-slate-400">
+                  Marks: {currentQ.marks || 1}
+                </span>
+
+                {/* Mark for Review Button */}
+                <button
+                  onClick={() => toggleReview(currentQ.id)}
+                  className="flex items-center gap-1.5 text-xs font-bold text-[#6332F6] hover:text-[#4F22D6] transition-colors cursor-pointer ml-1"
+                >
+                  <Bookmark
+                    size={15}
+                    className={markedForReview[currentQ.id] ? 'fill-[#6332F6] text-[#6332F6]' : 'text-[#6332F6]'}
+                  />
+                  <span>{markedForReview[currentQ.id] ? 'Marked for Review' : 'Mark for Review'}</span>
+                </button>
               </div>
-              <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
-                <span className="w-3 h-3 rounded-sm bg-red-500 inline-block" /> Not Answered: {notAnswered}
+
+              {/* Report Button */}
+              <button
+                onClick={() => handleReport(currentQ.id)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <AlertCircle size={14} />
+                <span>{reportedQuestions[currentQ.id] ? 'Reported' : 'Report'}</span>
+              </button>
+            </div>
+
+            {/* Report Toast Notification */}
+            {showReportDialog && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl text-xs flex items-center gap-2">
+                <AlertCircle size={14} />
+                <span>Thank you. Your report has been submitted to the content team for review.</span>
               </div>
-              <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
-                <span className="w-3 h-3 rounded-sm bg-purple-500 inline-block" /> Review: {reviewCount}
-              </div>
-              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                <span className="w-3 h-3 rounded-sm bg-slate-200 dark:bg-slate-700 inline-block" /> Not Visited: {notVisited}
+            )}
+
+            {/* Question Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-100 dark:border-slate-800 shadow-[0_2px_16px_rgba(0,0,0,0.03)] relative overflow-hidden">
+              {/* Left purple gradient accent bar */}
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#6332F6] to-[#8B5CF6] rounded-l-2xl" />
+
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-[#6332F6] shrink-0 leading-none pt-1">
+                  Q.
+                </span>
+                <div className="flex-1 space-y-2">
+                  <p className="text-base sm:text-[17px] text-slate-800 dark:text-slate-100 leading-relaxed font-medium">
+                    {currentQ.statement}
+                  </p>
+
+                  {/* Question Image if present */}
+                  {currentQ.image_url && (
+                    <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-950 max-w-lg">
+                      <img
+                        src={currentQ.image_url}
+                        alt="Question figure"
+                        className="max-h-72 object-contain mx-auto p-4"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Progress bar */}
-          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex justify-between text-[10px] font-semibold text-slate-400 mb-1">
-              <span>Progress</span>
-              <span>{answered}/{total}</span>
-            </div>
-            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                style={{ width: total > 0 ? `${(answered / total) * 100}%` : '0%' }}
-              />
-            </div>
-          </div>
+            {/* Answer Options Stack */}
+            <div className="space-y-3.5 pt-1">
+              {currentQ.options?.map(opt => {
+                const isSelected = selectedAnswers[currentQ.id] === opt.key;
 
-          {/* Question Grid */}
-          <div className="flex-1 p-4">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Question Navigator</p>
-            <div className="grid grid-cols-5 gap-1.5">
-              {filteredQs.map((_, idx) => {
-                const status = getStatus(idx);
-                const isCurrent = idx === currentIndex;
                 return (
                   <button
-                    key={idx}
-                    onClick={() => goTo(idx)}
-                    title={`Question ${idx + 1}`}
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold border transition-all cursor-pointer shadow-sm ring-offset-1 ${
-                      isCurrent
-                        ? 'ring-2 ring-[#003087] ring-offset-2 bg-[#003087] border-[#003087] text-white'
-                        : statusDot[status]
+                    key={opt.key}
+                    type="button"
+                    onClick={() => handleSelect(currentQ.id, opt.key)}
+                    className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 flex items-center justify-between group cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#F5F3FF] dark:bg-purple-950/30 border-2 border-[#7C3AED] shadow-sm'
+                        : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-purple-300 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 shadow-[0_1px_4px_rgba(0,0,0,0.02)]'
                     }`}
                   >
-                    {idx + 1}
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      {/* Option Letter Circle */}
+                      <span
+                        className={`w-9 h-9 rounded-full font-bold text-sm flex items-center justify-center shrink-0 transition-all ${
+                          isSelected
+                            ? 'bg-[#6D28D9] text-white shadow-sm'
+                            : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover:border-purple-300'
+                        }`}
+                      >
+                        {opt.key}
+                      </span>
+
+                      {/* Option Text */}
+                      <span
+                        className={`text-sm sm:text-base leading-relaxed ${
+                          isSelected
+                            ? 'text-slate-950 dark:text-white font-bold'
+                            : 'text-slate-700 dark:text-slate-300 font-medium'
+                        }`}
+                      >
+                        {opt.text}
+                      </span>
+                    </div>
+
+                    {/* Right Checkmark Icon (Visible when Selected) */}
+                    {isSelected && (
+                      <div className="w-6 h-6 rounded-full bg-[#6D28D9] text-white flex items-center justify-center shrink-0 shadow-sm ml-3">
+                        <Check size={14} strokeWidth={3} />
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {/* Legend */}
-          <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
-            {[
-              { color: 'bg-emerald-500', label: 'Answered' },
-              { color: 'bg-red-500', label: 'Not Answered' },
-              { color: 'bg-purple-500', label: 'Marked for Review' },
-              { color: 'bg-slate-200 dark:bg-slate-700', label: 'Not Visited' },
-            ].map(l => (
-              <div key={l.label} className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
-                <span className={`w-3 h-3 rounded-sm ${l.color} shrink-0`} />
-                {l.label}
+            {/* Solution & Explanation Card (Optional after answering) */}
+            {selectedAnswers[currentQ.id] && currentQ.explanation && (
+              <div className="bg-white dark:bg-slate-900 border border-purple-100 dark:border-purple-900/40 rounded-2xl p-6 shadow-sm space-y-3 mt-4 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                    <Lightbulb size={14} /> Explanation & Solution
+                  </span>
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Correct Answer: <strong className="text-emerald-600">Option {currentQ.correct_answer?.join(', ')}</strong>
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-normal">
+                  {currentQ.explanation}
+                </p>
+
+                {currentQ.shortcut_trick && (
+                  <div className="p-3.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-xl space-y-1">
+                    <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                      ⚡ Shortcut Trick
+                    </p>
+                    <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
+                      {currentQ.shortcut_trick}
+                    </p>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </aside>
-      </div>
+            )}
 
-      {/* ── MOBILE BOTTOM NAVIGATOR ── */}
-      <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-3">
-        <div className="flex flex-wrap gap-1.5 justify-center">
-          {filteredQs.map((_, idx) => {
-            const status = getStatus(idx);
-            const isCurrent = idx === currentIndex;
-            return (
+            {/* Bottom Navigation Bar */}
+            <div className="flex items-center justify-between pt-6 pb-2">
+              {/* Previous Button */}
               <button
-                key={idx}
-                onClick={() => goTo(idx)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold border transition-all cursor-pointer ${
-                  isCurrent ? 'ring-2 ring-blue-600 ring-offset-1 bg-[#003087] border-[#003087] text-white' : statusDot[status]
-                }`}
+                type="button"
+                onClick={() => goTo(currentIndex - 1)}
+                disabled={currentIndex === 0}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs sm:text-sm rounded-xl shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
-                {idx + 1}
+                <ChevronLeft size={16} />
+                <span>Previous</span>
               </button>
-            );
-          })}
+
+              {/* Dot Pagination Indicator */}
+              <div className="flex items-center gap-2">
+                {filteredQs.slice(0, Math.min(total, 12)).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => goTo(idx)}
+                    className={`transition-all ${
+                      idx === currentIndex
+                        ? 'w-2.5 h-2.5 rounded-full bg-[#6D28D9] scale-110'
+                        : selectedAnswers[filteredQs[idx]?.id]
+                        ? 'w-2.5 h-2.5 rounded-full bg-purple-300 dark:bg-purple-800'
+                        : 'w-2.5 h-2.5 rounded-full border border-purple-300 dark:border-purple-700 bg-transparent'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Next Button */}
+              <button
+                type="button"
+                onClick={() => goTo(currentIndex + 1)}
+                disabled={currentIndex === total - 1}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#6D28D9] hover:bg-[#5B21B6] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <span>Next</span>
+                <ChevronRight size={16} />
+              </button>
+            </div>
+
+          </div>
+
+          {/* ════════════════════════════════════════════════════════
+              RIGHT COLUMN: STICKY "YOUR PROGRESS" PANEL
+              ════════════════════════════════════════════════════════ */}
+          <div className="lg:col-span-4 sticky top-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-[0_2px_16px_rgba(0,0,0,0.03)] space-y-6">
+
+              {/* Header */}
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                YOUR PROGRESS
+              </h3>
+
+              {/* 3 Metric Columns: Answered | Not Answered | Review */}
+              <div className="grid grid-cols-3 gap-2">
+                {/* Answered */}
+                <div className="text-center space-y-1">
+                  <div className="w-8 h-8 rounded-full bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center mx-auto mb-2 shadow-xs">
+                    <Check size={16} strokeWidth={2.5} />
+                  </div>
+                  <p className="text-xl font-black text-slate-900 dark:text-white">
+                    {answered}
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-500">
+                    Answered
+                  </p>
+                </div>
+
+                {/* Not Answered */}
+                <div className="text-center space-y-1">
+                  <div className="w-8 h-8 rounded-full bg-[#FEE2E2] text-[#EF4444] flex items-center justify-center mx-auto mb-2 shadow-xs">
+                    <X size={16} strokeWidth={2.5} />
+                  </div>
+                  <p className="text-xl font-black text-slate-900 dark:text-white">
+                    {notAnswered}
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-500">
+                    Not Answered
+                  </p>
+                </div>
+
+                {/* Review */}
+                <div className="text-center space-y-1">
+                  <div className="w-8 h-8 rounded-full bg-[#EDE9FE] text-[#7C3AED] flex items-center justify-center mx-auto mb-2 shadow-xs">
+                    <Eye size={16} strokeWidth={2.5} />
+                  </div>
+                  <p className="text-xl font-black text-slate-900 dark:text-white">
+                    {reviewCount}
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-500">
+                    Review
+                  </p>
+                </div>
+              </div>
+
+              {/* Progress Bar Section */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="font-bold uppercase tracking-wider text-slate-400 text-[11px]">
+                    PROGRESS BAR
+                  </span>
+                  <span className="font-bold text-slate-700 dark:text-slate-300">
+                    {answered} / {total}
+                  </span>
+                </div>
+                <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#6366F1] to-[#7C3AED] rounded-full transition-all duration-300"
+                    style={{ width: `${total > 0 ? (answered / total) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Difficulty Filter */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  DIFFICULTY FILTER
+                </h4>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {(['all', 'easy', 'medium', 'hard'] as const).map(diff => (
+                    <button
+                      key={diff}
+                      type="button"
+                      onClick={() => {
+                        setDifficultyFilter(diff);
+                        setCurrentIndex(0);
+                      }}
+                      className={`text-xs font-bold py-1.5 rounded-full capitalize transition-all cursor-pointer text-center ${
+                        difficultyFilter === diff
+                          ? 'bg-[#5B21B6] text-white shadow-sm'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {diff}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Question Navigator Grid */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  QUESTION NAVIGATOR
+                </h4>
+
+                <div className="flex flex-wrap gap-2.5">
+                  {filteredQs.map((item, idx) => {
+                    const isCurrent = idx === currentIndex;
+                    const status = getStatus(idx);
+
+                    let buttonClass = 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-purple-300';
+
+                    if (isCurrent) {
+                      buttonClass = 'bg-[#5B21B6] text-white font-black ring-4 ring-purple-100 dark:ring-purple-950/60 shadow-sm border-transparent';
+                    } else if (status === 'answered') {
+                      buttonClass = 'bg-[#DCFCE7] text-[#16A34A] border border-[#16A34A]/30 font-bold';
+                    } else if (status === 'marked') {
+                      buttonClass = 'bg-[#EDE9FE] text-[#7C3AED] border border-[#7C3AED]/30 font-bold';
+                    } else if (status === 'not-answered') {
+                      buttonClass = 'bg-[#FEE2E2] text-[#EF4444] border border-[#EF4444]/30 font-bold';
+                    }
+
+                    return (
+                      <button
+                        key={item.id || idx}
+                        type="button"
+                        onClick={() => goTo(idx)}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all cursor-pointer shrink-0 ${buttonClass}`}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Status Legend */}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shrink-0" />
+                  <span>Answered</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] shrink-0" />
+                  <span>Not Answered</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#7C3AED] shrink-0" />
+                  <span>Review</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#CBD5E1] dark:bg-slate-700 shrink-0" />
+                  <span>Not Visited</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </div>
 

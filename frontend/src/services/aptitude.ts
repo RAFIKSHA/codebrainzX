@@ -17,6 +17,45 @@ export interface GamificationProfile {
   }>;
 }
 
+export interface AptitudeTrainer {
+  id: number;
+  name: string;
+  slug: string;
+  specialization: string;
+  bio: string;
+  profile_image: string | null;
+  is_active: boolean;
+  question_count: number;
+  topic_count: number;
+  category_count: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AptitudeTrainerDetail extends AptitudeTrainer {
+  categories: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    description: string;
+    total_questions: number;
+    topics: Array<{
+      id: number;
+      name: string;
+      slug: string;
+      description: string;
+      question_count: number;
+      sub_topics: Array<{ id: number; name: string; slug: string }>;
+    }>;
+  }>;
+  user_stats: {
+    questions_attempted: number;
+    correct_answers: number;
+    accuracy: number;
+    total_questions: number;
+  };
+}
+
 export interface AptitudeDashboardData {
   gamification: GamificationProfile;
   stats: {
@@ -34,6 +73,7 @@ export interface AptitudeDashboardData {
   } | null;
   weak_areas: Array<{ id: number; name: string; accuracy: number; total: number }>;
   strong_areas: Array<{ id: number; name: string; accuracy: number; total: number }>;
+  trainers?: AptitudeTrainer[];
 }
 
 export interface AptitudeSubTopic {
@@ -65,9 +105,12 @@ export interface AptitudeCategory {
 export interface AptitudeQuestion {
   id: number;
   topic: number;
+  category_name?: string;
   topic_name: string;
   sub_topic: number | null;
   sub_topic_name: string;
+  trainer?: number | null;
+  trainer_name?: string;
   title: string;
   slug: string;
   statement: string;
@@ -305,6 +348,44 @@ const aptitudeService = {
   
   deleteTest: async (id: number) => {
     await api.delete(`/aptitude/tests/${id}/`);
+  },
+
+  // Trainer Management API
+  getTrainers: async (activeOnly?: boolean) => {
+    const response = await api.get<AptitudeTrainer[]>('/aptitude/trainers/', {
+      params: activeOnly ? { active: 'true' } : undefined
+    });
+    return response.data;
+  },
+
+  getTrainerProfile: async (id: number) => {
+    const response = await api.get<AptitudeTrainerDetail>(`/aptitude/trainers/${id}/profile/`);
+    return response.data;
+  },
+
+  createTrainer: async (data: Partial<AptitudeTrainer>) => {
+    const response = await api.post<AptitudeTrainer>('/aptitude/trainers/', data);
+    return response.data;
+  },
+
+  updateTrainer: async (id: number, data: Partial<AptitudeTrainer>) => {
+    const response = await api.put<AptitudeTrainer>(`/aptitude/trainers/${id}/`, data);
+    return response.data;
+  },
+
+  deleteTrainer: async (id: number) => {
+    await api.delete(`/aptitude/trainers/${id}/`);
+  },
+
+  uploadTrainerImage: async (file: File): Promise<{ url: string; name: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post<{ url: string; name: string }>('/aptitude/trainers/upload-image/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   },
 };
 

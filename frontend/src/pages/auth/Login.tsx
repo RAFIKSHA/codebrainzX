@@ -31,7 +31,7 @@ const Login: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Sign In | CodexPetra',
-      description: 'Log in to your CodexPetra account to continue solving coding problems and tracking topic progressions.',
+      description: 'Log in to your CodexPetra account to continue solving coding problems, practicing aptitude, and participating in hackathons.',
     });
     
     const savedEmail = localStorage.getItem('remember_email');
@@ -202,7 +202,7 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-450 hover:text-slate-600 dark:hover:text-slate-350 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-455 hover:text-slate-600 dark:hover:text-slate-350 cursor-pointer"
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -243,7 +243,7 @@ const Login: React.FC = () => {
         <div className="space-y-4 mt-6">
           <div className="flex items-center gap-3">
             <div className="flex-1 h-[1px] bg-slate-150 dark:bg-slate-850"></div>
-            <span className="text-[10px] font-black uppercase text-slate-450 tracking-wider font-mono">or continue with</span>
+            <span className="text-[10px] font-black uppercase text-slate-455 tracking-wider font-mono">or continue with</span>
             <div className="flex-1 h-[1px] bg-slate-150 dark:bg-slate-850"></div>
           </div>
 

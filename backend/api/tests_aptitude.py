@@ -170,3 +170,48 @@ class AptitudeAssessmentTests(TestCase):
         self.assertIn('questions', response.data)
         # We had 2 questions in setup matching easy topic. So it should return 2 questions.
         self.assertEqual(len(response.data['questions']), 2)
+
+    def test_trainer_crud_and_question_association(self):
+        from api.models import AptitudeTrainer
+        
+        # 1. Admin creates a trainer
+        self.client.force_authenticate(user=self.admin_user)
+        trainer_res = self.client.post('/api/aptitude/trainers/', {
+            'name': 'Prof. John Doe',
+            'specialization': 'Advanced Mathematics',
+            'bio': 'PhD in Applied Math with 10 years experience.',
+            'profile_image': 'https://example.com/avatar.jpg',
+            'is_active': True
+        })
+        self.assertEqual(trainer_res.status_code, status.HTTP_201_CREATED)
+        trainer_id = trainer_res.data['id']
+
+        # 2. Student cannot create trainer
+        self.client.force_authenticate(user=self.student_user)
+        bad_res = self.client.post('/api/aptitude/trainers/', {
+            'name': 'Hacker Trainer',
+            'specialization': 'Nothing',
+            'is_active': True
+        })
+        self.assertEqual(bad_res.status_code, status.HTTP_403_FORBIDDEN)
+
+        # 3. Associate question with trainer
+        self.client.force_authenticate(user=self.admin_user)
+        self.q1.trainer_id = trainer_id
+        self.q1.save()
+
+        # 4. Filter questions by trainer
+        self.client.force_authenticate(user=self.student_user)
+        q_res = self.client.get(f'/api/aptitude/questions/?trainer={trainer_id}')
+        self.assertEqual(q_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(q_res.data), 1)
+        self.assertEqual(q_res.data[0]['id'], self.q1.id)
+        self.assertEqual(q_res.data[0]['trainer_name'], 'Prof. John Doe')
+
+        # 5. Trainer Profile details
+        profile_res = self.client.get(f'/api/aptitude/trainers/{trainer_id}/profile/')
+        self.assertEqual(profile_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(profile_res.data['name'], 'Prof. John Doe')
+        self.assertEqual(profile_res.data['question_count'], 1)
+        self.assertEqual(len(profile_res.data['categories']), 1)
+        self.assertIn('user_stats', profile_res.data)

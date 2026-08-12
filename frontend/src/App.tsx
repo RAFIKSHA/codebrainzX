@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -30,6 +30,7 @@ import AptitudeCategoriesPage from './pages/student/AptitudeCategoriesPage';
 import AptitudeTopicsPage from './pages/student/AptitudeTopicsPage';
 import AptitudeSubTopicsPage from './pages/student/AptitudeSubTopicsPage';
 import AptitudeMCQPracticePage from './pages/student/AptitudeMCQPracticePage';
+import AptitudeTrainerProfilePage from './pages/student/AptitudeTrainerProfilePage';
 import CodingTestListPage from './pages/student/CodingTestListPage';
 import CodingTestEngine from './pages/student/CodingTestEngine';
 import CodingTestResultPage from './pages/student/CodingTestResultPage';
@@ -47,6 +48,7 @@ import TutorialsHomePage from './pages/student/TutorialsHomePage';
 import TutorialLearningPage from './pages/student/TutorialLearningPage';
 import TutorialsAdminPanel from './pages/admin/TutorialsAdminPanel';
 import AnalyticsTracker from './components/analytics/AnalyticsTracker';
+import ProfilePage from './pages/student/ProfilePage';
 
 
 const queryClient = new QueryClient({
@@ -136,10 +138,22 @@ const App: React.FC = () => {
                 }
               />
               <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <ProfilePage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/dashboard/coding"
                 element={
                   <ProtectedRoute>
-                    <CodingDashboard />
+                    <DashboardLayout>
+                      <CodingDashboard />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />
@@ -174,81 +188,73 @@ const App: React.FC = () => {
               <Route
                 path="/dashboard/aptitude"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AptitudeDashboard />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AptitudeDashboard />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/aptitude/practice"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AptitudePracticeSelection />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AptitudePracticeSelection />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/aptitude/categories"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AptitudeCategoriesPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AptitudeCategoriesPage />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/aptitude/category/:categoryId"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AptitudeTopicsPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AptitudeTopicsPage />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/aptitude/topic/:topicId"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AptitudeSubTopicsPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AptitudeSubTopicsPage />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/dashboard/aptitude/trainer/:trainerId"
+                element={
+                  <DashboardLayout>
+                    <AptitudeTrainerProfilePage />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/aptitude/subtopic/:subtopicId/practice"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AptitudeMCQPracticePage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AptitudeMCQPracticePage />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/aptitude/test/:testId"
                 element={
-                  <ProtectedRoute>
-                    <Layout showFooter={false}>
-                      <AptitudeTestEngine />
-                    </Layout>
-                  </ProtectedRoute>
+                  <Layout showFooter={false}>
+                    <AptitudeTestEngine />
+                  </Layout>
                 }
               />
               <Route
                 path="/dashboard/aptitude/result/:attemptId"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AptitudeResultPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AptitudeResultPage />
+                  </DashboardLayout>
                 }
               />
               <Route
@@ -263,23 +269,11 @@ const App: React.FC = () => {
               />
               <Route
                 path="/dashboard/mcq"
-                element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <McqDashboard />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
+                element={<Navigate to="/dashboard/aptitude/categories" replace />}
               />
               <Route
                 path="/dashboard/contests"
-                element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <CodingTestListPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
+                element={<Navigate to="/dashboard/coding/tests" replace />}
               />
               <Route
                 path="/dashboard/courses"
@@ -345,7 +339,9 @@ const App: React.FC = () => {
                 path="/topics/:topicId/level/:levelName"
                 element={
                   <ProtectedRoute>
-                    <LevelQuestions />
+                    <DashboardLayout>
+                      <LevelQuestions />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />

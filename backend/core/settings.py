@@ -151,7 +151,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Merchant UPI Settings for Option 1
 MERCHANT_UPI_ID = os.environ.get('MERCHANT_UPI_ID', '7028352298@ptyes')
-MERCHANT_UPI_NAME = os.environ.get('MERCHANT_UPI_NAME', 'codexpetra')
+MERCHANT_UPI_NAME = os.environ.get('MERCHANT_UPI_NAME', 'CodexPetra')
 
 # Email SMTP Settings (Production-ready & Free-tier compliant)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

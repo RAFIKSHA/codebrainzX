@@ -30,69 +30,56 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
     navigate('/');
   };
 
-  // Nav Items configuration
-  const navItems = [
+  interface NavItem {
+    name: string;
+    path: string;
+    icon: any;
+    disabled: boolean;
+    exact?: boolean;
+    match?: (pathname: string) => boolean;
+    badge?: string;
+  }
+
+  // Nav Items configuration - Clean non-overlapping structure
+  const navItems: NavItem[] = [
     {
-      name: 'Learning Sections',
+      name: 'Dashboard',
       path: '/dashboard',
       icon: LayoutDashboard,
       disabled: false,
       exact: true,
     },
     {
-      name: 'Coding',
+      name: 'Coding Arena',
       path: '/dashboard/coding',
       icon: CodeXml,
       disabled: false,
-      // Matches coding dashboard as well as levels and question paths
+      // Matches coding practice as well as levels and question paths
       match: (pathname: string) => 
         pathname === '/dashboard/coding' || 
         pathname.startsWith('/topics') || 
         pathname.startsWith('/questions'),
     },
     {
-      name: 'Aptitude',
+      name: 'Aptitude Hub',
       path: '/dashboard/aptitude',
       icon: Brain,
       disabled: false,
+      match: (pathname: string) => pathname.startsWith('/dashboard/aptitude'),
     },
     {
-      name: 'Interview Prep',
-      path: '/dashboard/interview',
-      icon: Users,
-      disabled: false,
-    },
-    {
-      name: 'MCQ Practice',
-      path: '/dashboard/mcq',
-      icon: FileText,
-      disabled: false,
-    },
-    {
-      name: 'Contests',
-      path: '/dashboard/contests',
+      name: 'Online Tests',
+      path: '/dashboard/coding/tests',
       icon: Trophy,
       disabled: false,
+      match: (pathname: string) => pathname.startsWith('/dashboard/coding/test'),
     },
     {
       name: 'Hackathons',
       path: '/dashboard/hackathons',
-      icon: Trophy,
+      icon: Users,
       disabled: false,
       match: (pathname: string) => pathname.startsWith('/dashboard/hackathons'),
-    },
-    {
-      name: 'Courses',
-      path: '/dashboard/courses',
-      icon: BookOpen,
-      disabled: false,
-    },
-    {
-      name: 'AI Practice',
-      path: '/dashboard/ai-practice',
-      icon: Bot,
-      disabled: false,
-      badge: 'Soon',
     },
   ];
 
@@ -229,11 +216,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
 
         {/* Profile Link */}
         <NavLink
-          to="/dashboard/coding?tab=profile"
+          to="/profile"
           className={() => `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group relative cursor-pointer ${
-            location.search.includes('tab=profile')
+            location.pathname === '/profile'
               ? 'bg-blue-50/80 text-blue-650 dark:bg-blue-950/30 dark:text-blue-450 border-l-4 border-blue-600 dark:border-blue-500 shadow-sm'
-              : 'text-slate-650 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
+              : 'text-slate-655 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
           }`}
         >
           <User size={18} className="shrink-0 group-hover:scale-105 transition-transform" />

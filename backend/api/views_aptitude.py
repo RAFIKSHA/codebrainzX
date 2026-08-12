@@ -9,12 +9,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .models import (
-    AptitudeCategory, AptitudeTopic, AptitudeSubTopic, AptitudeQuestion,
+    AptitudeTrainer, AptitudeCategory, AptitudeTopic, AptitudeSubTopic, AptitudeQuestion,
     AptitudeQuestionVersion, AptitudeTest, AptitudeTestSection, AptitudeTestQuestion,
     AptitudeTestAttempt, AptitudeQuestionResponse, AptitudeBookmark,
     AptitudeReportedQuestion, GamificationProfile, GamificationBadge
 )
 from .serializers_aptitude import (
+    AptitudeTrainerSerializer, AptitudeTrainerDetailSerializer,
     AptitudeCategorySerializer, AptitudeTopicSerializer, AptitudeSubTopicSerializer,
     AptitudeQuestionSerializer, StudentAptitudeQuestionSerializer, StudentPracticeQuestionSerializer, AptitudeQuestionVersionSerializer,
     AptitudeTestSerializer, AptitudeTestSectionSerializer, AptitudeTestAttemptSerializer,
@@ -24,67 +25,78 @@ from .permissions import IsAdminUser
 from .admin_import import import_aptitude_questions_from_csv
 
 class AptitudeDashboardViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def list(self, request):
-        user = request.user
+        user = request.user if request.user and request.user.is_authenticated else None
         
-        # 1. Get or create gamification profile
-        g_profile, _ = GamificationProfile.objects.get_or_create(
-            user=user,
-            defaults={'xp': 0, 'coins': 0, 'level': 1, 'daily_streak': 0, 'weekly_streak': 0}
-        )
-        
-        # 2. Performance details
-        attempts = AptitudeTestAttempt.objects.filter(user=user, status='completed')
-        total_attempts = attempts.count()
-        avg_accuracy = attempts.aggregate(avg=Avg('accuracy'))['avg'] or 0.0
-        total_xp = g_profile.xp
-        total_coins = g_profile.coins
-        
-        # 3. Active pending attempt to "Continue Last Test"
-        pending_attempt = AptitudeTestAttempt.objects.filter(user=user, status='in_progress').order_by('-started_at').first()
-        pending_data = None
-        if pending_attempt:
-            pending_data = {
-                "attempt_id": pending_attempt.id,
-                "test_id": pending_attempt.test.id,
-                "test_title": pending_attempt.test.title,
-                "current_question_index": pending_attempt.current_question_index,
-                "started_at": pending_attempt.started_at
-            }
+        if user:
+            # 1. Get or create gamification profile
+            g_profile, _ = GamificationProfile.objects.get_or_create(
+                user=user,
+                defaults={'xp': 0, 'coins': 0, 'level': 1, 'daily_streak': 0, 'weekly_streak': 0}
+            )
+            
+            # 2. Performance details
+            attempts = AptitudeTestAttempt.objects.filter(user=user, status='completed')
+            total_attempts = attempts.count()
+            avg_accuracy = attempts.aggregate(avg=Avg('accuracy'))['avg'] or 0.0
+            
+            # 3. Active pending attempt to "Continue Last Test"
+            pending_attempt = AptitudeTestAttempt.objects.filter(user=user, status='in_progress').order_by('-started_at').first()
+            pending_data = None
+            if pending_attempt:
+                pending_data = {
+                    "attempt_id": pending_attempt.id,
+                    "test_id": pending_attempt.test.id,
+                    "test_title": pending_attempt.test.title,
+                    "current_question_index": pending_attempt.current_question_index,
+                    "started_at": pending_attempt.started_at
+                }
 
-        # 4. Strength/Weakness Analysis based on question responses
-        responses = AptitudeQuestionResponse.objects.filter(attempt__user=user, attempt__status='completed')
-        topic_stats = {}
-        for r in responses:
-            topic_id = r.question.topic_id
-            topic_name = r.question.topic.name
-            if topic_id not in topic_stats:
-                topic_stats[topic_id] = {"name": topic_name, "correct": 0, "total": 0}
-            topic_stats[topic_id]["total"] += 1
-            if r.is_correct:
-                topic_stats[topic_id]["correct"] += 1
+            # 4. Strength/Weakness Analysis based on question responses
+            responses = AptitudeQuestionResponse.objects.filter(attempt__user=user, attempt__status='completed')
+            topic_stats = {}
+            for r in responses:
+                topic_id = r.question.topic_id
+                topic_name = r.question.topic.name
+                if topic_id not in topic_stats:
+                    topic_stats[topic_id] = {"name": topic_name, "correct": 0, "total": 0}
+                topic_stats[topic_id]["total"] += 1
+                if r.is_correct:
+                    topic_stats[topic_id]["correct"] += 1
 
-        weak_areas = []
-        strong_areas = []
-        for tid, stats in topic_stats.items():
-            acc = (stats["correct"] / stats["total"]) * 100 if stats["total"] > 0 else 0
-            stats_entry = {"id": tid, "name": stats["name"], "accuracy": acc, "total": stats["total"]}
-            if acc < 50:
-                weak_areas.append(stats_entry)
-            elif acc >= 75:
-                strong_areas.append(stats_entry)
+            weak_areas = []
+            strong_areas = []
+            for tid, stats in topic_stats.items():
+                acc = (stats["correct"] / stats["total"]) * 100 if stats["total"] > 0 else 0
+                stats_entry = {"id": tid, "name": stats["name"], "accuracy": acc, "total": stats["total"]}
+                if acc < 50:
+                    weak_areas.append(stats_entry)
+                elif acc >= 75:
+                    strong_areas.append(stats_entry)
 
-        # 5. Bookmarks count
-        bookmarks_count = AptitudeBookmark.objects.filter(user=user).count()
+            # 5. Bookmarks count
+            bookmarks_count = AptitudeBookmark.objects.filter(user=user).count()
 
-        # 6. Wrong questions count (questions with incorrect responses in most recent completed attempts)
-        # To simplify: count questions where the last response was incorrect
-        wrong_count = responses.filter(is_correct=False).values('question').distinct().count()
+            # 6. Wrong questions count
+            wrong_count = responses.filter(is_correct=False).values('question').distinct().count()
+            gamification_data = GamificationProfileSerializer(g_profile).data
+        else:
+            total_attempts = 0
+            avg_accuracy = 0.0
+            bookmarks_count = 0
+            wrong_count = 0
+            pending_data = None
+            weak_areas = []
+            strong_areas = []
+            gamification_data = {"xp": 0, "coins": 0, "level": 1, "daily_streak": 0, "weekly_streak": 0, "badges": []}
+
+        # 7. Active Trainers
+        active_trainers = AptitudeTrainer.objects.filter(is_active=True)[:6]
 
         return Response({
-            "gamification": GamificationProfileSerializer(g_profile).data,
+            "gamification": gamification_data,
             "stats": {
                 "total_attempts": total_attempts,
                 "avg_accuracy": avg_accuracy,
@@ -93,8 +105,49 @@ class AptitudeDashboardViewSet(viewsets.ViewSet):
             },
             "pending_attempt": pending_data,
             "weak_areas": sorted(weak_areas, key=lambda x: x["accuracy"])[:5],
-            "strong_areas": sorted(strong_areas, key=lambda x: x["accuracy"], reverse=True)[:5]
+            "strong_areas": sorted(strong_areas, key=lambda x: x["accuracy"], reverse=True)[:5],
+            "trainers": AptitudeTrainerSerializer(active_trainers, many=True).data
         })
+
+
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files.storage import default_storage
+from django.conf import settings
+
+class AptitudeTrainerViewSet(viewsets.ModelViewSet):
+    queryset = AptitudeTrainer.objects.all()
+    serializer_class = AptitudeTrainerSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'profile']:
+            return [permissions.AllowAny()]
+        return [IsAdminUser()]
+
+    def get_queryset(self):
+        qs = AptitudeTrainer.objects.all()
+        active_only = self.request.query_params.get('active') or self.request.query_params.get('active_only')
+        is_admin = self.request.user and (self.request.user.is_staff or (hasattr(self.request.user, 'profile') and self.request.user.profile.role == 'admin'))
+        if active_only == 'true' or not is_admin:
+            qs = qs.filter(is_active=True)
+        return qs
+
+    @action(detail=True, methods=['get'])
+    def profile(self, request, pk=None):
+        trainer = self.get_object()
+        serializer = AptitudeTrainerDetailSerializer(trainer, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser], url_path='upload-image')
+    def upload_image(self, request):
+        file_obj = request.data.get('file') or request.data.get('image')
+        if not file_obj:
+            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        path = default_storage.save(f'trainers/{file_obj.name}', file_obj)
+        media_url = getattr(settings, 'MEDIA_URL', '/media/')
+        url = request.build_absolute_uri(media_url + path)
+        return Response({'url': url, 'name': file_obj.name})
+
 
 class AptitudeCategoryViewSet(viewsets.ModelViewSet):
     queryset = AptitudeCategory.objects.prefetch_related('topics__sub_topics').all()
@@ -113,6 +166,7 @@ class AptitudeCategoryViewSet(viewsets.ModelViewSet):
                 AptitudeCategory.objects.filter(pk=item["id"]).update(order=item["order"])
         return Response({"status": "categories reordered"})
 
+
 class AptitudeQuestionViewSet(viewsets.ModelViewSet):
     queryset = AptitudeQuestion.objects.all()
     
@@ -124,7 +178,9 @@ class AptitudeQuestionViewSet(viewsets.ModelViewSet):
         return StudentAptitudeQuestionSerializer
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'bookmark']:
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        if self.action == 'bookmark':
             return [permissions.IsAuthenticated()]
         return [IsAdminUser()]
 
@@ -132,12 +188,15 @@ class AptitudeQuestionViewSet(viewsets.ModelViewSet):
         qs = AptitudeQuestion.objects.filter(parent=None)
         
         # Filters
+        trainer_id = self.request.query_params.get('trainer') or self.request.query_params.get('trainer_id')
         topic_id = self.request.query_params.get('topic')
         sub_topic_id = self.request.query_params.get('sub_topic')
         difficulty = self.request.query_params.get('difficulty')
         q_type = self.request.query_params.get('question_type')
         status_val = self.request.query_params.get('status', 'active')
         
+        if trainer_id:
+            qs = qs.filter(trainer_id=trainer_id)
         if topic_id:
             qs = qs.filter(topic_id=topic_id)
         if sub_topic_id:
@@ -146,7 +205,7 @@ class AptitudeQuestionViewSet(viewsets.ModelViewSet):
             qs = qs.filter(difficulty=difficulty)
         if q_type:
             qs = qs.filter(question_type=q_type)
-        if status_val and self.request.user.is_staff:
+        if status_val and self.request.user and self.request.user.is_authenticated and self.request.user.is_staff:
             qs = qs.filter(status=status_val)
         else:
             qs = qs.filter(status='active', visibility='public')
@@ -292,12 +351,12 @@ class AptitudeTestViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [permissions.IsAuthenticated()]
+            return [permissions.AllowAny()]
         return [IsAdminUser()]
 
     def get_queryset(self):
         qs = AptitudeTest.objects.all()
-        if not self.request.user.is_staff:
+        if not (self.request.user and self.request.user.is_authenticated and self.request.user.is_staff):
             qs = qs.filter(is_published=True)
             
         test_type = self.request.query_params.get('test_type')
@@ -316,14 +375,18 @@ class AptitudeTestViewSet(viewsets.ModelViewSet):
 class AptitudeTestAttemptViewSet(viewsets.ModelViewSet):
     queryset = AptitudeTestAttempt.objects.all()
     serializer_class = AptitudeTestAttemptSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return AptitudeTestAttempt.objects.filter(user=self.request.user)
+        if self.request.user and self.request.user.is_authenticated:
+            return AptitudeTestAttempt.objects.filter(user=self.request.user)
+        return AptitudeTestAttempt.objects.all()
 
     @action(detail=False, methods=['post'], url_path='start-practice')
     def start_practice(self, request):
-        user = request.user
+        user = request.user if request.user and request.user.is_authenticated else None
+        if not user:
+            user, _ = User.objects.get_or_create(username='guest_student', defaults={'first_name': 'Guest', 'last_name': 'Student', 'is_active': True})
         mode = request.data.get('mode', 'topic')
         topic_id = request.data.get('topic_id')
         sub_topic_id = request.data.get('sub_topic_id')
@@ -432,8 +495,12 @@ class AptitudeTestAttemptViewSet(viewsets.ModelViewSet):
         except AptitudeTest.DoesNotExist:
             return Response({"error": "Test not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        user = request.user if request.user and request.user.is_authenticated else None
+        if not user:
+            user, _ = User.objects.get_or_create(username='guest_student', defaults={'first_name': 'Guest', 'last_name': 'Student', 'is_active': True})
+
         # Check for active attempt. If exists, resume it.
-        active = AptitudeTestAttempt.objects.filter(user=request.user, test=test, status='in_progress').first()
+        active = AptitudeTestAttempt.objects.filter(user=user, test=test, status='in_progress').first()
         if active:
             return Response(self._get_attempt_payload(active, request))
 
@@ -448,7 +515,7 @@ class AptitudeTestAttemptViewSet(viewsets.ModelViewSet):
 
         with transaction.atomic():
             attempt = AptitudeTestAttempt.objects.create(
-                user=request.user,
+                user=user,
                 test=test,
                 status='in_progress',
                 current_section=first_section,
@@ -621,56 +688,57 @@ class AptitudeTestAttemptViewSet(viewsets.ModelViewSet):
             attempt.save()
 
             # --- Gamification Profile updates ---
-            g_profile, _ = GamificationProfile.objects.get_or_create(user=attempt.user)
-            
-            # 1. Award XP: Correct question marks * 10 + 20 flat for completing a test
-            xp_reward = int(attempt.score * 10) + 20
-            g_profile.xp += xp_reward
-            
-            # 2. Award Coins: Correct answers * 5
-            coin_reward = correct * 5
-            g_profile.coins += coin_reward
-            
-            # 3. Daily streak calculations
-            today = timezone.now().date()
-            if g_profile.last_active_date:
-                delta = (today - g_profile.last_active_date).days
-                if delta == 1:
-                    g_profile.daily_streak += 1
-                    if g_profile.daily_streak % 7 == 0:
-                        g_profile.weekly_streak += 1
-                elif delta > 1:
+            if attempt.user and attempt.user.username != 'guest_student':
+                g_profile, _ = GamificationProfile.objects.get_or_create(user=attempt.user)
+                
+                # 1. Award XP: Correct question marks * 10 + 20 flat for completing a test
+                xp_reward = int(attempt.score * 10) + 20
+                g_profile.xp += xp_reward
+                
+                # 2. Award Coins: Correct answers * 5
+                coin_reward = correct * 5
+                g_profile.coins += coin_reward
+                
+                # 3. Daily streak calculations
+                today = timezone.now().date()
+                if g_profile.last_active_date:
+                    delta = (today - g_profile.last_active_date).days
+                    if delta == 1:
+                        g_profile.daily_streak += 1
+                        if g_profile.daily_streak % 7 == 0:
+                            g_profile.weekly_streak += 1
+                    elif delta > 1:
+                        g_profile.daily_streak = 1
+                else:
                     g_profile.daily_streak = 1
-            else:
-                g_profile.daily_streak = 1
-            
-            g_profile.last_active_date = today
-            
-            # 4. Levels calculation (Every 200 XP = 1 Level)
-            new_level = (g_profile.xp // 200) + 1
-            g_profile.level = new_level
-            g_profile.save()
+                
+                g_profile.last_active_date = today
+                
+                # 4. Levels calculation (Every 200 XP = 1 Level)
+                new_level = (g_profile.xp // 200) + 1
+                g_profile.level = new_level
+                g_profile.save()
 
-            # 5. Badges unlocks
-            if attempt.accuracy == 100.0 and attempt.total_questions >= 5:
-                GamificationBadge.objects.get_or_create(
-                    user=attempt.user,
-                    badge_name="Centurion",
-                    defaults={"badge_type": "accuracy", "icon_name": "Target"}
-                )
-            if attempt.time_spent < (attempt.test.overall_duration * 15) and attempt.accuracy >= 80: # Finished in 25% of time with good accuracy
-                GamificationBadge.objects.get_or_create(
-                    user=attempt.user,
-                    badge_name="Speedster",
-                    defaults={"badge_type": "speed", "icon_name": "Zap"}
-                )
-            completed_count = AptitudeTestAttempt.objects.filter(user=attempt.user, status='completed').count()
-            if completed_count >= 10:
-                GamificationBadge.objects.get_or_create(
-                    user=attempt.user,
-                    badge_name="Aptitude Veteran",
-                    defaults={"badge_type": "experience", "icon_name": "Shield"}
-                )
+                # 5. Badges unlocks
+                if attempt.accuracy == 100.0 and attempt.total_questions >= 5:
+                    GamificationBadge.objects.get_or_create(
+                        user=attempt.user,
+                        badge_name="Centurion",
+                        defaults={"badge_type": "accuracy", "icon_name": "Target"}
+                    )
+                if attempt.time_spent < (attempt.test.overall_duration * 15) and attempt.accuracy >= 80: # Finished in 25% of time with good accuracy
+                    GamificationBadge.objects.get_or_create(
+                        user=attempt.user,
+                        badge_name="Speedster",
+                        defaults={"badge_type": "speed", "icon_name": "Zap"}
+                    )
+                completed_count = AptitudeTestAttempt.objects.filter(user=attempt.user, status='completed').count()
+                if completed_count >= 10:
+                    GamificationBadge.objects.get_or_create(
+                        user=attempt.user,
+                        badge_name="Aptitude Veteran",
+                        defaults={"badge_type": "experience", "icon_name": "Shield"}
+                    )
 
         return Response(AptitudeTestAttemptSerializer(attempt).data)
 
@@ -774,7 +842,7 @@ class AptitudeBookmarkViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 class GamificationViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     @action(detail=False, methods=['get'])
     def leaderboard(self, request):
@@ -795,8 +863,10 @@ class GamificationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='wrong-questions')
     def wrong_questions(self, request):
+        user = request.user if request.user and request.user.is_authenticated else None
+        if not user:
+            return Response([])
         # Retrieve distinct questions that the user answered incorrectly in their attempts
-        user = request.user
         incorrect_responses = AptitudeQuestionResponse.objects.filter(
             attempt__user=user,
             attempt__status='completed',
@@ -818,38 +888,41 @@ class GamificationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='ai-recommend')
     def ai_recommend(self, request):
-        user = request.user
+        user = request.user if request.user and request.user.is_authenticated else None
         
-        # 1. Fetch weak areas (topics with < 50% accuracy)
-        responses = AptitudeQuestionResponse.objects.filter(attempt__user=user, attempt__status='completed')
-        topic_stats = {}
-        for r in responses:
-            topic_id = r.question.topic_id
-            if topic_id not in topic_stats:
-                topic_stats[topic_id] = {"correct": 0, "total": 0}
-            topic_stats[topic_id]["total"] += 1
-            if r.is_correct:
-                topic_stats[topic_id]["correct"] += 1
+        if user:
+            # 1. Fetch weak areas (topics with < 50% accuracy)
+            responses = AptitudeQuestionResponse.objects.filter(attempt__user=user, attempt__status='completed')
+            topic_stats = {}
+            for r in responses:
+                topic_id = r.question.topic_id
+                if topic_id not in topic_stats:
+                    topic_stats[topic_id] = {"correct": 0, "total": 0}
+                topic_stats[topic_id]["total"] += 1
+                if r.is_correct:
+                    topic_stats[topic_id]["correct"] += 1
 
-        weak_topic_ids = []
-        for tid, stats in topic_stats.items():
-            acc = (stats["correct"] / stats["total"]) * 100
-            if acc < 50.0:
-                weak_topic_ids.append(tid)
+            weak_topic_ids = []
+            for tid, stats in topic_stats.items():
+                acc = (stats["correct"] / stats["total"]) * 100
+                if acc < 50.0:
+                    weak_topic_ids.append(tid)
 
-        # 2. Query questions under those weak topic IDs that the user hasn't solved correctly yet
-        correct_qids = responses.filter(is_correct=True).values_list('question_id', flat=True)
-        
-        qs = AptitudeQuestion.objects.filter(parent=None, status='active', visibility='public')
-        if weak_topic_ids:
-            qs = qs.filter(topic_id__in=weak_topic_ids)
+            # 2. Query questions under those weak topic IDs that the user hasn't solved correctly yet
+            correct_qids = responses.filter(is_correct=True).values_list('question_id', flat=True)
             
-        # Exclude solved ones
-        qs = qs.exclude(id__in=correct_qids).order_by('?')[:10] # Return 10 random recommended questions
-        
-        if not qs.exists():
-            # Fallback to general unsolved active questions
-            qs = AptitudeQuestion.objects.filter(parent=None, status='active', visibility='public').exclude(id__in=correct_qids).order_by('?')[:10]
+            qs = AptitudeQuestion.objects.filter(parent=None, status='active', visibility='public')
+            if weak_topic_ids:
+                qs = qs.filter(topic_id__in=weak_topic_ids)
+                
+            # Exclude solved ones
+            qs = qs.exclude(id__in=correct_qids).order_by('?')[:10] # Return 10 random recommended questions
+            
+            if not qs.exists():
+                # Fallback to general unsolved active questions
+                qs = AptitudeQuestion.objects.filter(parent=None, status='active', visibility='public').exclude(id__in=correct_qids).order_by('?')[:10]
+        else:
+            qs = AptitudeQuestion.objects.filter(parent=None, status='active', visibility='public').order_by('?')[:10]
 
         return Response(StudentAptitudeQuestionSerializer(qs, many=True, context={'request': request}).data)
 

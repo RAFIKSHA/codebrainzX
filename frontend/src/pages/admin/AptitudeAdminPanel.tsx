@@ -1,27 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Plus, Trash2, Edit3, Database, Trophy, Upload, X, Check, AlertCircle, 
   RefreshCw, FileSpreadsheet, FileText, Loader2, Compass, 
   Brain, BarChart2, GripVertical, Search, Copy, Archive, Settings, 
-  Download, CheckSquare, Square, Shield, PieChart, Activity
+  Download, CheckSquare, Square, Shield, PieChart, Activity, Users, UserCheck, UserX, Image, Camera
 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
-import type { AptitudeCategory, AptitudeTopic, AptitudeSubTopic, AptitudeQuestion, AptitudeTest } from '../../services/aptitude';
+import type { AptitudeCategory, AptitudeTopic, AptitudeSubTopic, AptitudeQuestion, AptitudeTest, AptitudeTrainer } from '../../services/aptitude';
 
 const AptitudeAdminPanel: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'bank' | 'categories' | 'tests' | 'import' | 'analytics'>('bank');
+  const [activeTab, setActiveTab] = useState<'bank' | 'categories' | 'trainers' | 'tests' | 'import' | 'analytics'>('bank');
   
   const [categories, setCategories] = useState<AptitudeCategory[]>([]);
   const [questions, setQuestions] = useState<AptitudeQuestion[]>([]);
   const [tests, setTests] = useState<AptitudeTest[]>([]);
+  const [trainers, setTrainers] = useState<AptitudeTrainer[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState<string | null>(null);
 
   // Bank search/filters
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterTrainer, setFilterTrainer] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterTopic, setFilterTopic] = useState<string>('');
   const [filterDifficulty, setFilterDifficulty] = useState<string>('');
@@ -34,9 +36,22 @@ const AptitudeAdminPanel: React.FC = () => {
   const [catSearch, setCatSearch] = useState('');
   const [topicSearch, setTopicSearch] = useState('');
   const [subSearch, setSubSearch] = useState('');
+  const [trainerSearch, setTrainerSearch] = useState('');
 
   // Bulk Selection State
   const [selectedQIds, setSelectedQIds] = useState<number[]>([]);
+
+  // CRUD Trainer Modal
+  const [showTrainerModal, setShowTrainerModal] = useState(false);
+  const [editingTrainer, setEditingTrainer] = useState<AptitudeTrainer | null>(null);
+  const [trainerName, setTrainerName] = useState('');
+  const [trainerSpecialization, setTrainerSpecialization] = useState('');
+  const [trainerBio, setTrainerBio] = useState('');
+  const [trainerProfileImage, setTrainerProfileImage] = useState('');
+  const [trainerImageFile, setTrainerImageFile] = useState<File | null>(null);
+  const [uploadingTrainerImg, setUploadingTrainerImg] = useState(false);
+  const [trainerIsActive, setTrainerIsActive] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // CRUD Category Modal
   const [showCatModal, setShowCatModal] = useState(false);
@@ -79,14 +94,16 @@ const AptitudeAdminPanel: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const [cats, qs, ts] = await Promise.all([
+      const [cats, qs, ts, trs] = await Promise.all([
         aptitudeService.getCategories(),
         aptitudeService.getQuestions(),
-        aptitudeService.getTests()
+        aptitudeService.getTests(),
+        aptitudeService.getTrainers()
       ]);
       setCategories(cats);
       setQuestions(qs);
       setTests(ts);
+      setTrainers(trs);
 
       // Restore category/topic selections if they still exist
       if (cats.length > 0) {
@@ -395,6 +412,108 @@ const AptitudeAdminPanel: React.FC = () => {
     }
   };
 
+  // TRAINER CRUD MODALS & API CALLS
+  const openCreateTrainerModal = () => {
+    setEditingTrainer(null);
+    setTrainerName('');
+    setTrainerSpecialization('');
+    setTrainerBio('');
+    setTrainerProfileImage('');
+    setTrainerImageFile(null);
+    setUploadingTrainerImg(false);
+    setTrainerIsActive(true);
+    setShowTrainerModal(true);
+  };
+
+  const openEditTrainerModal = (t: AptitudeTrainer) => {
+    setEditingTrainer(t);
+    setTrainerName(t.name);
+    setTrainerSpecialization(t.specialization || '');
+    setTrainerBio(t.bio || '');
+    setTrainerProfileImage(t.profile_image || '');
+    setTrainerImageFile(null);
+    setUploadingTrainerImg(false);
+    setTrainerIsActive(t.is_active);
+    setShowTrainerModal(true);
+  };
+
+  const handleTrainerImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Selected image exceeds 5MB limit. Please choose a smaller image.');
+      return;
+    }
+
+    setTrainerImageFile(file);
+
+    // Instant local preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setTrainerProfileImage(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server media storage
+    try {
+      setUploadingTrainerImg(true);
+      const res = await aptitudeService.uploadTrainerImage(file);
+      if (res && res.url) {
+        setTrainerProfileImage(res.url);
+      }
+    } catch (err) {
+      console.warn('Image upload fallback to data URL:', err);
+    } finally {
+      setUploadingTrainerImg(false);
+    }
+  };
+
+  const handleSaveTrainer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      name: trainerName,
+      specialization: trainerSpecialization,
+      bio: trainerBio,
+      profile_image: trainerProfileImage || undefined,
+      is_active: trainerIsActive
+    };
+    try {
+      if (editingTrainer) {
+        await aptitudeService.updateTrainer(editingTrainer.id, payload);
+      } else {
+        await aptitudeService.createTrainer(payload);
+      }
+      setShowTrainerModal(false);
+      fetchAdminData();
+    } catch (err) {
+      console.error('Failed to save trainer:', err);
+      alert('Failed to save trainer.');
+    }
+  };
+
+  const handleToggleTrainerActive = async (t: AptitudeTrainer) => {
+    try {
+      await aptitudeService.updateTrainer(t.id, { is_active: !t.is_active });
+      fetchAdminData();
+    } catch (err) {
+      console.error('Failed to toggle trainer status:', err);
+    }
+  };
+
+  const handleDeleteTrainer = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this trainer? Associated questions will remain in the bank.')) return;
+    try {
+      await aptitudeService.deleteTrainer(id);
+      fetchAdminData();
+    } catch (err) {
+      console.error('Failed to delete trainer:', err);
+      alert('Failed to delete trainer.');
+    }
+  };
+
   // MOCK TEST CRUD MODALS & API CALLS
   const openCreateTestModal = () => {
     setEditingTest(null);
@@ -528,6 +647,10 @@ const AptitudeAdminPanel: React.FC = () => {
     const searchMatch = q.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         q.statement.toLowerCase().includes(searchQuery.toLowerCase());
     
+    // trainer filter resolving
+    const trainerMatch = filterTrainer === '' || 
+                         (filterTrainer === 'unassigned' ? !q.trainer : String(q.trainer) === filterTrainer);
+
     // category filter resolving
     let catMatch = true;
     if (filterCategory !== '') {
@@ -544,7 +667,7 @@ const AptitudeAdminPanel: React.FC = () => {
     const topicMatch = filterTopic === '' || q.topic_name === filterTopic;
     const diffMatch = filterDifficulty === '' || q.difficulty === filterDifficulty;
     
-    return searchMatch && catMatch && topicMatch && diffMatch;
+    return searchMatch && trainerMatch && catMatch && topicMatch && diffMatch;
   });
 
   // Category topics resolving
@@ -555,6 +678,10 @@ const AptitudeAdminPanel: React.FC = () => {
   const filteredCategoriesForCols = categories.filter(c => c.name.toLowerCase().includes(catSearch.toLowerCase()));
   const filteredTopicsForCols = selectedCategory?.topics.filter(t => t.name.toLowerCase().includes(topicSearch.toLowerCase())) || [];
   const filteredSubTopicsForCols = selectedTopic?.sub_topics.filter(s => s.name.toLowerCase().includes(subSearch.toLowerCase())) || [];
+  const filteredTrainersForCols = trainers.filter(t => 
+    t.name.toLowerCase().includes(trainerSearch.toLowerCase()) || 
+    t.specialization.toLowerCase().includes(trainerSearch.toLowerCase())
+  );
 
 
 
@@ -563,6 +690,7 @@ const AptitudeAdminPanel: React.FC = () => {
   const totalTopics = categories.reduce((acc, c) => acc + c.topics.length, 0);
   const totalSubTopics = categories.reduce((acc, c) => acc + c.topics.reduce((acc2, t) => acc2 + (t.sub_topics?.length || 0), 0), 0);
   const totalQuestionsCount = questions.length;
+  const totalTrainersCount = trainers.length;
   const easyQuestions = questions.filter(q => q.difficulty === 'easy').length;
   const mediumQuestions = questions.filter(q => q.difficulty === 'medium').length;
   const hardQuestions = questions.filter(q => q.difficulty === 'hard').length;
@@ -592,9 +720,10 @@ const AptitudeAdminPanel: React.FC = () => {
         </div>
 
         {/* Studio Sub Tabs */}
-        <div className="flex bg-white p-1 rounded-xl border border-[#E5E7EB] self-start sm:self-center">
+        <div className="flex bg-white p-1 rounded-xl border border-[#E5E7EB] self-start sm:self-center overflow-x-auto">
           {[
             { id: 'bank', label: 'Question Bank', icon: Database },
+            { id: 'trainers', label: 'Trainer Management', icon: Users },
             { id: 'categories', label: 'Hierarchy Builder', icon: Brain },
             { id: 'tests', label: 'Assessment Creator', icon: Trophy },
             { id: 'import', label: 'CSV Importer', icon: Upload },
@@ -608,7 +737,7 @@ const AptitudeAdminPanel: React.FC = () => {
                   setActiveTab(tab.id as any);
                   setSelectedQIds([]);
                 }}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                   activeTab === tab.id 
                     ? 'bg-[#2563EB] text-white shadow-sm' 
                     : 'text-slate-500 hover:text-[#111827]'
@@ -628,7 +757,7 @@ const AptitudeAdminPanel: React.FC = () => {
           
           {/* Filters Row */}
           <div className="flex flex-col xl:flex-row gap-4 justify-between items-stretch">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 flex-1">
               {/* Search text box */}
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-3.5 text-slate-400" />
@@ -640,6 +769,17 @@ const AptitudeAdminPanel: React.FC = () => {
                   className="w-full h-[42px] bg-white border border-[#D1D5DB] rounded-lg pl-9 pr-4 text-xs text-[#111827] outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] placeholder-[#9CA3AF]"
                 />
               </div>
+
+              {/* Trainer selector */}
+              <select
+                value={filterTrainer}
+                onChange={(e) => setFilterTrainer(e.target.value)}
+                className="bg-white border border-[#D1D5DB] rounded-lg px-3 h-[42px] text-xs text-slate-700 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              >
+                <option value="">All Trainers</option>
+                <option value="unassigned">Unassigned (No Trainer)</option>
+                {trainers.map(t => <option key={t.id} value={String(t.id)}>{t.name}</option>)}
+              </select>
 
               {/* Category selector */}
               <select
@@ -718,11 +858,11 @@ const AptitudeAdminPanel: React.FC = () => {
                       </button>
                     </th>
                     <th className="p-4">Question</th>
+                    <th className="p-4">Trainer</th>
                     <th className="p-4">Category</th>
                     <th className="p-4">Topic</th>
                     <th className="p-4">Difficulty</th>
                     <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-center">Created By</th>
                     <th className="p-4 text-center">Date</th>
                     <th className="p-4 text-center">Actions</th>
                   </tr>
@@ -757,6 +897,15 @@ const AptitudeAdminPanel: React.FC = () => {
                             <div className="text-xs text-slate-500 line-clamp-1 mt-0.5" title={q.statement}>{q.statement}</div>
                           </td>
                           <td className="p-4 text-slate-600 font-medium">
+                            {q.trainer_name ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
+                                <Users size={11} /> {q.trainer_name}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-xs italic">Unassigned</span>
+                            )}
+                          </td>
+                          <td className="p-4 text-slate-600 font-medium">
                             {catName}
                           </td>
                           <td className="p-4 text-slate-600 font-medium">
@@ -783,9 +932,6 @@ const AptitudeAdminPanel: React.FC = () => {
                             >
                               {q.visibility === 'public' ? 'Published' : 'Draft'}
                             </button>
-                          </td>
-                          <td className="p-4 text-center text-slate-500 text-xs font-medium">
-                            Admin
                           </td>
                           <td className="p-4 text-center text-slate-500 text-xs font-mono">
                             {qDate}
@@ -848,6 +994,121 @@ const AptitudeAdminPanel: React.FC = () => {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB CONTENT: TRAINER MANAGEMENT */}
+      {activeTab === 'trainers' && (
+        <div className="space-y-6">
+          {/* Top action row */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center">
+            <div className="relative flex-1 max-w-md">
+              <Search size={14} className="absolute left-3 top-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search trainers by name or specialization..."
+                value={trainerSearch}
+                onChange={(e) => setTrainerSearch(e.target.value)}
+                className="w-full h-[42px] bg-white border border-[#D1D5DB] rounded-lg pl-9 pr-4 text-xs text-[#111827] outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] placeholder-[#9CA3AF]"
+              />
+            </div>
+            <button
+              onClick={openCreateTrainerModal}
+              className="flex items-center justify-center gap-1.5 px-5 h-[42px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors shrink-0"
+            >
+              <Plus size={14} /> Add Trainer
+            </button>
+          </div>
+
+          {/* Trainers Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTrainersForCols.length === 0 ? (
+              <div className="col-span-full py-16 text-center bg-white border border-dashed border-[#E5E7EB] rounded-xl space-y-3">
+                <Users size={36} className="mx-auto text-slate-300" />
+                <p className="text-sm font-bold text-slate-600">No trainers found</p>
+                <p className="text-xs text-slate-400">Add a new trainer to start assigning questions and tracks.</p>
+              </div>
+            ) : (
+              filteredTrainersForCols.map((t) => (
+                <div
+                  key={t.id}
+                  className="bg-white border border-[#E5E7EB] rounded-xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-3">
+                    {/* Header: Avatar, Name, Specialization & Status */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {t.profile_image ? (
+                          <img
+                            src={t.profile_image}
+                            alt={t.name}
+                            className="w-12 h-12 rounded-full object-cover border border-slate-200"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-sm border border-blue-200">
+                            {t.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="text-sm font-bold text-[#111827]">{t.name}</h4>
+                          <span className="inline-block text-[11px] font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded mt-0.5">
+                            {t.specialization}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleToggleTrainerActive(t)}
+                        className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                          t.is_active
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+                            : 'bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200'
+                        }`}
+                        title="Click to toggle Active / Inactive"
+                      >
+                        {t.is_active ? 'Active' : 'Inactive'}
+                      </button>
+                    </div>
+
+                    {/* Bio */}
+                    {t.bio && (
+                      <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">
+                        {t.bio}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Stats & Actions */}
+                  <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                      <span><strong>{t.question_count || 0}</strong> Questions</span>
+                      <span>•</span>
+                      <span><strong>{t.topic_count || 0}</strong> Topics</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => openEditTrainerModal(t)}
+                        className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded-lg transition-colors cursor-pointer"
+                        title="Edit Trainer"
+                      >
+                        <Edit3 size={13} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTrainer(t.id)}
+                        className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-lg transition-colors cursor-pointer"
+                        title="Delete Trainer"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 
@@ -1496,6 +1757,166 @@ const AptitudeAdminPanel: React.FC = () => {
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setShowSubTopicModal(false)} className="px-4 py-2 border border-[#E5E7EB] hover:bg-slate-50 text-slate-650 rounded-lg cursor-pointer">Cancel</button>
                 <button type="submit" className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg font-bold cursor-pointer">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* TRAINER CRUD POPUP MODAL */}
+      {showTrainerModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white border border-[#E5E7EB] rounded-xl p-6 sm:p-8 space-y-6 shadow-xl relative text-[#111827] max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowTrainerModal(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <h3 className="text-base font-bold text-[#111827] border-b border-[#E5E7EB] pb-3">
+              {editingTrainer ? 'Edit Trainer Profile' : 'Add New Trainer'}
+            </h3>
+
+            <form onSubmit={handleSaveTrainer} className="space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="text-slate-600 font-semibold block">Full Name</label>
+                <input
+                  type="text"
+                  value={trainerName}
+                  onChange={e => setTrainerName(e.target.value)}
+                  placeholder="e.g. Dr. Rajesh Sharma"
+                  className="w-full h-10 border border-[#D1D5DB] rounded-lg px-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white text-[#111827]"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-600 font-semibold block">Specialization / Title</label>
+                <input
+                  type="text"
+                  value={trainerSpecialization}
+                  onChange={e => setTrainerSpecialization(e.target.value)}
+                  placeholder="e.g. Quantitative Aptitude & Speed Math"
+                  className="w-full h-10 border border-[#D1D5DB] rounded-lg px-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white text-[#111827]"
+                  required
+                />
+              </div>
+
+              {/* Profile Photo - Choose from This PC */}
+              <div className="space-y-2">
+                <label className="text-slate-600 font-semibold block">Profile Photo (This PC)</label>
+
+                {/* Hidden File Input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleTrainerImageFileChange}
+                  accept="image/png, image/jpeg, image/jpg, image/webp, image/svg+xml"
+                  className="hidden"
+                />
+
+                {trainerProfileImage ? (
+                  <div className="flex items-center gap-4 p-3.5 bg-slate-50 border border-[#D1D5DB] rounded-xl">
+                    <div className="relative shrink-0">
+                      <img
+                        src={trainerProfileImage}
+                        alt="Trainer Preview"
+                        className="w-16 h-16 rounded-xl object-cover border border-blue-200 shadow-sm"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                      {uploadingTrainerImg && (
+                        <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                          <Loader2 size={16} className="animate-spin text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-slate-800 truncate">
+                        {trainerImageFile ? trainerImageFile.name : 'Profile Photo Selected'}
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        {trainerImageFile ? `${(trainerImageFile.size / 1024).toFixed(1)} KB` : 'Ready to save'}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-2.5 py-1 text-[11px] font-semibold bg-white border border-[#D1D5DB] hover:border-blue-500 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Change from This PC
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTrainerProfileImage('');
+                            setTrainerImageFile(null);
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
+                          className="px-2.5 py-1 text-[11px] font-semibold bg-white border border-[#D1D5DB] hover:border-red-500 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-5 text-center cursor-pointer transition-all bg-slate-50/60 hover:bg-blue-50/20 group"
+                  >
+                    <div className="mx-auto w-10 h-10 rounded-full bg-blue-50 group-hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors mb-2">
+                      <Upload size={18} />
+                    </div>
+                    <p className="text-xs font-bold text-slate-700 group-hover:text-blue-600">
+                      Click to choose photo from This PC
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Supports JPG, PNG, WebP (Max 5MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-600 font-semibold block">Biography</label>
+                <textarea
+                  rows={3}
+                  value={trainerBio}
+                  onChange={e => setTrainerBio(e.target.value)}
+                  placeholder="Short description of trainer's experience, achievements, and teaching style..."
+                  className="w-full border border-[#D1D5DB] rounded-lg p-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white text-[#111827]"
+                />
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-slate-700 font-semibold select-none">
+                  <input
+                    type="checkbox"
+                    checked={trainerIsActive}
+                    onChange={e => setTrainerIsActive(e.target.checked)}
+                    className="rounded border-[#D1D5DB] text-[#2563EB] focus:ring-0 w-4 h-4"
+                  />
+                  <span>Active Trainer (Visible to students & selectable for questions)</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-[#E5E7EB]">
+                <button
+                  type="button"
+                  onClick={() => setShowTrainerModal(false)}
+                  className="px-4 py-2 border border-[#E5E7EB] hover:bg-slate-50 text-slate-650 rounded-lg cursor-pointer font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg font-bold cursor-pointer shadow-sm"
+                >
+                  {editingTrainer ? 'Update Trainer' : 'Add Trainer'}
+                </button>
               </div>
             </form>
           </div>

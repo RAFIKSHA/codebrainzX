@@ -36,7 +36,7 @@ const ForgotPassword: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Reset Password | CodexPetra',
-      description: 'Request a password reset link to regain access to your CodexPetra account.',
+      description: 'Request a password reset OTP to regain access to your CodexPetra account.',
     });
   }, []);
 

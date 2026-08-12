@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Brain, Clock, ChevronRight, BookOpen, BarChart2,
   CheckCircle, XCircle, Bookmark, Play, RefreshCw,
-  AlertCircle, Target, Trophy, Star, Zap
+  AlertCircle, Target, Trophy, Star, Zap, Users, Sparkles
 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
-import type { AptitudeDashboardData, AptitudeCategory, AptitudeTest } from '../../services/aptitude';
+import type { AptitudeDashboardData, AptitudeCategory, AptitudeTest, AptitudeTrainer } from '../../services/aptitude';
 
 const AptitudeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -15,20 +15,23 @@ const AptitudeDashboard: React.FC = () => {
   const [data, setData] = useState<AptitudeDashboardData | null>(null);
   const [categories, setCategories] = useState<AptitudeCategory[]>([]);
   const [tests, setTests] = useState<AptitudeTest[]>([]);
+  const [trainers, setTrainers] = useState<AptitudeTrainer[]>([]);
   const [activeSection, setActiveSection] = useState<'topics' | 'mocks' | 'companies'>('topics');
 
   const fetch = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [dashRes, catRes, testRes] = await Promise.all([
+      const [dashRes, catRes, testRes, trRes] = await Promise.all([
         aptitudeService.getDashboard(),
         aptitudeService.getCategories(),
-        aptitudeService.getTests()
+        aptitudeService.getTests(),
+        aptitudeService.getTrainers(true)
       ]);
       setData(dashRes);
       setCategories(catRes);
       setTests(testRes);
+      setTrainers(trRes);
     } catch (err: any) {
       setError('Failed to load. Please try again.');
     } finally {
@@ -84,10 +87,10 @@ const AptitudeDashboard: React.FC = () => {
         </div>
         <div className="flex items-center gap-3 text-sm">
           <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-1.5 rounded-lg font-semibold">
-            <Zap size={14} /> Level {gamification.level}
+            <Zap size={14} /> Level {gamification?.level ?? 1}
           </div>
           <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 rounded-lg font-semibold">
-            <Star size={14} /> {gamification.xp} XP
+            <Star size={14} /> {gamification?.xp ?? 0} XP
           </div>
         </div>
       </div>
@@ -108,6 +111,76 @@ const AptitudeDashboard: React.FC = () => {
           >
             <Play size={12} fill="white" /> Continue Test
           </button>
+        </div>
+      )}
+
+      {/* ── Learn from Trainers Section ── */}
+      {trainers.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users size={18} className="text-blue-600" />
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Learn from Trainers</h2>
+            </div>
+            <span className="text-xs text-slate-500 font-medium">Expert curated modules & questions</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {trainers.slice(0, 3).map((t) => (
+              <div
+                key={t.id}
+                onClick={() => navigate(`/dashboard/aptitude/trainer/${t.id}`)}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4.5 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-md cursor-pointer flex flex-col justify-between group shadow-sm"
+              >
+                <div className="space-y-3">
+                  {/* Trainer Avatar + Info */}
+                  <div className="flex items-center gap-3">
+                    {t.profile_image ? (
+                      <img
+                        src={t.profile_image}
+                        alt={t.name}
+                        className="w-12 h-12 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0">
+                        {t.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {t.name}
+                      </h3>
+                      <span className="inline-block text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 px-2 py-0.5 rounded mt-0.5 truncate max-w-full">
+                        {t.specialization}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  {t.bio && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      {t.bio}
+                    </p>
+                  )}
+                </div>
+
+                {/* Footer stats & link */}
+                <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-slate-400 font-medium">
+                    <span>{t.question_count} Qs</span>
+                    <span>•</span>
+                    <span>{t.topic_count} Topics</span>
+                  </div>
+                  <span className="font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                    Explore <ChevronRight size={13} />
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -227,10 +300,10 @@ const AptitudeDashboard: React.FC = () => {
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">My Stats</h3>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Tests Taken', value: stats.total_attempts, color: 'text-blue-600' },
-                { label: 'Avg Accuracy', value: `${stats.avg_accuracy.toFixed(0)}%`, color: 'text-emerald-600' },
-                { label: 'Bookmarks', value: stats.bookmarks_count, color: 'text-amber-600' },
-                { label: 'Wrong Qs', value: stats.wrong_questions_count, color: 'text-red-500' },
+                { label: 'Tests Taken', value: stats?.total_attempts ?? 0, color: 'text-blue-600' },
+                { label: 'Avg Accuracy', value: stats?.avg_accuracy != null ? `${stats.avg_accuracy.toFixed(0)}%` : '0%', color: 'text-emerald-600' },
+                { label: 'Bookmarks', value: stats?.bookmarks_count ?? 0, color: 'text-amber-600' },
+                { label: 'Wrong Qs', value: stats?.wrong_questions_count ?? 0, color: 'text-red-500' },
               ].map((s, i) => (
                 <div key={i} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 space-y-0.5">
                   <p className="text-[10px] text-slate-400 uppercase font-bold">{s.label}</p>
@@ -259,7 +332,7 @@ const AptitudeDashboard: React.FC = () => {
           </div>
 
           {/* Weak Areas */}
-          {weak_areas.length > 0 && (
+          {weak_areas && weak_areas.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 shadow-sm">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Focus Areas</h3>
               <div className="space-y-3">
@@ -285,7 +358,7 @@ const AptitudeDashboard: React.FC = () => {
           )}
 
           {/* Achievements */}
-          {gamification.badges.length > 0 && (
+          {gamification?.badges && gamification.badges.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 shadow-sm">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Badges Earned</h3>
               <div className="space-y-2">

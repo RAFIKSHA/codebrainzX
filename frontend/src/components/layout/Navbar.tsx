@@ -25,6 +25,9 @@ const Navbar: React.FC = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
   const fetchNotifications = async () => {
     if (!user) return;
     try {
@@ -49,6 +52,9 @@ const Navbar: React.FC = () => {
     const clickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", clickOutside);
@@ -274,17 +280,51 @@ const Navbar: React.FC = () => {
                     Admin
                   </Link>
                 )}
-                <Link to="/dashboard" className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center font-bold text-blue-600 dark:text-blue-450 border border-blue-100 dark:border-blue-900/60 text-xs shadow-sm">
-                    {user.username.charAt(0).toUpperCase()}
-                  </div>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-red-650 dark:text-slate-350 dark:hover:text-red-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all cursor-pointer"
-                >
-                  Sign Out
-                </button>
+                <div className="relative" ref={profileDropdownRef}>
+                  <button
+                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                    className="flex items-center gap-2 focus:outline-none cursor-pointer"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center font-bold text-blue-600 dark:text-blue-450 border border-blue-100 dark:border-blue-900/60 text-xs shadow-sm transition-transform hover:scale-105">
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                  </button>
+
+                  {profileMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-900 shadow-xl z-50 overflow-hidden text-left py-1.5">
+                      <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-900">
+                        <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{user.username}</p>
+                        <p className="text-[10px] text-slate-450 dark:text-slate-500 truncate mt-0.5">{user.email}</p>
+                      </div>
+                      <Link
+                        to="/profile"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-355 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                      >
+                        <User size={13} />
+                        View Profile
+                      </Link>
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-355 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                      >
+                        <LayoutDashboard size={13} />
+                        Dashboard Hub
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors text-left border-t border-slate-105 dark:border-slate-900 mt-1 cursor-pointer"
+                      >
+                        <LogOut size={13} />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-3">

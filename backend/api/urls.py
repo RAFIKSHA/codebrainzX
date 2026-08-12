@@ -4,12 +4,14 @@ from .views import (
     RegisterView, LoginView, UserMeView, TopicViewSet, QuestionLevelViewSet,
     QuestionViewSet, TestCaseViewSet, LanguageViewSet, SubmissionViewSet, AdminStatsView,
     SectionViewSet, ContentItemViewSet, UserViewSet,
-    GoogleLoginView, EmailOTPSendView, RegisterSendOTPView, RegisterVerifyView, ForgotPasswordVerifyView
+    GoogleLoginView, EmailOTPSendView, RegisterSendOTPView, RegisterVerifyView, ForgotPasswordVerifyView,
+    ProfileStatsView
 )
 from .views_aptitude import (
     AptitudeDashboardViewSet, AptitudeCategoryViewSet, AptitudeQuestionViewSet,
     AptitudeTestViewSet, AptitudeTestAttemptViewSet, AptitudeBookmarkViewSet,
-    GamificationViewSet, AptitudeTopicViewSet, AptitudeSubTopicViewSet
+    GamificationViewSet, AptitudeTopicViewSet, AptitudeSubTopicViewSet,
+    AptitudeTrainerViewSet
 )
 from .views_coding_test import CodingTestViewSet, CodingTestAttemptViewSet
 from .views_hackathon import (
@@ -40,6 +42,7 @@ router.register('languages', LanguageViewSet, basename='language')
 router.register('submissions', SubmissionViewSet, basename='submission')
 
 router.register('aptitude/dashboard', AptitudeDashboardViewSet, basename='aptitude-dashboard')
+router.register('aptitude/trainers', AptitudeTrainerViewSet, basename='aptitude-trainer')
 router.register('aptitude/categories', AptitudeCategoryViewSet, basename='aptitude-category')
 router.register('aptitude/topics', AptitudeTopicViewSet, basename='aptitude-topic')
 router.register('aptitude/subtopics', AptitudeSubTopicViewSet, basename='aptitude-subtopic')
@@ -84,6 +87,7 @@ urlpatterns = [
     
     # Stats endpoints
     path('admin/stats/', AdminStatsView.as_view(), name='admin-stats'),
+    path('profile/stats/', ProfileStatsView.as_view(), name='profile-stats'),
     
     # Custom Hackathon endpoints
     path('admin/hackathons/analytics/', AnalyticsView.as_view(), name='hackathon-analytics'),

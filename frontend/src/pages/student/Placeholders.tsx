@@ -88,43 +88,7 @@ const ComingSoonWrapper: React.FC<{
   );
 };
 
-// 1. Aptitude & Reasoning Dashboard Placeholder
-export const AptitudeDashboard: React.FC = () => {
-  const mockCategories = [
-    { title: 'Quantitative Aptitude', topics: ['Percentages', 'Profit & Loss', 'Time & Work', 'Probability'] },
-    { title: 'Logical Reasoning', topics: ['Blood Relations', 'Syllogisms', 'Seating Arrangements', 'Data Sufficiency'] },
-    { title: 'Verbal Ability', topics: ['Reading Comprehension', 'Sentence Correction', 'Para Jumbles', 'Vocabulary'] }
-  ];
-
-  return (
-    <ComingSoonWrapper 
-      title="Aptitude & Reasoning Hub" 
-      description="Access hundreds of practice sets covering logical reasoning, quantitative skills, and verbal ability. Boost your chances in company placement papers."
-      category="aptitude"
-      isUnlocked={true}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {mockCategories.map((cat, idx) => (
-          <div key={idx} className="bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-slate-850 rounded-2xl p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2">
-              {cat.title}
-            </h3>
-            <div className="space-y-2">
-              {cat.topics.map((t, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-850/80 rounded-xl border border-slate-150 dark:border-slate-800/80 cursor-pointer transition-all">
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-350">{t}</span>
-                  <ChevronRight size={14} className="text-blue-500" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </ComingSoonWrapper>
-  );
-};
-
-// 2. Interview Prep Dashboard Placeholder
+// 1. Interview Prep Dashboard Placeholder
 export const InterviewDashboard: React.FC = () => {
   const sheets = [
     { title: 'SDE Core Placement Sheet', count: '180 Questions', tag: 'Popular' },

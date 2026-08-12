@@ -15,7 +15,7 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'CodeBrainzX | Practice Coding, Aptitude & Learn',
+      title: 'CodexPetra | Practice Coding, Aptitude & Learn',
       description: 'Prepare for placements and coding interviews with structured coding challenges, aptitude prep, interactive language tutorials, and mega hackathons.',
       canonicalUrl: window.location.href,
     });

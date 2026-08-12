@@ -135,7 +135,7 @@ const QuestionPage: React.FC = () => {
       }
 
       setSEOMetadata({
-        title: `${question.title} | CodeBrainzX IDE`,
+        title: `${question.title} | CodexPetra IDE`,
         description: `Solve the coding challenge ${question.title}. Write solutions in Python, C++, Java, JavaScript, and run compiled test suites.`,
         canonicalUrl: window.location.href,
         structuredData: getQuestionSchema(question.title, question.statement, question.level_name),

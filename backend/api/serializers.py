@@ -5,16 +5,41 @@ from .models import Profile, Topic, QuestionLevel, Question, TestCase, Language,
 
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.CharField(source='profile.role', read_only=True)
-    avatar_url = serializers.CharField(source='profile.avatar_url', read_only=True)
-    full_name = serializers.CharField(source='profile.full_name', read_only=True)
+    avatar_url = serializers.CharField(source='profile.avatar_url', required=False, allow_null=True, allow_blank=True)
+    full_name = serializers.CharField(source='profile.full_name', required=False, allow_blank=True)
     google_id = serializers.CharField(source='profile.google_id', read_only=True)
     profile_photo = serializers.CharField(source='profile.profile_photo', read_only=True)
     login_provider = serializers.CharField(source='profile.login_provider', read_only=True)
     email_verified = serializers.BooleanField(source='profile.email_verified', read_only=True)
+    
+    bio = serializers.CharField(source='profile.bio', required=False, allow_blank=True, default='')
+    country = serializers.CharField(source='profile.country', required=False, allow_blank=True, default='United States')
+    github = serializers.CharField(source='profile.github', required=False, allow_null=True, allow_blank=True)
+    linkedin = serializers.CharField(source='profile.linkedin', required=False, allow_null=True, allow_blank=True)
+    portfolio = serializers.CharField(source='profile.portfolio', required=False, allow_null=True, allow_blank=True)
+    resume_url = serializers.CharField(source='profile.resume_url', required=False, allow_null=True, allow_blank=True)
+    skills = serializers.CharField(source='profile.skills', required=False, allow_blank=True, default='')
+    projects = serializers.CharField(source='profile.projects', required=False, allow_blank=True, default='')
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'role', 'avatar_url', 'full_name', 'google_id', 'profile_photo', 'login_provider', 'email_verified')
+        fields = ('id', 'username', 'email', 'role', 'avatar_url', 'full_name', 'google_id', 'profile_photo', 'login_provider', 'email_verified',
+                  'bio', 'country', 'github', 'linkedin', 'portfolio', 'resume_url', 'skills', 'projects')
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', {})
+        
+        # Update user fields
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        
+        # Update profile fields
+        profile, _ = Profile.objects.get_or_create(user=instance)
+        for attr, value in profile_data.items():
+            setattr(profile, attr, value)
+        profile.save()
+        
+        return instance
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:

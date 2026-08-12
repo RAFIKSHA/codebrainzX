@@ -126,9 +126,9 @@ export const enrichQuestions = (questions: any[], topicNameMap?: Record<number, 
   if (!questions) return [];
 
   // Load interactive state from local storage
-  const bookmarks: number[] = JSON.parse(localStorage.getItem('codexpetra_bookmarks') || '[]');
-  const favorites: number[] = JSON.parse(localStorage.getItem('codexpetra_favorites') || '[]');
-  const likedList: number[] = JSON.parse(localStorage.getItem('codexpetra_liked') || '[]');
+  const bookmarks: number[] = JSON.parse(localStorage.getItem('codexpetra_bookmarks') || localStorage.getItem('codebrainzx_bookmarks') || '[]');
+  const favorites: number[] = JSON.parse(localStorage.getItem('codexpetra_favorites') || localStorage.getItem('codebrainzx_favorites') || '[]');
+  const likedList: number[] = JSON.parse(localStorage.getItem('codexpetra_liked') || localStorage.getItem('codebrainzx_liked') || '[]');
 
   return questions.map((q) => {
     const topicName = q.topic_name || (topicNameMap && topicNameMap[q.topic]) || 'General Algorithms';
@@ -160,7 +160,7 @@ export const enrichQuestions = (questions: any[], topicNameMap?: Record<number, 
  */
 export const toggleQuestionFlag = (id: number, flagType: 'bookmarks' | 'favorites' | 'liked'): boolean => {
   const storageKey = `codexpetra_${flagType}`;
-  const list: number[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  const list: number[] = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem(`codebrainzx_${flagType}`) || '[]');
   
   const index = list.indexOf(id);
   let isEnabled = false;

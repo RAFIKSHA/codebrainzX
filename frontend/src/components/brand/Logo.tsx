@@ -67,7 +67,7 @@ export const Logo: React.FC<LogoProps> = ({
       {/* Brand Typography */}
       {showText && (
         <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-          Codex<span className="text-indigo-600 dark:text-indigo-400">Petra</span>
+          Codex<span className="text-blue-600 dark:text-blue-400">Petra</span>
         </span>
       )}
     </div>

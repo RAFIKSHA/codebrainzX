@@ -24,6 +24,17 @@ class Profile(models.Model):
     email_verified = models.BooleanField(default=False)
     login_failures = models.IntegerField(default=0)
     locked_until = models.DateTimeField(blank=True, null=True)
+    
+    # Redesigned Profile Fields
+    bio = models.TextField(blank=True, default='')
+    country = models.CharField(max_length=100, blank=True, default='United States')
+    github = models.URLField(max_length=500, blank=True, null=True)
+    linkedin = models.URLField(max_length=500, blank=True, null=True)
+    portfolio = models.URLField(max_length=500, blank=True, null=True)
+    resume_url = models.URLField(max_length=1024, blank=True, null=True)
+    skills = models.TextField(blank=True, default='')
+    projects = models.TextField(blank=True, default='')
+
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -240,6 +251,34 @@ class ContentItem(models.Model):
         return f"[{self.section.slug}] {self.title}"
 
 
+class AptitudeTrainer(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    specialization = models.CharField(max_length=255, help_text="e.g. Quantitative Aptitude & Speed Math")
+    bio = models.TextField(blank=True, default='')
+    profile_image = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-is_active', 'name']
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name) or 'trainer'
+            slug = base_slug
+            counter = 1
+            while AptitudeTrainer.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
 class AptitudeCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
@@ -321,6 +360,7 @@ class AptitudeQuestion(models.Model):
     )
     topic = models.ForeignKey(AptitudeTopic, on_delete=models.CASCADE, related_name='questions')
     sub_topic = models.ForeignKey(AptitudeSubTopic, on_delete=models.SET_NULL, null=True, blank=True, related_name='questions')
+    trainer = models.ForeignKey(AptitudeTrainer, on_delete=models.SET_NULL, null=True, blank=True, related_name='questions')
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     statement = models.TextField()

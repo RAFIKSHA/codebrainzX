@@ -36,7 +36,7 @@ const Signup: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Sign Up | CodexPetra',
-      description: 'Create a free student account on CodexPetra to start learning algorithms and unlocking programming challenges.',
+      description: 'Create a free student account on CodexPetra to start learning algorithms, practicing aptitude, and participating in hackathons.',
     });
     // Redirect if already logged in
     if (user) {
