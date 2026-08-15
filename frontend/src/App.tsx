@@ -14,7 +14,8 @@ const Login = lazy(() => import('./pages/auth/Login'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const LearningSections = lazy(() => import('./pages/student/LearningSections'));
-const CodingDashboard = lazy(() => import('./pages/student/Dashboard'));
+const DsaRoadmap = lazy(() => import('./pages/student/DsaRoadmap'));
+const PracticePlayground = lazy(() => import('./pages/student/PracticePlayground'));
 const LevelQuestions = lazy(() => import('./pages/student/LevelQuestions'));
 const QuestionPage = lazy(() => import('./pages/question/QuestionPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -165,11 +166,21 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="/dashboard/coding"
+                path="/dashboard/coding/dsa"
                 element={
                   <ProtectedRoute>
                     <DashboardLayout>
-                      <CodingDashboard />
+                      <DsaRoadmap />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/coding/problems"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <PracticePlayground />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }

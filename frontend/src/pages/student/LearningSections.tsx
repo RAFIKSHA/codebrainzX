@@ -305,15 +305,25 @@ const LearningSections: React.FC = () => {
             </Link>
           </div>
 
-          {/* 4 Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {/* 5 Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
             {[
               {
-                title: 'Coding & DSA',
-                desc: 'Practice coding problems, DSA and improve your problem-solving skills.',
-                cta: 'Explore Coding →',
-                path: '/dashboard/coding',
+                title: 'DSA Roadmap',
+                desc: '19-step structured coding curriculum from fundamentals to advanced data structures.',
+                cta: 'Start Learning Path →',
+                path: '/dashboard/coding/dsa',
                 icon: CodeXml,
+                color: 'text-[#8b5cf6] bg-[#f5f3ff] dark:bg-[#8b5cf6]/10',
+                hoverBorder: 'hover:border-[#ddd6fe] dark:hover:border-violet-900',
+                hoverCta: 'hover:text-[#6d28d9]'
+              },
+              {
+                title: 'Practice Playground',
+                desc: 'Freestyle coding problem bank, filter search sheets and company interview sets.',
+                cta: 'Freestyle Practice →',
+                path: '/dashboard/coding/problems',
+                icon: LayoutGrid,
                 color: 'text-[#4f46e5] bg-[#eef2ff] dark:bg-[#4f46e5]/10',
                 hoverBorder: 'hover:border-[#c5c2f7] dark:hover:border-purple-900',
                 hoverCta: 'hover:text-[#4338ca]'
