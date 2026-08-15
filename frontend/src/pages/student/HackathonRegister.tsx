@@ -60,6 +60,11 @@ const HackathonRegister: React.FC = () => {
   const [problemStatementId, setProblemStatementId] = useState<number | null>(null);
   const [confirmProblem, setConfirmProblem] = useState(false);
   const [viewingProblem, setViewingProblem] = useState<any | null>(null);
+  const [selectedProblem, setSelectedProblemState] = useState<any | null>(null);
+  const setSelectedProblem = (ps: any) => {
+    setSelectedProblemState(ps);
+    setProblemStatementId(ps ? ps.id : null);
+  };
 
   // Form Fields - Step 2 (formerly Step 1)
   const [teamName, setTeamName] = useState('');

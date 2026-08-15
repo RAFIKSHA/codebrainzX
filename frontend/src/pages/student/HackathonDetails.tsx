@@ -6,7 +6,7 @@ import {
   BookOpen, Layers, Code2, Shield, Target, GitBranch, Globe, Server, Database,
   Lock, Package, CheckCircle2, ArrowRight, XCircle, AlertCircle, Tag,
   ChevronDown, ChevronUp, Loader, Star, FileText, Cpu, Workflow,
-  Mail, Phone, HelpCircle, Download, ExternalLink, Flame, Award
+  Mail, Phone, HelpCircle, Download, ExternalLink, Flame, Award, Sparkles
 } from 'lucide-react';
 import api from '../../services/api';
 
