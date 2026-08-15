@@ -14,6 +14,10 @@ from .views_aptitude import (
     AptitudeTrainerViewSet
 )
 from .views_coding_test import CodingTestViewSet, CodingTestAttemptViewSet
+from .views_test_series import (
+    TestSeriesCategoryViewSet, TestSeriesCompanyViewSet, TestSeriesViewSet,
+    IndividualTestViewSet, IndividualTestAttemptViewSet
+)
 from .views_hackathon import (
     HackathonViewSet, TeamViewSet, ApplicationViewSet, PaymentViewSet,
     CertificateViewSet, EmailViewSet, HackathonSettingViewSet, NotificationViewSet,
@@ -30,6 +34,12 @@ from .views_tutorials import (
 router = DefaultRouter()
 router.register('coding/tests', CodingTestViewSet, basename='coding-test')
 router.register('coding/attempts', CodingTestAttemptViewSet, basename='coding-attempt')
+
+router.register('test-series/categories', TestSeriesCategoryViewSet, basename='test-series-category')
+router.register('test-series/companies', TestSeriesCompanyViewSet, basename='test-series-company')
+router.register('test-series/series', TestSeriesViewSet, basename='test-series')
+router.register('test-series/tests', IndividualTestViewSet, basename='test-series-test')
+router.register('test-series/attempts', IndividualTestAttemptViewSet, basename='test-series-attempt')
 
 router.register('sections', SectionViewSet, basename='section')
 router.register('contentitems', ContentItemViewSet, basename='contentitem')

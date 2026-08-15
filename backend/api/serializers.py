@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'role', 'avatar_url', 'full_name', 'google_id', 'profile_photo', 'login_provider', 'email_verified',
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role', 'avatar_url', 'full_name', 'google_id', 'profile_photo', 'login_provider', 'email_verified',
                   'bio', 'country', 'github', 'linkedin', 'portfolio', 'resume_url', 'skills', 'projects')
 
     def update(self, instance, validated_data):

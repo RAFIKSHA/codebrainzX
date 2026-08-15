@@ -173,6 +173,31 @@ export const tutorialsService = {
     return res.data;
   },
 
+  getUserProgress: async () => {
+    const res = await api.get<{ completed_slugs: string[]; last_accessed: any }>('/tutorials/lessons/user-progress/');
+    return res.data;
+  },
+
+  completeLesson: async (lessonId: number, completed: boolean = true) => {
+    const res = await api.post<{ completed: boolean }>(`/tutorials/lessons/${lessonId}/complete/`, { completed });
+    return res.data;
+  },
+
+  getContinueLearning: async () => {
+    const res = await api.get<{
+      course_name: string;
+      course_slug: string;
+      chapter_name: string;
+      lesson_title: string;
+      lesson_slug: string;
+      progress_percent: number;
+      completed_lessons: number;
+      total_lessons: number;
+      last_accessed: string;
+    }>('/tutorials/lessons/continue-learning/');
+    return res.data;
+  },
+
   // --- Admin CRUD APIs ---
   // Languages
   adminGetLanguages: async () => {

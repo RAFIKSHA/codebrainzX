@@ -1,11 +1,15 @@
 from django.contrib import admin
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Hackathon, Team, Application, Payment, Certificate, EmailLog, HackathonNotification, HackathonSetting
+from .models import (
+    Hackathon, Team, Application, Payment, Certificate, EmailLog, HackathonNotification, HackathonSetting,
+    TestSeriesCategory, TestSeriesCompany, TestSeries, IndividualTest, IndividualTestAttempt, IndividualTestResponse,
+    ProblemStatement, ProblemApplication
+)
 from .models_tutorials import (
     TutorialLanguage, TutorialChapter, TutorialLesson, TutorialLessonBlock,
     TutorialQuiz, TutorialQuizQuestion, TutorialPracticeQuestion,
-    TutorialLessonResource, TutorialMedia, TutorialLessonAnalytics
+    TutorialLessonResource, TutorialMedia, TutorialLessonAnalytics, UserLessonProgress
 )
 
 @admin.register(Payment)
@@ -80,6 +84,8 @@ admin.site.register(Certificate)
 admin.site.register(EmailLog)
 admin.site.register(HackathonNotification)
 admin.site.register(HackathonSetting)
+admin.site.register(ProblemStatement)
+admin.site.register(ProblemApplication)
 
 admin.site.register(TutorialLanguage)
 admin.site.register(TutorialChapter)
@@ -91,4 +97,12 @@ admin.site.register(TutorialPracticeQuestion)
 admin.site.register(TutorialLessonResource)
 admin.site.register(TutorialMedia)
 admin.site.register(TutorialLessonAnalytics)
+admin.site.register(UserLessonProgress)
+
+admin.site.register(TestSeriesCategory)
+admin.site.register(TestSeriesCompany)
+admin.site.register(TestSeries)
+admin.site.register(IndividualTest)
+admin.site.register(IndividualTestAttempt)
+admin.site.register(IndividualTestResponse)
 

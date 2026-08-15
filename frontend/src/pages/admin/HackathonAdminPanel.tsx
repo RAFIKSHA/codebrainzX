@@ -133,6 +133,17 @@ const HackathonAdminPanel: React.FC = () => {
   const [problemTechInput, setProblemTechInput] = useState('');
   const [problemOrder, setProblemOrder] = useState(0);
   const [problemSubmitting, setProblemSubmitting] = useState(false);
+  const [problemShortDesc, setProblemShortDesc] = useState('');
+  const [problemBackground, setProblemBackground] = useState('');
+  const [problemObjective, setProblemObjective] = useState('');
+  const [problemRequirements, setProblemRequirements] = useState('');
+  const [problemExpectedSolution, setProblemExpectedSolution] = useState('');
+  const [problemConstraints, setProblemConstraints] = useState('');
+  const [problemTechnologyPreferences, setProblemTechnologyPreferences] = useState('');
+  const [problemDeliverables, setProblemDeliverables] = useState('');
+  const [problemEvaluationCriteria, setProblemEvaluationCriteria] = useState('');
+  const [problemAdditionalInstructions, setProblemAdditionalInstructions] = useState('');
+  const [problemActive, setProblemActive] = useState(true);
   // ────────────────────────────────────────────────────────────────────────────
 
   // Search & Filter
@@ -379,11 +390,10 @@ const HackathonAdminPanel: React.FC = () => {
   };
 
   const openAddProblem = async () => {
-    // Ensure hackathons are loaded before opening modal
     let hackList = hackathons;
-    if (hackathons.length === 0) {
+    if (hackList.length === 0) {
       try {
-        const hacks = await api.get('/hackathons/');
+        const hacks = await api.get('/admin/hackathons/');
         setHackathons(hacks.data);
         hackList = hacks.data;
         if (hacks.data.length > 0 && !problemHackathonId) {
@@ -402,10 +412,21 @@ const HackathonAdminPanel: React.FC = () => {
     setProblemTechStack([]);
     setProblemTechInput('');
     setProblemOrder(0);
+    setProblemShortDesc('');
+    setProblemBackground('');
+    setProblemObjective('');
+    setProblemRequirements('');
+    setProblemExpectedSolution('');
+    setProblemConstraints('');
+    setProblemTechnologyPreferences('');
+    setProblemDeliverables('');
+    setProblemEvaluationCriteria('');
+    setProblemAdditionalInstructions('');
+    setProblemActive(true);
     setProblemModalOpen(true);
   };
 
-  const openEditProblem = (p: ProblemStatement) => {
+  const openEditProblem = (p: any) => {
     setEditingProblem(p);
     setModalHackathonId(String(p.hackathon));
     setProblemTitle(p.title);
@@ -414,6 +435,17 @@ const HackathonAdminPanel: React.FC = () => {
     setProblemTechStack(p.tech_stack || []);
     setProblemTechInput('');
     setProblemOrder(p.order);
+    setProblemShortDesc(p.short_description || '');
+    setProblemBackground(p.background || '');
+    setProblemObjective(p.objective || '');
+    setProblemRequirements(p.requirements || '');
+    setProblemExpectedSolution(p.expected_solution || '');
+    setProblemConstraints(p.constraints || '');
+    setProblemTechnologyPreferences(p.technology_preferences || '');
+    setProblemDeliverables(p.deliverables || '');
+    setProblemEvaluationCriteria(p.evaluation_criteria || '');
+    setProblemAdditionalInstructions(p.additional_instructions || '');
+    setProblemActive(p.active !== false);
     setProblemModalOpen(true);
   };
 
@@ -441,6 +473,17 @@ const HackathonAdminPanel: React.FC = () => {
       difficulty: problemDifficulty,
       tech_stack: problemTechStack,
       order: problemOrder,
+      short_description: problemShortDesc,
+      background: problemBackground,
+      objective: problemObjective,
+      requirements: problemRequirements,
+      expected_solution: problemExpectedSolution,
+      constraints: problemConstraints,
+      technology_preferences: problemTechnologyPreferences,
+      deliverables: problemDeliverables,
+      evaluation_criteria: problemEvaluationCriteria,
+      additional_instructions: problemAdditionalInstructions,
+      active: problemActive
     };
     try {
       if (editingProblem) {
@@ -448,19 +491,28 @@ const HackathonAdminPanel: React.FC = () => {
       } else {
         await api.post('/hackathon-problem-statements/', payload);
       }
-      // Refresh the list
       if (hackId === (problemHackathonId || hackId)) {
         setProblemHackathonId(hackId);
       }
       await fetchProblems(hackId);
       if (addAnother) {
-        // Reset form fields but keep modal open and hackathon selected
         setProblemTitle('');
         setProblemDesc('');
         setProblemDifficulty('medium');
         setProblemTechStack([]);
         setProblemTechInput('');
         setProblemOrder(0);
+        setProblemShortDesc('');
+        setProblemBackground('');
+        setProblemObjective('');
+        setProblemRequirements('');
+        setProblemExpectedSolution('');
+        setProblemConstraints('');
+        setProblemTechnologyPreferences('');
+        setProblemDeliverables('');
+        setProblemEvaluationCriteria('');
+        setProblemAdditionalInstructions('');
+        setProblemActive(true);
         setEditingProblem(null);
       } else {
         setProblemModalOpen(false);
@@ -1155,6 +1207,73 @@ const HackathonAdminPanel: React.FC = () => {
                         <textarea required rows={4} value={problemDesc} onChange={e => setProblemDesc(e.target.value)}
                           placeholder="Describe the problem, context, expected solution, and constraints..."
                           className="w-full px-3.5 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-500 block mb-1">Short Description</label>
+                        <input type="text" value={problemShortDesc} onChange={e => setProblemShortDesc(e.target.value)}
+                          placeholder="A quick 1-sentence summary"
+                          className="w-full px-3.5 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-500 block mb-1">Background</label>
+                          <textarea rows={2} value={problemBackground} onChange={e => setProblemBackground(e.target.value)}
+                            placeholder="Context and background..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-500 block mb-1">Objective</label>
+                          <textarea rows={2} value={problemObjective} onChange={e => setProblemObjective(e.target.value)}
+                            placeholder="Core objective of the challenge..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-500 block mb-1">Requirements</label>
+                          <textarea rows={2} value={problemRequirements} onChange={e => setProblemRequirements(e.target.value)}
+                            placeholder="Functional/non-functional requirements..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-550 block mb-1">Expected Solution</label>
+                          <textarea rows={2} value={problemExpectedSolution} onChange={e => setProblemExpectedSolution(e.target.value)}
+                            placeholder="Expected deliverables structure..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-550 block mb-1">Constraints</label>
+                          <textarea rows={2} value={problemConstraints} onChange={e => setProblemConstraints(e.target.value)}
+                            placeholder="Time, API limits, sizing constraints..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-550 block mb-1">Technology Preferences</label>
+                          <textarea rows={2} value={problemTechnologyPreferences} onChange={e => setProblemTechnologyPreferences(e.target.value)}
+                            placeholder="Recommended languages, databases, hosting..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-550 block mb-1">Deliverables</label>
+                          <textarea rows={2} value={problemDeliverables} onChange={e => setProblemDeliverables(e.target.value)}
+                            placeholder="GitHub repo, Demo URL, Video presentation..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-550 block mb-1">Evaluation Criteria</label>
+                          <textarea rows={2} value={problemEvaluationCriteria} onChange={e => setProblemEvaluationCriteria(e.target.value)}
+                            placeholder="Ui/Ux: 20%, Code: 40%, Novelty: 40%..."
+                            className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 focus:outline-none" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-500 block mb-1">Additional Instructions</label>
+                        <textarea rows={2} value={problemAdditionalInstructions} onChange={e => setProblemAdditionalInstructions(e.target.value)}
+                          placeholder="Any extra instructions..."
+                          className="w-full px-3.5 py-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 focus:outline-none" />
+                      </div>
+                      <div className="flex items-center gap-2 select-none">
+                        <input type="checkbox" id="ps-active" checked={problemActive} onChange={e => setProblemActive(e.target.checked)}
+                          className="w-4 h-4 rounded text-blue-600 cursor-pointer" />
+                        <label htmlFor="ps-active" className="text-xs text-slate-650 cursor-pointer font-bold">Active and selectable by hackers</label>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -1927,6 +2046,64 @@ const HackathonAdminPanel: React.FC = () => {
                 </div>
 
               </div>
+
+              {/* Event Performance & Problem Statement Selection Distribution */}
+              {analytics.event_performance && analytics.event_performance.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-6 rounded-3xl shadow-sm space-y-6">
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Event Performance & Problem Selections</h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Inspect registrations, paid states, pending payments, and challenge selections for each hackathon.</p>
+                  </div>
+
+                  <div className="space-y-6">
+                    {analytics.event_performance.map((event: any, index: number) => (
+                      <div key={event.id} className="p-5 border border-slate-150 dark:border-slate-850 rounded-2xl space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-850/50">
+                          <div>
+                            <h4 className="text-xs font-black text-slate-900 dark:text-white">{event.title}</h4>
+                            <span className="text-[10px] text-slate-400 mt-0.5 block capitalize font-semibold">Status: {event.status}</span>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <div className="px-3 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-center">
+                              <span className="text-[8px] text-slate-400 uppercase tracking-widest block font-bold">Registrations</span>
+                              <span className="text-xs font-black text-slate-900 dark:text-white">{event.registrations}</span>
+                            </div>
+                            
+                            <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-650 rounded-xl text-center">
+                              <span className="text-[8px] uppercase tracking-widest block font-bold">Paid</span>
+                              <span className="text-xs font-black">{event.paid_registrations}</span>
+                            </div>
+
+                            <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-650 rounded-xl text-center">
+                              <span className="text-[8px] uppercase tracking-widest block font-bold">Pending</span>
+                              <span className="text-xs font-black">{event.pending_payments}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Problem statement distribution details */}
+                        <div className="space-y-2">
+                          <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Problem Statement Distribution</span>
+                          
+                          {event.problem_distribution && event.problem_distribution.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                              {event.problem_distribution.map((pd: any, pIdx: number) => (
+                                <div key={pIdx} className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-955/20 p-3 rounded-xl border border-slate-150 dark:border-slate-850/50">
+                                  <span className="text-[11px] font-bold text-slate-750 dark:text-slate-350 truncate max-w-[200px]" title={pd.title}>{pd.title}</span>
+                                  <span className="text-xs font-black text-blue-600 dark:text-blue-400">{pd.count} Teams</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-[10px] text-slate-400 italic font-semibold">No problem statement selections logged.</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
           )}

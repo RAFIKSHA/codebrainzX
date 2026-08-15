@@ -169,16 +169,16 @@ const Navbar: React.FC = () => {
                 Hackathons
               </NavLink>
               <NavLink 
-                to="/dashboard/coding?tab=companies" 
+                to="/test-series" 
                 className={({ isActive }) => 
                   `text-[13px] font-semibold transition-colors ${
                     isActive 
-                      ? 'text-blue-600 dark:text-blue-405 font-bold' 
+                      ? 'text-blue-600 dark:text-blue-400 font-bold' 
                       : 'text-slate-655 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400'
                   }`
                 }
               >
-                Companies
+                Test Series
               </NavLink>
               <a 
                 href="#" 
@@ -397,11 +397,11 @@ const Navbar: React.FC = () => {
               Hackathons
             </Link>
             <Link
-              to="/dashboard/coding?tab=companies"
+              to="/test-series"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
             >
-              Companies
+              Test Series
             </Link>
           </div>
 

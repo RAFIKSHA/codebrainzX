@@ -206,3 +206,19 @@ class TutorialLessonAnalytics(models.Model):
 
     def __str__(self):
         return f"Analytics for {self.lesson.title}"
+
+
+class UserLessonProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='lesson_progress')
+    language = models.ForeignKey(TutorialLanguage, on_delete=models.CASCADE)
+    chapter = models.ForeignKey(TutorialChapter, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(TutorialLesson, on_delete=models.CASCADE)
+    last_accessed_at = models.DateTimeField(auto_now=True)
+    completed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
+        ordering = ['-last_accessed_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.lesson.title} - {'Completed' if self.completed else 'In Progress'}"

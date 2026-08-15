@@ -34,7 +34,7 @@ interface ProblemApplication {
   selected_tech_stack: string[]; team_name: string;
 }
 
-type TabId = 'overview' | 'problems' | 'requirements' | 'features' | 'techstack' | 'faq';
+type TabId = 'dashboard' | 'overview' | 'problems' | 'requirements' | 'features' | 'techstack' | 'faq';
 
 // ─── Colour helpers ────────────────────────────────────────────────────────────
 const difficultyConfig = {
@@ -145,6 +145,7 @@ const HackathonDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [registeredTeam, setRegisteredTeam] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [viewingPublicLanding, setViewingPublicLanding] = useState(false);
 
   // Problem statements
   const [problemStatements, setProblemStatements] = useState<ProblemStatement[]>([]);
@@ -153,6 +154,34 @@ const HackathonDetails: React.FC = () => {
   const [expandedPsId, setExpandedPsId] = useState<number | null>(null);
   const [psLoading, setPsLoading] = useState(false);
   const [psError, setPsError] = useState<string | null>(null);
+
+  // Project Submission States
+  const [projectTitle, setProjectTitle] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
+  const [projectGithubUrl, setProjectGithubUrl] = useState('');
+  const [projectDemoUrl, setProjectDemoUrl] = useState('');
+  const [projectPresentationUrl, setProjectPresentationUrl] = useState('');
+  const [isEditingSubmission, setIsEditingSubmission] = useState(true);
+  const [submissionSubmitting, setSubmissionSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+
+  useEffect(() => {
+    if (registeredTeam) {
+      setProjectTitle(registeredTeam.project_title || '');
+      setProjectDescription(registeredTeam.project_description || '');
+      setProjectGithubUrl(registeredTeam.project_github_url || '');
+      setProjectDemoUrl(registeredTeam.project_demo_url || '');
+      setProjectPresentationUrl(registeredTeam.project_presentation_url || '');
+      
+      // If already has title and github url, view details first
+      if (registeredTeam.project_title && registeredTeam.project_github_url) {
+        setIsEditingSubmission(false);
+      } else {
+        setIsEditingSubmission(true);
+      }
+    }
+  }, [registeredTeam]);
 
   const fetchProblemData = useCallback(async (hackathonId: number) => {
     setPsLoading(true);
@@ -190,6 +219,9 @@ const HackathonDetails: React.FC = () => {
       const res = await api.get('/hackathon-teams/my_registrations/');
       const match = res.data.find((t: any) => t.hackathon === id);
       setRegisteredTeam(match || null);
+      if (match && match.application_status === 'approved') {
+        setActiveTab('dashboard');
+      }
     } catch {}
   };
 
@@ -207,6 +239,36 @@ const HackathonDetails: React.FC = () => {
       const msg = err.response?.data?.non_field_errors?.[0] || err.response?.data?.detail || 'Failed to apply. Please try again.';
       setPsError(msg);
     } finally { setApplyingId(null); }
+  };
+
+  const handleProjectSubmission = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!registeredTeam) return;
+
+    setSubmissionSubmitting(true);
+    setSubmissionError(null);
+    setSubmissionSuccess(false);
+
+    try {
+      const payload = {
+        project_title: projectTitle,
+        project_description: projectDescription,
+        project_github_url: projectGithubUrl,
+        project_demo_url: projectDemoUrl || null,
+        project_presentation_url: projectPresentationUrl || null
+      };
+
+      const res = await api.post(`/hackathon-teams/${registeredTeam.id}/submit_project/`, payload);
+      setRegisteredTeam(res.data);
+      setSubmissionSuccess(true);
+      setIsEditingSubmission(false);
+      setTimeout(() => setSubmissionSuccess(false), 5000);
+    } catch (err: any) {
+      const msg = err.response?.data?.error || err.response?.data?.non_field_errors?.[0] || 'Failed to submit deliverables.';
+      setSubmissionError(msg);
+    } finally {
+      setSubmissionSubmitting(false);
+    }
   };
 
   // ── Loading skeleton ─────────────────────────────────────────────────────────
@@ -244,7 +306,10 @@ const HackathonDetails: React.FC = () => {
   // Aggregate unique tech tags across all problem statements
   const allTechTags = [...new Set(problemStatements.flatMap(p => p.tech_stack || []))];
 
+  const showDashboardTab = registeredTeam && registeredTeam.application_status === 'approved';
+
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    ...(showDashboardTab ? [{ id: 'dashboard' as TabId, label: 'Participation Dashboard', icon: <Trophy size={13}/> }] : []),
     { id: 'overview',      label: 'Overview',          icon: <Globe size={13}/>       },
     { id: 'problems',      label: `Problems (${problemStatements.length})`, icon: <Layers size={13}/> },
     { id: 'requirements',  label: 'Requirements',      icon: <Shield size={13}/>      },
@@ -295,7 +360,6 @@ const HackathonDetails: React.FC = () => {
     },
   ].filter(cat => cat.tags.length > 0);
 
-  // Judging criteria — parse percentages from text or use sensible defaults
   const judgingCriteria = [
     { label: 'Technical Complexity', pct: 40, color: 'bg-blue-600'    },
     { label: 'Innovation',           pct: 30, color: 'bg-purple-600'  },
@@ -303,8 +367,442 @@ const HackathonDetails: React.FC = () => {
     { label: 'Presentation',         pct: 10, color: 'bg-amber-500'   },
   ];
 
+  if (registeredTeam && !viewingPublicLanding) {
+    const isApproved = registeredTeam.application_status === 'approved';
+    const isPending = registeredTeam.application_status === 'pending' || registeredTeam.application_status === 'waitlisted';
+    const isRejected = registeredTeam.application_status === 'rejected';
+
+    return (
+      <div className="space-y-6 select-none animate-fade-in -mt-2">
+        {/* Workspace Breadcrumb & Header Toggle Row */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+          <div className="space-y-1">
+            <nav className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <Link to="/dashboard/hackathons" className="hover:text-slate-600 dark:hover:text-white transition-colors">Hackathons</Link>
+              <ChevronRight size={10} className="text-slate-600"/>
+              <span className="truncate max-w-[150px]">{hackathon.title}</span>
+            </nav>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-905 dark:text-white mt-1 leading-tight flex items-center gap-2">
+              Hacker Workspace <span className="text-slate-300 dark:text-slate-700 font-light">|</span> <span className="text-blue-605 dark:text-blue-400 font-medium">Team {registeredTeam.name}</span>
+            </h1>
+          </div>
+          
+          <button
+            onClick={() => setViewingPublicLanding(true)}
+            className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-850 transition cursor-pointer flex items-center gap-1.5"
+          >
+            <Globe size={13} /> View Public Event Page
+          </button>
+        </div>
+
+        {/* Status Notification Banners */}
+        {isPending && (
+          <div className="p-5 bg-amber-500/10 text-amber-705 dark:bg-amber-955/20 dark:text-amber-400 border border-amber-500/15 rounded-3xl flex items-start gap-3">
+            <Clock size={18} className="shrink-0 mt-0.5 animate-pulse" />
+            <div className="space-y-1 text-xs">
+              <p className="font-black uppercase tracking-wider text-[10px]">Application Status: Under Verification Review</p>
+              <p className="font-semibold leading-relaxed">
+                We have received your registration details and UPI UTR Transaction number. Our administrators are verifying the transaction. Once verified, your status will turn to Approved and your Stage 4 Project Workspace deliverables portal will unlock. Typically reviewed within 1-2 hours.
+              </p>
+              <div className="bg-white/40 dark:bg-slate-900/40 p-3 rounded-2xl border border-amber-500/10 mt-3 space-y-1 max-w-md font-mono text-[10px] text-slate-700 dark:text-slate-350">
+                <div className="flex justify-between"><span>Registration ID:</span> <span className="font-bold">{registeredTeam.registration_number || 'N/A'}</span></div>
+                <div className="flex justify-between"><span>Payment Method:</span> <span className="font-bold capitalize">{registeredTeam.payment_method || 'UPI'}</span></div>
+                <div className="flex justify-between"><span>Transaction Reference:</span> <span className="font-bold">{registeredTeam.utr_number || 'Verification Pending'}</span></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isRejected && (
+          <div className="p-5 bg-red-500/10 text-red-650 dark:bg-red-950/20 dark:text-red-400 border border-red-500/15 rounded-3xl flex items-start gap-3">
+            <XCircle size={18} className="shrink-0 mt-0.5" />
+            <div className="space-y-1.5 text-xs">
+              <p className="font-black uppercase tracking-wider text-[10px]">Application Status: Registration Rejected</p>
+              <p className="font-semibold leading-relaxed">
+                Unfortunately, your application profile was rejected by our panel due to verification issues or incomplete information.
+              </p>
+              <button
+                onClick={() => navigate(`/dashboard/hackathons/${hackathon.slug}/register`)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-bold transition shadow shadow-red-500/10 cursor-pointer"
+              >
+                Resubmit Application
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Hacker Workspace Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Main Stage Timeline column */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Timeline header */}
+            <div className="bg-slate-50 dark:bg-slate-950 p-4 border border-slate-150 dark:border-slate-850 rounded-2xl flex items-center justify-between text-xs">
+              <span className="text-slate-455 font-bold uppercase tracking-wider">Hacker Lifecycle Tracker</span>
+              <span className="text-slate-500 font-mono">Stages completed: {isApproved ? '3/4' : '2/4'}</span>
+            </div>
+
+            {/* STAGE 1: REGISTRATION COMPLETED */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/30">
+                <CheckCircle2 size={18} />
+              </div>
+              <div className="space-y-1.5 flex-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Stage 1: Application Intake</span>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white">Registration Profile Created</h3>
+                <p className="text-[11px] text-slate-455 dark:text-slate-450 leading-relaxed font-semibold">
+                  You registered under team <span className="font-bold text-slate-850 dark:text-slate-200">'{registeredTeam.name}'</span>. Academic verification from college <span className="font-semibold text-slate-700 dark:text-slate-350">{registeredTeam.college}</span> has been logged.
+                </p>
+              </div>
+            </div>
+
+            {/* STAGE 2: PROBLEM LOCKED */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/30">
+                <CheckCircle2 size={18} />
+              </div>
+              <div className="space-y-2.5 flex-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Stage 2: Target Challenge Choice</span>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white">Problem Statement Locked</h3>
+                
+                {registeredTeam.problem_statement_detail ? (
+                  <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-850 rounded-2xl space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-150/40 dark:border-slate-850 pb-2">
+                      <h4 className="text-xs font-black text-slate-850 dark:text-white">{registeredTeam.problem_statement_detail.title}</h4>
+                      <span className={`px-2 py-0.5 text-[8px] font-black uppercase rounded border ${
+                        registeredTeam.problem_statement_detail.difficulty === 'easy' ? 'bg-emerald-50 text-emerald-705 border-emerald-250 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                        registeredTeam.problem_statement_detail.difficulty === 'hard' ? 'bg-red-50 text-red-705 border-red-250 dark:bg-red-950/20 dark:text-red-400' :
+                        'bg-amber-50 text-amber-705 border-amber-250 dark:bg-amber-955/20 dark:text-amber-400'
+                      }`}>{registeredTeam.problem_statement_detail.difficulty}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                      {registeredTeam.problem_statement_detail.short_description || registeredTeam.problem_statement_detail.description}
+                    </p>
+                    {registeredTeam.problem_statement_detail.tech_stack && registeredTeam.problem_statement_detail.tech_stack.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {registeredTeam.problem_statement_detail.tech_stack.map((t: string) => (
+                          <span key={t} className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[9px] font-bold rounded border border-blue-200/20">{t}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-455 italic">No problem selected.</p>
+                )}
+              </div>
+            </div>
+
+            {/* STAGE 3: TEAM FORMATION */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/30">
+                <CheckCircle2 size={18} />
+              </div>
+              <div className="space-y-2.5 flex-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Stage 3: Roster Composition</span>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white">Team Roster Verified</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs text-slate-655">
+                  <div className="p-3.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-850 rounded-2xl">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-blue-600 block">Team Leader</span>
+                    <span className="font-extrabold text-slate-900 dark:text-white block mt-0.5">{registeredTeam.leader_name}</span>
+                    <span className="text-[10px] text-slate-455 block mt-0.5 font-semibold">{registeredTeam.leader_email}</span>
+                  </div>
+
+                  {registeredTeam.members && registeredTeam.members.map((m: any, idx: number) => (
+                    <div key={idx} className="p-3.5 bg-slate-50/70 dark:bg-slate-955/20 border border-slate-150 dark:border-slate-850 rounded-2xl">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Co-Member #{idx + 2}</span>
+                      <span className="font-bold text-slate-900 dark:text-white block mt-0.5">{m.name}</span>
+                      <span className="text-[10px] text-slate-455 block mt-0.5 font-semibold">{m.email}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* STAGE 4: SOLUTIONS DELIVERABLES WORKSPACE */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4 relative overflow-hidden">
+              {!isApproved && (
+                <div className="absolute inset-0 bg-slate-50/70 dark:bg-slate-955/70 backdrop-blur-[1px] z-20 flex flex-col items-center justify-center text-center p-6">
+                  <Lock size={28} className="text-slate-400 dark:text-slate-600 mb-2" />
+                  <h4 className="text-xs font-black text-slate-855 dark:text-slate-200 uppercase tracking-wider">Workspace Deliverables Portal Locked</h4>
+                  <p className="text-[10px] text-slate-450 max-w-sm mt-1 leading-relaxed">
+                    Submit phase deliverables will automatically unlock immediately once the administrator verifies your transaction UTR reference check.
+                  </p>
+                </div>
+              )}
+
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                registeredTeam.project_submitted_at
+                  ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-600 text-blue-600 animate-pulse'
+              }`}>
+                {registeredTeam.project_submitted_at ? <CheckCircle2 size={18} /> : <Zap size={15} />}
+              </div>
+
+              <div className="space-y-4 flex-1">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Stage 4: Workspace Deliverables Portal</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-white">
+                      {registeredTeam.project_submitted_at ? 'Project Solutions Submitted' : 'Pending Deliverables Submission'}
+                    </h3>
+                    {registeredTeam.project_submitted_at && (
+                      <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-650 border border-emerald-500/20 text-[9px] font-black uppercase rounded-full">
+                        Completed
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Display Submission Success */}
+                {submissionSuccess && (
+                  <div className="p-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-450 border border-emerald-500/20 dark:border-emerald-850 rounded-2xl text-xs font-bold flex items-center gap-2 animate-slide-in">
+                    <CheckCircle2 size={16} /> Deliverables saved successfully!
+                  </div>
+                )}
+
+                {/* Display Submission Errors */}
+                {submissionError && (
+                  <div className="p-4 bg-red-500/10 text-red-655 dark:text-red-400 border border-red-500/20 dark:border-red-800 rounded-2xl text-xs font-bold flex items-center gap-2 animate-shake">
+                    <AlertCircle size={16} /> {submissionError}
+                  </div>
+                )}
+
+                {/* Read-Only Solution Details View */}
+                {!isEditingSubmission && registeredTeam.project_title ? (
+                  <div className="space-y-4 animate-fade-in">
+                    <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-850 rounded-2xl space-y-4">
+                      <div>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Project Title</span>
+                        <h5 className="text-xs font-black text-slate-900 dark:text-white mt-0.5 leading-snug">{registeredTeam.project_title}</h5>
+                      </div>
+
+                      <div>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Project Description</span>
+                        <p className="text-[11px] text-slate-650 dark:text-slate-400 mt-1 leading-relaxed whitespace-pre-wrap font-semibold">
+                          {registeredTeam.project_description}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px]">
+                        <div className="p-3 bg-white dark:bg-slate-905 border border-slate-100 dark:border-slate-850 rounded-xl">
+                          <span className="text-[8px] font-black uppercase text-slate-400 block">GitHub Repository</span>
+                          <a href={registeredTeam.project_github_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold block truncate mt-1">
+                            GitHub Link →
+                          </a>
+                        </div>
+
+                        {registeredTeam.project_demo_url && (
+                          <div className="p-3 bg-white dark:bg-slate-905 border border-slate-100 dark:border-slate-850 rounded-xl">
+                            <span className="text-[8px] font-black uppercase text-slate-400 block">Live Demo Link</span>
+                            <a href={registeredTeam.project_demo_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold block truncate mt-1">
+                              Demo Link →
+                            </a>
+                          </div>
+                        )}
+
+                        {registeredTeam.project_presentation_url && (
+                          <div className="p-3 bg-white dark:bg-slate-905 border border-slate-100 dark:border-slate-850 rounded-xl">
+                            <span className="text-[8px] font-black uppercase text-slate-400 block">Presentation / Video</span>
+                            <a href={registeredTeam.project_presentation_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold block truncate mt-1">
+                              Presentation Link →
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-[9px] text-slate-400 dark:text-slate-500 pt-2 border-t border-slate-150/45 dark:border-slate-850 font-mono">
+                        Submitted at: {new Date(registeredTeam.project_submitted_at).toLocaleString()}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingSubmission(true)}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-850 dark:hover:bg-slate-800 dark:text-slate-350 text-xs font-bold rounded-xl transition cursor-pointer"
+                    >
+                      Update Solution deliverables
+                    </button>
+                  </div>
+                ) : (
+                  /* Submission Edit Form */
+                  <form onSubmit={handleProjectSubmission} className="space-y-4 animate-fade-in max-w-xl">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-405 block mb-1">Project Title *</label>
+                      <input
+                        type="text"
+                        required
+                        value={projectTitle}
+                        onChange={(e) => setProjectTitle(e.target.value)}
+                        placeholder="e.g. AgriScan: AI Crop Pathogen Detection"
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-405 block mb-1">Project Description *</label>
+                      <textarea
+                        required
+                        value={projectDescription}
+                        onChange={(e) => setProjectDescription(e.target.value)}
+                        rows={4}
+                        placeholder="Describe your implementation approach, methodology, architecture, and feature sets..."
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-805 dark:text-slate-205 focus:outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-405 block mb-1">GitHub Repository URL *</label>
+                      <input
+                        type="url"
+                        required
+                        value={projectGithubUrl}
+                        onChange={(e) => setProjectGithubUrl(e.target.value)}
+                        placeholder="https://github.com/team/repository"
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-550 dark:text-slate-405 block mb-1">Live Demo Link (Optional)</label>
+                        <input
+                          type="url"
+                          value={projectDemoUrl}
+                          onChange={(e) => setProjectDemoUrl(e.target.value)}
+                          placeholder="https://demo.platform.com"
+                          className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-555 dark:text-slate-405 block mb-1">Presentation / Deck Link (Optional)</label>
+                        <input
+                          type="url"
+                          value={projectPresentationUrl}
+                          onChange={(e) => setProjectPresentationUrl(e.target.value)}
+                          placeholder="Google Slides or Pitch Video URL"
+                          className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <button
+                        type="submit"
+                        disabled={submissionSubmitting}
+                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/10 cursor-pointer flex items-center gap-1.5"
+                      >
+                        {submissionSubmitting ? <Loader size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                        {submissionSubmitting ? 'Submitting Solution...' : 'Submit Deliverables'}
+                      </button>
+
+                      {registeredTeam.project_title && (
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingSubmission(false)}
+                          className="px-4 py-2.5 border border-slate-250 dark:border-slate-800 text-slate-500 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right Sidebar column */}
+          <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
+            
+            {/* Quick overview metrics card */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-5">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Workspace Profile</h3>
+              
+              <div className="space-y-3.5 text-xs">
+                <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-850">
+                  <span className="text-slate-455 font-bold">Workspace Role</span>
+                  <span className="font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider text-[10px]">Team Leader</span>
+                </div>
+                <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-850">
+                  <span className="text-slate-455">Registration Fee</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {parseFloat(hackathon.registration_fee) > 0 ? `₹${Math.round(parseFloat(hackathon.registration_fee))}` : 'Free Entrance'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-850">
+                  <span className="text-slate-455">College Campus</span>
+                  <span className="font-bold text-slate-900 dark:text-white truncate max-w-[130px]">{registeredTeam.college}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-455">Submissions Status</span>
+                  <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded ${
+                    registeredTeam.project_submitted_at
+                      ? 'bg-emerald-105 text-emerald-650 dark:bg-emerald-950/20 dark:text-emerald-450 border border-emerald-500/10'
+                      : 'bg-amber-105 text-amber-650 dark:bg-amber-955/20 dark:text-amber-450 border border-amber-500/10'
+                  }`}>
+                    {registeredTeam.project_submitted_at ? 'Submitted' : 'Pending'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Event Rules & Downloads */}
+            {hackathon.attachments && hackathon.attachments.length > 0 && (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Resources & Attachments</h3>
+                <div className="space-y-1.5">
+                  {hackathon.attachments.map((file: any, idx: number) => (
+                    <a key={idx} href={file.url} target="_blank" rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 dark:border-slate-850 bg-slate-50 dark:bg-slate-955/40 hover:bg-slate-100 dark:hover:bg-slate-850/50 text-[11px] font-bold text-blue-605 dark:text-blue-400 transition-colors">
+                      <span className="flex items-center gap-1.5 truncate pr-2"><FileText size={12} className="text-slate-400 shrink-0"/> {file.name}</span>
+                      <Download size={11} className="shrink-0"/>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Support Desk */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-3.5">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Hacker Support Desk</h3>
+              <p className="text-[10px] text-slate-450 leading-relaxed font-semibold">
+                Facing payment verification delays, UTR errors, or need problem specifications help? Contact the support helpline.
+              </p>
+              <div className="space-y-2 pt-1">
+                <a href="mailto:portal-hackathons@codexpetra.com" className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-350 hover:text-blue-600">
+                  <Mail size={12} className="text-slate-400" /> portal-hackathons@codexpetra.com
+                </a>
+                <a href="tel:+919876543210" className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-350 hover:text-blue-600">
+                  <Phone size={12} className="text-slate-400" /> +91 98765 43210
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-0 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 md:-mt-8">
+      {registeredTeam && (
+        <div className="bg-blue-600 text-white p-3.5 text-center text-xs font-bold flex justify-center items-center gap-3 shadow-md rounded-b-2xl animate-slide-in relative z-30 select-none">
+          <Sparkles size={14} className="animate-pulse text-yellow-300" />
+          <span>You are registered for this hackathon!</span>
+          <button
+            onClick={() => setViewingPublicLanding(false)}
+            className="px-4 py-1.5 bg-white text-blue-650 hover:bg-slate-100 rounded-xl font-black uppercase text-[10px] shadow transition cursor-pointer"
+          >
+            Go to Hacker Workspace →
+          </button>
+        </div>
+      )}
 
       {/* ── Hero / Header ─────────────────────────────────────────────────────── */}
       <div className="relative bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white overflow-hidden">
@@ -398,6 +896,295 @@ const HackathonDetails: React.FC = () => {
                 </button>
               ))}
             </div>
+
+            {/* ── TAB: PARTICIPATION DASHBOARD ───────────────────────────────────── */}
+            {activeTab === 'dashboard' && registeredTeam && (
+              <div className="space-y-6 animate-fade-in">
+                
+                {/* Dashboard Intro banner */}
+                <div className="p-6 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/20 rounded-3xl relative overflow-hidden">
+                  <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
+                  <span className="px-2.5 py-0.5 text-[9px] font-black uppercase rounded bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/30">
+                    Active Participation
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1.5 leading-snug">
+                    Welcome to your Hacker Dashboard, Team <span className="text-emerald-600">{registeredTeam.name}</span>!
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                    Track your registration stages, review your selected problem specs, and submit your project deliverables when ready.
+                  </p>
+                </div>
+
+                {/* 4-Stage Stepper Dashboard */}
+                <div className="space-y-6">
+                  
+                  {/* STEP 1: REGISTRATION APPROVED */}
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
+                      <CheckCircle2 size={18} />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Stage 1: Registration Status</h4>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">Registration Approved & Verified</p>
+                      <p className="text-[11px] text-slate-455 dark:text-slate-450 leading-relaxed font-semibold">
+                        Your registration for <span className="font-bold text-slate-700 dark:text-slate-350">{hackathon.title}</span> has been confirmed by the administrators.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STEP 2: PROBLEM STATEMENT SELECTED */}
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
+                      <CheckCircle2 size={18} />
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Stage 2: Selected Challenge</h4>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">Problem Statement Locked</p>
+                      
+                      {registeredTeam.problem_statement_detail ? (
+                        <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-850 rounded-2xl space-y-2.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <h5 className="text-xs font-black text-slate-850 dark:text-white leading-snug">{registeredTeam.problem_statement_detail.title}</h5>
+                            <span className={`px-2 py-0.5 text-[8px] font-black uppercase rounded-full border ${
+                              registeredTeam.problem_statement_detail.difficulty === 'easy' ? 'bg-emerald-50 text-emerald-705 border-emerald-250 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                              registeredTeam.problem_statement_detail.difficulty === 'hard' ? 'bg-red-50 text-red-705 border-red-250 dark:bg-red-950/20 dark:text-red-400' :
+                              'bg-amber-50 text-amber-755 border-amber-250 dark:bg-amber-955/20 dark:text-amber-400'
+                            }`}>{registeredTeam.problem_statement_detail.difficulty}</span>
+                          </div>
+                          
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                            {registeredTeam.problem_statement_detail.short_description || registeredTeam.problem_statement_detail.description}
+                          </p>
+
+                          {registeredTeam.problem_statement_detail.tech_stack && registeredTeam.problem_statement_detail.tech_stack.length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {registeredTeam.problem_statement_detail.tech_stack.map((t: string) => (
+                                <span key={t} className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[9px] font-bold rounded-full border border-blue-200/20">{t}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-slate-455">No problem statement details attached.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* STEP 3: TEAM SETUP COMPLETED */}
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
+                      <CheckCircle2 size={18} />
+                    </div>
+                    <div className="space-y-3 flex-1">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Stage 3: Team Roster</h4>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">Roster Composition Completed</p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-850 rounded-2xl">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 block font-bold">Team Leader</span>
+                          <span className="font-extrabold text-slate-900 dark:text-white block mt-0.5">{registeredTeam.leader_name}</span>
+                          <span className="text-[10px] text-slate-455 block mt-0.5 font-semibold">{registeredTeam.leader_email}</span>
+                          <span className="text-[10px] text-slate-455 block mt-0.5 font-mono">{registeredTeam.leader_mobile}</span>
+                        </div>
+
+                        {registeredTeam.members && registeredTeam.members.map((m: any, i: number) => (
+                          <div key={i} className="p-3 bg-slate-50/70 dark:bg-slate-955/20 border border-slate-150 dark:border-slate-850 rounded-2xl">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block font-bold">Co-Member #{i + 2}</span>
+                            <span className="font-bold text-slate-900 dark:text-white block mt-0.5">{m.name}</span>
+                            <span className="text-[10px] text-slate-455 block mt-0.5 font-semibold">{m.email}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* STEP 4: SOLUTION SUBMISSION */}
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-start gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                      registeredTeam.project_submitted_at
+                        ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-600 text-blue-600 animate-pulse'
+                    }`}>
+                      {registeredTeam.project_submitted_at ? <CheckCircle2 size={18} /> : <Zap size={15} />}
+                    </div>
+
+                    <div className="space-y-4 flex-1">
+                      <div>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Stage 4: Solution Deliverables</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs font-bold text-slate-900 dark:text-white">
+                            {registeredTeam.project_submitted_at ? 'Deliverables Submitted Successfully' : 'Deliverables Pending Submission'}
+                          </p>
+                          {registeredTeam.project_submitted_at && (
+                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase rounded-full border border-emerald-250 dark:bg-emerald-950/30 dark:text-emerald-450 dark:border-emerald-800/40">
+                              Completed
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Display Submission Success */}
+                      {submissionSuccess && (
+                        <div className="p-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-450 border border-emerald-500/20 dark:border-emerald-850 rounded-2xl text-xs font-bold flex items-center gap-2 animate-slide-in">
+                          <CheckCircle2 size={16} /> Deliverables saved successfully!
+                        </div>
+                      )}
+
+                      {/* Display Submission Errors */}
+                      {submissionError && (
+                        <div className="p-4 bg-red-500/10 text-red-650 dark:text-red-400 border border-red-500/20 dark:border-red-800 rounded-2xl text-xs font-bold flex items-center gap-2 animate-shake">
+                          <AlertCircle size={16} /> {submissionError}
+                        </div>
+                      )}
+
+                      {/* Read-Only Solution Details View */}
+                      {!isEditingSubmission && registeredTeam.project_title ? (
+                        <div className="space-y-4 animate-fade-in">
+                          <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-850 rounded-2xl space-y-3.5">
+                            <div>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block font-bold">Project Title</span>
+                              <h5 className="text-xs font-black text-slate-900 dark:text-white mt-0.5 leading-snug">{registeredTeam.project_title}</h5>
+                            </div>
+
+                            <div>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block font-bold">Project Description</span>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed whitespace-pre-wrap font-semibold">
+                                {registeredTeam.project_description}
+                              </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px] pt-1">
+                              <div className="p-2.5 bg-white dark:bg-slate-905 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                <span className="text-[8px] font-black uppercase text-slate-400 block">GitHub Repository</span>
+                                <a href={registeredTeam.project_github_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold block truncate mt-1">
+                                  GitHub Link →
+                                </a>
+                              </div>
+
+                              {registeredTeam.project_demo_url && (
+                                <div className="p-2.5 bg-white dark:bg-slate-905 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                  <span className="text-[8px] font-black uppercase text-slate-400 block">Live Demo Link</span>
+                                  <a href={registeredTeam.project_demo_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold block truncate mt-1">
+                                    Demo Link →
+                                  </a>
+                                </div>
+                              )}
+
+                              {registeredTeam.project_presentation_url && (
+                                <div className="p-2.5 bg-white dark:bg-slate-905 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                  <span className="text-[8px] font-black uppercase text-slate-400 block">Presentation / Video</span>
+                                  <a href={registeredTeam.project_presentation_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold block truncate mt-1">
+                                    Presentation Link →
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="text-[9px] text-slate-400 dark:text-slate-500 pt-1 border-t border-slate-150/45 dark:border-slate-850">
+                              Submitted at: {new Date(registeredTeam.project_submitted_at).toLocaleString()}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setIsEditingSubmission(true)}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-850 dark:hover:bg-slate-800 dark:text-slate-350 text-xs font-bold rounded-xl transition cursor-pointer"
+                          >
+                            Edit Solution Details
+                          </button>
+                        </div>
+                      ) : (
+                        /* Submission Edit Form */
+                        <form onSubmit={handleProjectSubmission} className="space-y-4 animate-fade-in max-w-xl">
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-405 block mb-1">Project Title *</label>
+                            <input
+                              type="text"
+                              required
+                              value={projectTitle}
+                              onChange={(e) => setProjectTitle(e.target.value)}
+                              placeholder="e.g. AgriScan: AI Crop Pathogen Detection"
+                              className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-405 block mb-1">Project Description *</label>
+                            <textarea
+                              required
+                              value={projectDescription}
+                              onChange={(e) => setProjectDescription(e.target.value)}
+                              rows={4}
+                              placeholder="Describe your implementation approach, methodology, architecture, and feature sets..."
+                              className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-405 block mb-1">GitHub Repository URL *</label>
+                            <input
+                              type="url"
+                              required
+                              value={projectGithubUrl}
+                              onChange={(e) => setProjectGithubUrl(e.target.value)}
+                              placeholder="https://github.com/team/repository"
+                              className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-550 dark:text-slate-405 block mb-1">Live Demo Link (Optional)</label>
+                              <input
+                                type="url"
+                                value={projectDemoUrl}
+                                onChange={(e) => setProjectDemoUrl(e.target.value)}
+                                placeholder="https://demo.platform.com"
+                                className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-550 dark:text-slate-405 block mb-1">Presentation / Deck Link (Optional)</label>
+                              <input
+                                type="url"
+                                value={projectPresentationUrl}
+                                onChange={(e) => setProjectPresentationUrl(e.target.value)}
+                                placeholder="Google Slides or Pitch Video URL"
+                                className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 pt-2">
+                            <button
+                              type="submit"
+                              disabled={submissionSubmitting}
+                              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/10 cursor-pointer flex items-center gap-1.5"
+                            >
+                              {submissionSubmitting ? <Loader size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                              {submissionSubmitting ? 'Submitting Solution...' : 'Submit Deliverables'}
+                            </button>
+
+                            {registeredTeam.project_title && (
+                              <button
+                                type="button"
+                                onClick={() => setIsEditingSubmission(false)}
+                                className="px-4 py-2.5 border border-slate-250 dark:border-slate-800 text-slate-500 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </div>
+                        </form>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
 
             {/* ── TAB: OVERVIEW ─────────────────────────────────────────────────── */}
             {activeTab === 'overview' && (

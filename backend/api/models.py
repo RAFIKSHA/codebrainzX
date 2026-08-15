@@ -677,6 +677,17 @@ class ProblemStatement(models.Model):
     hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name='problem_statements')
     title = models.CharField(max_length=255)
     description = models.TextField()
+    short_description = models.TextField(blank=True, default='')
+    background = models.TextField(blank=True, default='')
+    objective = models.TextField(blank=True, default='')
+    requirements = models.TextField(blank=True, default='')
+    expected_solution = models.TextField(blank=True, default='')
+    constraints = models.TextField(blank=True, default='')
+    technology_preferences = models.TextField(blank=True, default='')
+    deliverables = models.TextField(blank=True, default='')
+    evaluation_criteria = models.TextField(blank=True, default='')
+    additional_instructions = models.TextField(blank=True, default='')
+    active = models.BooleanField(default=True)
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='medium')
     tech_stack = models.JSONField(default=list, blank=True, help_text="List of recommended tech stack tags, e.g. ['React', 'Node.js', 'Python']")
     order = models.IntegerField(default=0)
@@ -719,6 +730,13 @@ class Team(models.Model):
     github_url = models.URLField(blank=True, null=True)
     linkedin_url = models.URLField(blank=True, null=True)
     resume_url = models.URLField(blank=True, null=True)
+    problem_statement = models.ForeignKey(ProblemStatement, on_delete=models.SET_NULL, null=True, blank=True, related_name='teams')
+    project_title = models.CharField(max_length=255, blank=True, default='')
+    project_description = models.TextField(blank=True, default='')
+    project_github_url = models.URLField(blank=True, null=True)
+    project_demo_url = models.URLField(blank=True, null=True)
+    project_presentation_url = models.URLField(blank=True, null=True)
+    project_submitted_at = models.DateTimeField(blank=True, null=True)
     registration_number = models.CharField(max_length=100, unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -842,4 +860,165 @@ class HackathonSetting(models.Model):
 
     def __str__(self):
         return self.key
+
+
+class TestSeriesCategory(models.Model):
+    TYPE_CHOICES = (
+        ('coding', 'Coding'),
+        ('aptitude', 'Aptitude'),
+    )
+    name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    icon = models.CharField(max_length=100, blank=True)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='coding')
+    display_order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['display_order', 'id']
+        verbose_name_plural = "Test Series Categories"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class TestSeriesCompany(models.Model):
+    name = models.CharField(max_length=255)
+    logo_url = models.TextField(blank=True, default='')
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    website = models.URLField(max_length=500, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['display_order', 'name']
+        verbose_name_plural = "Test Series Companies"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class TestSeries(models.Model):
+    DIFFICULTY_CHOICES = (
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    )
+    company = models.ForeignKey(TestSeriesCompany, on_delete=models.CASCADE, related_name='series')
+    category = models.ForeignKey(TestSeriesCategory, on_delete=models.CASCADE, related_name='series')
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
+    thumbnail_url = models.TextField(blank=True, default='')
+    validity_days = models.IntegerField(default=90)
+    is_published = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_order', 'id']
+        verbose_name_plural = "Test Series"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.company.name} - {self.name}"
+
+
+class IndividualTest(models.Model):
+    DIFFICULTY_CHOICES = (
+        ('easy', 'Easy'),
+        ('medium', 'Medium'),
+        ('hard', 'Hard'),
+    )
+    series = models.ForeignKey(TestSeries, on_delete=models.CASCADE, related_name='tests')
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    test_number = models.IntegerField(default=1)
+    description = models.TextField(blank=True)
+    duration_minutes = models.IntegerField(default=30)
+    marks = models.IntegerField(default=100)
+    negative_marking = models.BooleanField(default=False)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='medium')
+    instructions = models.TextField(blank=True)
+    is_published = models.BooleanField(default=True)
+    coding_questions = models.ManyToManyField(Question, blank=True, related_name='individual_tests')
+    aptitude_questions = models.ManyToManyField(AptitudeQuestion, blank=True, related_name='individual_tests')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['test_number', 'id']
+        unique_together = ('series', 'test_number')
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(f"{self.series.slug}-{self.test_number}-{self.name[:20]}")
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.series.name} - Test {self.test_number}: {self.name}"
+
+
+class IndividualTestAttempt(models.Model):
+    STATUS_CHOICES = (
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_series_attempts')
+    test = models.ForeignKey(IndividualTest, on_delete=models.CASCADE, related_name='attempts')
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_progress')
+    score = models.FloatField(default=0.0)
+    max_score = models.FloatField(default=0.0)
+    accuracy = models.FloatField(default=0.0)
+    time_spent = models.IntegerField(default=0)  # in seconds
+    total_questions = models.IntegerField(default=0)
+    attempted_questions = models.IntegerField(default=0)
+    correct_questions = models.IntegerField(default=0)
+    wrong_questions = models.IntegerField(default=0)
+    skipped_questions = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.test.name} ({self.status})"
+
+
+class IndividualTestResponse(models.Model):
+    attempt = models.ForeignKey(IndividualTestAttempt, on_delete=models.CASCADE, related_name='responses')
+    coding_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+    aptitude_question = models.ForeignKey(AptitudeQuestion, on_delete=models.CASCADE, null=True, blank=True)
+    selected_options = models.JSONField(default=list, blank=True)
+    code = models.TextField(blank=True, default='')
+    language_slug = models.CharField(max_length=20, blank=True, default='')
+    is_correct = models.BooleanField(default=False)
+    is_answered = models.BooleanField(default=False)
+    time_spent = models.IntegerField(default=0)  # in seconds
+    passed_test_cases = models.IntegerField(default=0)
+    total_test_cases = models.IntegerField(default=0)
+    error_message = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, default='Unsubmitted')
+
+    class Meta:
+        unique_together = [('attempt', 'coding_question'), ('attempt', 'aptitude_question')]
+
 

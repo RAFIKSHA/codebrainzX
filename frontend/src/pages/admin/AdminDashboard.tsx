@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import AptitudeAdminPanel from './AptitudeAdminPanel';
 import HackathonAdminPanel from './HackathonAdminPanel';
+import TestSeriesAdminPanel from './TestSeriesAdminPanel';
 
 // Error boundary to catch AptitudeAdminPanel crashes and display the error
 class AptitudeErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
@@ -226,7 +227,7 @@ const AdminDashboard: React.FC = () => {
   const { theme } = useTheme();
   
   // CMS Sidebar and view states
-  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'create-content' | 'aptitude' | 'categories' | 'topics' | 'levels' | 'users' | 'contests' | 'courses' | 'analytics' | 'settings' | 'hackathons'>('dashboard');
+  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'create-content' | 'aptitude' | 'categories' | 'topics' | 'levels' | 'users' | 'contests' | 'courses' | 'test-series' | 'analytics' | 'settings' | 'hackathons'>('dashboard');
   const [selectedSection, setSelectedSection] = useState<string>('coding');
   
   // View states: 'list' | 'create' | 'edit-content'
@@ -2448,6 +2449,7 @@ const AdminDashboard: React.FC = () => {
               { key: 'contests', label: 'Contests', icon: <Trophy size={16} /> },
               { key: 'hackathons', label: 'Hackathons', icon: <Trophy size={16} /> },
               { key: 'courses', label: 'Courses', icon: <BookOpen size={16} /> },
+              { key: 'test-series', label: 'Test Series CMS', icon: <Trophy size={16} /> },
               { key: 'analytics', label: 'Analytics', icon: <Database size={16} /> },
               { key: 'settings', label: 'Settings', icon: <Settings size={16} /> }
             ].map(item => (
@@ -3506,6 +3508,7 @@ const AdminDashboard: React.FC = () => {
           {activeMenu === 'courses' && renderCoursesView()}
           {activeMenu === 'analytics' && renderAnalyticsView()}
           {activeMenu === 'settings' && renderSettingsView()}
+          {activeMenu === 'test-series' && <TestSeriesAdminPanel />}
         </>
       )}
 

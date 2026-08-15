@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Trophy, User, Mail, Phone, BookOpen, ArrowRight, ArrowLeft, CheckCircle, CreditCard, QrCode, Plus, Trash2, Copy, Check, ShieldAlert, Loader, FileText, ChevronLeft, Sparkles, Clock, AlertCircle } from 'lucide-react';
+import { Trophy, User, Mail, Phone, BookOpen, ArrowRight, ArrowLeft, CheckCircle, CreditCard, QrCode, Plus, Trash2, Copy, Check, ShieldAlert, Loader, FileText, ChevronLeft, Sparkles, Clock, AlertCircle, Layers, X, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 
 interface Hackathon {
@@ -55,30 +55,36 @@ const HackathonRegister: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showDraftPrompt, setShowDraftPrompt] = useState(false);
 
-  // Form Fields - Step 1
+  // Problem Selection States
+  const [problemStatements, setProblemStatements] = useState<any[]>([]);
+  const [problemStatementId, setProblemStatementId] = useState<number | null>(null);
+  const [confirmProblem, setConfirmProblem] = useState(false);
+  const [viewingProblem, setViewingProblem] = useState<any | null>(null);
+
+  // Form Fields - Step 2 (formerly Step 1)
   const [teamName, setTeamName] = useState('');
   const [college, setCollege] = useState('');
   const [department, setDepartment] = useState('');
   const [year, setYear] = useState('1st');
 
-  // Leader Details - Step 2
+  // Leader Details - Step 3 (formerly Step 2)
   const [leaderName, setLeaderName] = useState('');
   const [leaderEmail, setLeaderEmail] = useState('');
   const [leaderMobile, setLeaderMobile] = useState('');
   const [leaderRollNumber, setLeaderRollNumber] = useState('');
 
-  // Members - Step 3 (minimum of 3 members including leader means 2 co-members mandatory)
+  // Members - Step 4 (formerly Step 3)
   const [members, setMembers] = useState<MemberForm[]>([
     { name: '', email: '', phone: '', college: '' },
     { name: '', email: '', phone: '', college: '' }
   ]);
 
-  // Documents/Socials - Step 4
+  // Documents/Socials - Step 5 (formerly Step 4)
   const [githubUrl, setGithubUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [resumeUrl, setResumeUrl] = useState('');
 
-  // Payment Details - Step 5
+  // Payment Details - Step 6 (formerly Step 5)
   const [payMethod, setPayMethod] = useState<'card' | 'upi'>('upi');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -89,7 +95,7 @@ const HackathonRegister: React.FC = () => {
   const [merchantName, setMerchantName] = useState('CodexPetra');
   const [copiedUpi, setCopiedUpi] = useState(false);
 
-  // Success Info - Step 7
+  // Success Info - Step 8 (formerly Step 7)
   const [successInfo, setSuccessInfo] = useState<{
     payment_id: string;
     invoice_number: string;
@@ -108,10 +114,18 @@ const HackathonRegister: React.FC = () => {
         if (match) {
           setHackathon(match);
           
+          // Load problem statements
+          try {
+            const psRes = await api.get(`/hackathon-problem-statements/?hackathon_id=${match.id}`);
+            setProblemStatements(psRes.data.filter((ps: any) => ps.active !== false));
+          } catch (e) {
+            console.error("Failed to load problem statements.", e);
+          }
+
           // Check if resuming from an external payment redirection
-          if (paramStep === '5' && paramTeamId) {
+          if (paramStep === '6' && paramTeamId) {
             setTeamId(parseInt(paramTeamId));
-            setStep(5);
+            setStep(6);
             await fetchTeamDetails(parseInt(paramTeamId));
           } else {
             // Check if there is an existing registered team on the server for this hackathon
@@ -130,6 +144,8 @@ const HackathonRegister: React.FC = () => {
                 setLeaderEmail(existingTeam.leader_email || '');
                 setLeaderMobile(existingTeam.leader_mobile || '');
                 setLeaderRollNumber(existingTeam.leader_roll_number || '');
+                setProblemStatementId(existingTeam.problem_statement || null);
+                setConfirmProblem(!!existingTeam.problem_statement);
                 
                 const loadedMembers = existingTeam.members || [];
                 while (loadedMembers.length < 2) {
@@ -219,6 +235,8 @@ const HackathonRegister: React.FC = () => {
       setLeaderEmail(res.data.leader_email);
       setLeaderMobile(res.data.leader_mobile);
       setLeaderRollNumber(res.data.leader_roll_number);
+      setProblemStatementId(res.data.problem_statement || null);
+      setConfirmProblem(!!res.data.problem_statement);
       
       const loadedMembers = res.data.members || [];
       while (loadedMembers.length < 2) {
@@ -296,17 +314,21 @@ const HackathonRegister: React.FC = () => {
   // Validations
   const validateStep = (s: number) => {
     if (s === 1) {
+      if (!problemStatementId) return "Please select a problem statement.";
+      if (!confirmProblem) return "Please confirm your selected problem statement to continue.";
+    }
+    if (s === 2) {
       if (!teamName.trim()) return "Team Name is required.";
       if (!college.trim()) return "College Name is required.";
       if (!department.trim()) return "Department is required.";
     }
-    if (s === 2) {
+    if (s === 3) {
       if (!leaderName.trim()) return "Leader Name is required.";
       if (!leaderEmail.trim()) return "Leader Email is required.";
       if (!leaderMobile.trim()) return "Leader Mobile is required.";
       if (!leaderRollNumber.trim()) return "Leader Roll Number is required.";
     }
-    if (s === 3) {
+    if (s === 4) {
       if (members.length < 2) return "A minimum of 3 team members (1 leader + at least 2 co-members) is required to apply.";
       for (let i = 0; i < members.length; i++) {
         const m = members[i];
@@ -315,7 +337,7 @@ const HackathonRegister: React.FC = () => {
         if (m.email.trim() === leaderEmail.trim()) return `Member ${i + 2} Email cannot be identical to Team Leader email.`;
       }
     }
-    if (s === 5) {
+    if (s === 6) {
       if (parseFloat(hackathon?.registration_fee || '0') > 0) {
         if (payMethod === 'card') {
           if (cardNumber.replace(/\s/g, '').length < 16) return "Card number must be 16 digits.";
@@ -338,12 +360,32 @@ const HackathonRegister: React.FC = () => {
       return;
     }
     setError(null);
-    setStep(step + 1);
+    
+    // Dynamic skipping of payment gateway step for free events
+    if (step === 5) {
+      if (parseFloat(hackathon?.registration_fee || '0') === 0) {
+        setStep(7); // Skip step 6 (Checkout) and go to step 7 (Review Details)
+      } else {
+        setStep(6);
+      }
+    } else {
+      setStep(step + 1);
+    }
   };
 
   const handleBack = () => {
     setError(null);
-    setStep(step - 1);
+    
+    // Dynamic skipping of payment gateway step for free events
+    if (step === 7) {
+      if (parseFloat(hackathon?.registration_fee || '0') === 0) {
+        setStep(5); // Go back from Step 7 (Review) to Step 5 (Documents)
+      } else {
+        setStep(6);
+      }
+    } else {
+      setStep(step - 1);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -360,6 +402,7 @@ const HackathonRegister: React.FC = () => {
       if (!activeTeamId) {
         const teamPayload = {
           hackathon: hackathon.id,
+          problem_statement: problemStatementId,
           name: teamName,
           college,
           department,
@@ -404,7 +447,7 @@ const HackathonRegister: React.FC = () => {
       // Clear localStorage draft on success
       localStorage.removeItem(`hackathon_draft_${slug}`);
       
-      setStep(7);
+      setStep(8);
     } catch (err: any) {
       console.error(err);
       const backendErr = err.response?.data;
@@ -567,28 +610,29 @@ const HackathonRegister: React.FC = () => {
       )}
 
       {/* Multi-Step Stepper Progress Bar */}
-      {step < 7 && (
+      {step < 8 && (
         <div className="overflow-x-auto pb-2 select-none scrollbar-none">
-          <div className="flex items-center justify-between min-w-[700px] px-2 relative">
+          <div className="flex items-center justify-between min-w-[800px] px-2 relative">
             <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-[2px] bg-slate-100 dark:bg-slate-850 -z-10"></div>
             {[
-              { id: 1, label: 'Team Profile' },
-              { id: 2, label: 'Leader info' },
-              { id: 3, label: 'Members' },
-              { id: 4, label: 'Documents' },
-              { id: 5, label: 'Secure Checkout' },
-              { id: 6, label: 'Review details' }
-            ].map(s => {
+              { id: 1, label: 'Problem Selection' },
+              { id: 2, label: 'Team Profile' },
+              { id: 3, label: 'Leader Info' },
+              { id: 4, label: 'Members' },
+              { id: 5, label: 'Documents' },
+              ...(parseFloat(hackathon.registration_fee || '0') > 0 ? [{ id: 6, label: 'Secure Checkout' }] : []),
+              { id: 7, label: 'Review Details' }
+            ].map((s, idx) => {
               const active = step === s.id;
               const passed = step > s.id;
               return (
                 <div key={s.id} className="flex flex-col items-center gap-2 flex-1">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 text-xs font-black shadow-sm transition-all bg-white dark:bg-[#090b11] ${
-                    active ? 'border-blue-600 text-blue-600 scale-105 shadow-md shadow-blue-500/10' : 
+                    active ? 'border-blue-600 text-blue-600 scale-105 scale-110 shadow-md shadow-blue-500/10' : 
                     passed ? 'border-emerald-500 bg-emerald-500 text-white' :
                     'border-slate-200 dark:border-slate-800 text-slate-400'
                   }`}>
-                    {passed ? <CheckCircle size={14} className="text-white fill-emerald-500" /> : s.id}
+                    {passed ? <CheckCircle size={14} className="text-white fill-emerald-500" /> : (idx + 1)}
                   </div>
                   <span className={`text-[10px] font-black uppercase tracking-wider ${
                     active ? 'text-blue-600' : passed ? 'text-emerald-500' : 'text-slate-400'
@@ -620,8 +664,195 @@ const HackathonRegister: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 1: TEAM PROFILE */}
+        {/* STEP 1: CHOOSE PROBLEM STATEMENT */}
         {step === 1 && (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h3 className="text-sm font-black text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2 flex items-center gap-2">
+                <Layers size={16} className="text-blue-600" /> Choose Your Problem Statement
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1 font-semibold">
+                Select one of the official problem statement challenges. You can view full details for each before selecting.
+              </p>
+            </div>
+
+            {problemStatements.length === 0 ? (
+              <div className="text-center py-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl space-y-2">
+                <Layers size={36} className="mx-auto text-slate-300 dark:text-slate-700" />
+                <p className="text-sm font-bold text-slate-500">Problem statements will be announced soon.</p>
+                <p className="text-xs text-slate-400">Please check back later or contact the hackathon administrator.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  {problemStatements.map((ps, idx) => {
+                    const isSelected = problemStatementId === ps.id;
+                    return (
+                      <div
+                        key={ps.id}
+                        onClick={() => {
+                          setProblemStatementId(ps.id);
+                          setSelectedProblem(ps);
+                          setConfirmProblem(false);
+                        }}
+                        className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden select-none flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-blue-600 bg-blue-50/10 dark:bg-blue-950/15 shadow-md shadow-blue-500/5'
+                            : 'border-slate-200 dark:border-slate-800 bg-white hover:bg-slate-50/50 dark:bg-slate-900 hover:border-slate-350 hover:shadow-sm'
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute top-0 right-0 bg-blue-600 text-white text-[8px] font-black uppercase px-3 py-1 rounded-bl-xl flex items-center gap-1">
+                            <CheckCircle size={10} /> Selected Choice
+                          </div>
+                        )}
+                        
+                        <div className="space-y-2 pr-12">
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-black text-[10px] flex items-center justify-center shrink-0">
+                              {String(idx + 1).padStart(2, '0')}
+                            </span>
+                            <h4 className="text-xs font-black text-slate-900 dark:text-white truncate">{ps.title}</h4>
+                            <span className={`px-2 py-0.5 text-[8px] font-black uppercase rounded-full border ${
+                              ps.difficulty === 'easy' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                              ps.difficulty === 'hard' ? 'bg-red-50 text-red-705 border-red-200 dark:bg-red-950/20 dark:text-red-400' :
+                              'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-955/20 dark:text-amber-400'
+                            }`}>{ps.difficulty}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed">
+                            {ps.short_description || ps.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 dark:border-slate-850">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingProblem(ps);
+                            }}
+                            className="text-[10px] font-black text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-0.5"
+                          >
+                            View Full Problem Details →
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProblemStatementId(ps.id);
+                              setSelectedProblem(ps);
+                              setConfirmProblem(true);
+                            }}
+                            className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-200'
+                            }`}
+                          >
+                            {isSelected ? 'Selected' : 'Select'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Confirm Chosen Problem Area */}
+                {problemStatementId && selectedProblem && (
+                  <div className="p-5 bg-blue-50/10 dark:bg-blue-950/5 border border-blue-500/20 dark:border-blue-800/40 rounded-2xl animate-slide-in space-y-3">
+                    <span className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider">Your Selected Problem</span>
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white leading-snug">{selectedProblem.title}</h4>
+                    <div className="flex items-center gap-2 pt-1.5 border-t border-slate-100 dark:border-slate-850">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmProblem(true)}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                          confirmProblem
+                            ? 'bg-emerald-600 text-white shadow shadow-emerald-500/10'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow shadow-blue-500/10'
+                        }`}
+                      >
+                        {confirmProblem ? <><CheckCircle size={12} /> Confirmed</> : 'Confirm & Continue →'}
+                      </button>
+                      
+                      {confirmProblem && (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmProblem(false)}
+                          className="px-3 py-2 border border-slate-200 dark:border-slate-800 text-slate-505 dark:text-slate-405 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                        >
+                          Change Choice
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Complete Detailed Problem Statement Modal */}
+            {viewingProblem && (
+              <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-2xl shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto">
+                  <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-3">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest block">Full Specifications</span>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight">{viewingProblem.title}</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setViewingProblem(null)}
+                      className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors cursor-pointer"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                    {[
+                      { label: "Description Overview", val: viewingProblem.description },
+                      { label: "Background", val: viewingProblem.background },
+                      { label: "Objective", val: viewingProblem.objective },
+                      { label: "Requirements", val: viewingProblem.requirements },
+                      { label: "Expected Solution", val: viewingProblem.expected_solution },
+                      { label: "Constraints", val: viewingProblem.constraints },
+                      { label: "Technology Preferences", val: viewingProblem.technology_preferences },
+                      { label: "Deliverables", val: viewingProblem.deliverables },
+                      { label: "Evaluation Criteria", val: viewingProblem.evaluation_criteria },
+                      { label: "Additional Instructions", val: viewingProblem.additional_instructions },
+                    ].filter(s => s.val).map((sect, i) => (
+                      <div key={i} className="space-y-1">
+                        <span className="text-[10px] font-black uppercase text-slate-900 dark:text-white tracking-wide block">{sect.label}</span>
+                        <p className="whitespace-pre-wrap bg-slate-50 dark:bg-slate-950/40 p-3.5 border border-slate-100 dark:border-slate-850 rounded-xl leading-relaxed font-semibold">
+                          {sect.val}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-850">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProblemStatementId(viewingProblem.id);
+                        setSelectedProblem(viewingProblem);
+                        setConfirmProblem(true);
+                        setViewingProblem(null);
+                      }}
+                      className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow cursor-pointer"
+                    >
+                      Select & Confirm This Problem
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STEP 2: TEAM PROFILE */}
+        {step === 2 && (
           <div className="space-y-6 animate-fade-in">
             <div>
               <h3 className="text-sm font-black text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2 flex items-center gap-2">
@@ -643,7 +874,7 @@ const HackathonRegister: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-550 dark:text-slate-450 block mb-1">College Name *</label>
+                <label className="text-[10px] font-bold text-slate-550 dark:text-slate-455 block mb-1">College Name *</label>
                 <input 
                   type="text"
                   required
@@ -654,7 +885,7 @@ const HackathonRegister: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-550 dark:text-slate-450 block mb-1">Department *</label>
+                <label className="text-[10px] font-bold text-slate-550 dark:text-slate-455 block mb-1">Department *</label>
                 <input 
                   type="text"
                   required
@@ -665,7 +896,7 @@ const HackathonRegister: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-550 dark:text-slate-450 block mb-1">Year of Study *</label>
+                <label className="text-[10px] font-bold text-slate-550 dark:text-slate-455 block mb-1">Year of Study *</label>
                 <select
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
@@ -681,8 +912,8 @@ const HackathonRegister: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 2: LEADER PROFILE */}
-        {step === 2 && (
+        {/* STEP 3: LEADER PROFILE */}
+        {step === 3 && (
           <div className="space-y-6 animate-fade-in">
             <div>
               <h3 className="text-sm font-black text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2 flex items-center gap-2">
@@ -738,8 +969,8 @@ const HackathonRegister: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 3: MEMBERS DETAIL */}
-        {step === 3 && (
+        {/* STEP 4: MEMBERS DETAIL */}
+        {step === 4 && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-2">
               <div>
@@ -808,8 +1039,8 @@ const HackathonRegister: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 4: DOCUMENTS/SOCIALS */}
-        {step === 4 && (
+        {/* STEP 5: DOCUMENTS/SOCIALS */}
+        {step === 5 && (
           <div className="space-y-6 animate-fade-in">
             <div>
               <h3 className="text-sm font-black text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2 flex items-center gap-2">
@@ -826,7 +1057,7 @@ const HackathonRegister: React.FC = () => {
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
                   placeholder="https://github.com/username"
-                  className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-808 focus:outline-none"
+                  className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none"
                 />
               </div>
               <div>
@@ -836,7 +1067,7 @@ const HackathonRegister: React.FC = () => {
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
                   placeholder="https://linkedin.com/in/username"
-                  className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-808 focus:outline-none"
+                  className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none"
                 />
               </div>
               <div>
@@ -846,15 +1077,15 @@ const HackathonRegister: React.FC = () => {
                   value={resumeUrl}
                   onChange={(e) => setResumeUrl(e.target.value)}
                   placeholder="Google Drive or Dropbox shareable PDF link"
-                  className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-808 focus:outline-none"
+                  className="w-full px-4 py-2.5 text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-955 text-slate-808 focus:outline-none"
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* STEP 5: SECURE PAYMENT GATEWAY */}
-        {step === 5 && (
+        {/* STEP 6: SECURE PAYMENT GATEWAY */}
+        {step === 6 && (
           <div className="space-y-6 animate-fade-in">
             <div>
               <h3 className="text-sm font-black text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2 flex items-center gap-2">
@@ -936,8 +1167,8 @@ const HackathonRegister: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 6: APPLICATION SUMMARY REVIEW */}
-        {step === 6 && (
+        {/* STEP 7: APPLICATION SUMMARY REVIEW */}
+        {step === 7 && (
           <div className="space-y-6 animate-fade-in">
             <div>
               <h3 className="text-sm font-black text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2 flex items-center gap-2">
@@ -946,8 +1177,17 @@ const HackathonRegister: React.FC = () => {
               <p className="text-[11px] text-slate-455 mt-1 font-semibold">Review your submitted parameters before dispatching final registrations.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-650 dark:text-slate-350">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-655 dark:text-slate-350">
               
+              {/* Box: Selected Problem Statement */}
+              <div className="p-5 bg-blue-50/10 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/40 rounded-2xl space-y-2 shadow-sm md:col-span-2">
+                <h4 className="font-black text-blue-800 dark:text-blue-400 border-b border-blue-150/40 dark:border-blue-850 pb-1 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                  <Layers size={12} /> Selected Problem Statement
+                </h4>
+                <p><span className="text-slate-455 font-bold">Title:</span> <span className="font-extrabold text-slate-900 dark:text-white">{selectedProblem?.title || 'None Selected'}</span></p>
+                <p><span className="text-slate-455">Difficulty:</span> <span className="capitalize">{selectedProblem?.difficulty || 'medium'}</span></p>
+              </div>
+
               {/* Box 1: Team profile */}
               <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl space-y-2 shadow-sm">
                 <h4 className="font-black text-slate-850 dark:text-white border-b border-slate-150/40 dark:border-slate-850 pb-1 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
@@ -1015,7 +1255,7 @@ const HackathonRegister: React.FC = () => {
             </div>
 
             {/* Terms checkbox */}
-            <div className="border-t border-slate-100 dark:border-slate-850 pt-4 flex items-start gap-2.5 text-xs text-slate-650 dark:text-slate-400 select-none">
+            <div className="border-t border-slate-100 dark:border-slate-850 pt-4 flex items-start gap-2.5 text-xs text-slate-655 dark:text-slate-400 select-none">
               <input
                 type="checkbox"
                 id="final-agree"
@@ -1029,8 +1269,8 @@ const HackathonRegister: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 7: SUCCESS COMPLETION */}
-        {step === 7 && successInfo && (
+        {/* STEP 8: SUCCESS COMPLETION */}
+        {step === 8 && successInfo && (
           <div className="text-center py-12 space-y-6 animate-fade-in select-none max-w-md mx-auto">
             
             {/* success tick bouncing */}
@@ -1040,7 +1280,7 @@ const HackathonRegister: React.FC = () => {
             
             <div className="space-y-2">
               <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                {successInfo.status === 'pending' ? 'UTR Registration Logged!' : 'Registration Confirmed!'}
+                {successInfo.status === 'pending' ? 'UTR Registration Logged!' : 'Registration Confirmed! 🎉'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
                 {successInfo.status === 'pending'
@@ -1054,6 +1294,10 @@ const HackathonRegister: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-slate-455">Team Name</span>
                 <span className="font-bold text-slate-900 dark:text-white">{teamName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-455">Selected Problem</span>
+                <span className="font-bold text-slate-900 dark:text-white truncate max-w-[200px]">{selectedProblem?.title}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-455">Registration ID</span>
@@ -1071,8 +1315,8 @@ const HackathonRegister: React.FC = () => {
                 <span className="text-slate-455">Approval Status</span>
                 <span className={`px-2.5 py-0.5 text-[9px] font-black uppercase rounded ${
                   successInfo.status === 'success' 
-                    ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-450 border border-emerald-500/10' 
-                    : 'bg-amber-100 text-amber-600 dark:bg-amber-955/20 dark:text-amber-450 border border-amber-500/10'
+                    ? 'bg-emerald-100 text-emerald-650 dark:bg-emerald-950/20 dark:text-emerald-450 border border-emerald-500/10' 
+                    : 'bg-amber-100 text-amber-650 dark:bg-amber-955/20 dark:text-amber-450 border border-amber-500/10'
                 }`}>
                   {successInfo.status}
                 </span>
@@ -1081,22 +1325,22 @@ const HackathonRegister: React.FC = () => {
 
             <div className="pt-2">
               <Link
-                to="/dashboard/hackathons"
+                to={`/dashboard/hackathons/${hackathon.slug}`}
                 className="w-full py-3 bg-blue-650 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition-all text-center block"
               >
-                Return to Hackathon Dashboard
+                Go to My Hackathon
               </Link>
             </div>
           </div>
         )}
 
         {/* Form Footer Buttons (Sticky Actions Layout inside card) */}
-        {step < 7 && (
+        {step < 8 && (
           <div className="border-t border-slate-100 dark:border-slate-850 pt-6 mt-8 flex justify-between items-center gap-3 bg-white dark:bg-slate-900">
             {step === 1 ? (
               <Link
                 to={`/dashboard/hackathons/${hackathon.slug}`}
-                className="px-5 py-2.5 border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors"
+                className="px-5 py-2.5 border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-955 transition-colors"
               >
                 Cancel
               </Link>
@@ -1111,13 +1355,13 @@ const HackathonRegister: React.FC = () => {
               </button>
             )}
 
-            {step < 6 ? (
+            {step < 7 ? (
               <button
                 type="button"
                 onClick={handleNext}
                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5 transition-all cursor-pointer"
               >
-                {step === 5 && parseFloat(hackathon.registration_fee) === 0 ? 'Skip to Review' : 'Next Step'} <ArrowRight size={14} />
+                {step === 6 && parseFloat(hackathon.registration_fee) === 0 ? 'Skip to Review' : 'Next Step'} <ArrowRight size={14} />
               </button>
             ) : (
               <button

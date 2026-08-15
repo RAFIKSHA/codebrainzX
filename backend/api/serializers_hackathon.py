@@ -30,6 +30,26 @@ class HackathonSerializer(serializers.ModelSerializer):
         return min(100.0, round(percentage, 1))
 
 
+class ProblemStatementSerializer(serializers.ModelSerializer):
+    application_count = serializers.SerializerMethodField()
+    hackathon_title = serializers.ReadOnlyField(source='hackathon.title')
+
+    class Meta:
+        model = ProblemStatement
+        fields = (
+            'id', 'hackathon', 'hackathon_title', 'title', 'description',
+            'short_description', 'background', 'objective', 'requirements',
+            'expected_solution', 'constraints', 'technology_preferences',
+            'deliverables', 'evaluation_criteria', 'additional_instructions',
+            'active', 'difficulty', 'tech_stack', 'order', 'application_count',
+            'created_at', 'updated_at'
+        )
+        read_only_fields = ('created_at', 'updated_at')
+
+    def get_application_count(self, obj):
+        return obj.applications.count()
+
+
 class TeamMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamMember
@@ -43,6 +63,7 @@ class TeamSerializer(serializers.ModelSerializer):
     utr_number = serializers.SerializerMethodField()
     payment_id = serializers.SerializerMethodField()
     payment_record_id = serializers.SerializerMethodField()
+    problem_statement_detail = ProblemStatementSerializer(source='problem_statement', read_only=True)
 
     class Meta:
         model = Team
@@ -51,7 +72,10 @@ class TeamSerializer(serializers.ModelSerializer):
             'leader_name', 'leader_email', 'leader_mobile', 'leader_roll_number',
             'github_url', 'linkedin_url', 'resume_url', 'registration_number',
             'members', 'payment_status', 'application_status', 'utr_number',
-            'payment_id', 'payment_record_id', 'created_at'
+            'payment_id', 'payment_record_id', 'created_at',
+            'problem_statement', 'problem_statement_detail',
+            'project_title', 'project_description', 'project_github_url',
+            'project_demo_url', 'project_presentation_url', 'project_submitted_at'
         )
         read_only_fields = ('registration_number', 'created_at')
 
@@ -218,23 +242,6 @@ class HackathonSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = HackathonSetting
         fields = '__all__'
-
-
-class ProblemStatementSerializer(serializers.ModelSerializer):
-    application_count = serializers.SerializerMethodField()
-    hackathon_title = serializers.ReadOnlyField(source='hackathon.title')
-
-    class Meta:
-        model = ProblemStatement
-        fields = (
-            'id', 'hackathon', 'hackathon_title', 'title', 'description',
-            'difficulty', 'tech_stack', 'order', 'application_count',
-            'created_at', 'updated_at'
-        )
-        read_only_fields = ('created_at', 'updated_at')
-
-    def get_application_count(self, obj):
-        return obj.applications.count()
 
 
 class ProblemApplicationSerializer(serializers.ModelSerializer):

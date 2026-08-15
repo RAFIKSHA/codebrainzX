@@ -68,8 +68,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database Configuration
+import sys
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
+if DATABASE_URL and 'test' not in sys.argv:
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,

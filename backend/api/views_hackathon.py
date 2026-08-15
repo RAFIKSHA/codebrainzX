@@ -100,6 +100,145 @@ class TeamViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(teams, many=True)
         return Response(serializer.data)
 
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        hackathon_id = request.data.get('hackathon')
+        problem_statement_id = request.data.get('problem_statement')
+
+        if not hackathon_id:
+            return Response({"error": "Hackathon is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Enforce one team per user per hackathon
+        if Team.objects.filter(hackathon_id=hackathon_id).filter(
+            Q(leader_email=user.email) | Q(members__email=user.email)
+        ).exists():
+            return Response({"error": "You have already registered a team for this hackathon."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2. Enforce selecting exactly one problem statement
+        if not problem_statement_id:
+            return Response({"error": "Problem statement selection is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 3. Validate problem statement belongs to correct hackathon
+        try:
+            problem = ProblemStatement.objects.get(id=problem_statement_id, hackathon_id=hackathon_id)
+        except ProblemStatement.DoesNotExist:
+            return Response({"error": "Invalid problem statement selected."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+
+        # 4. Synchronize ProblemApplication
+        ProblemApplication.objects.update_or_create(
+            hackathon=problem.hackathon,
+            user=user,
+            defaults={
+                'problem_statement': problem,
+                'team_name': team.name
+            }
+        )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Verify permissions
+        if instance.leader_email != user.email and not (hasattr(user, 'profile') and user.profile.role == 'admin'):
+            return Response({"error": "Only the team leader or an admin can update this registration."}, status=status.HTTP_403_FORBIDDEN)
+
+        hackathon_id = request.data.get('hackathon') or instance.hackathon_id
+        problem_statement_id = request.data.get('problem_statement')
+
+        if problem_statement_id:
+            try:
+                problem = ProblemStatement.objects.get(id=problem_statement_id, hackathon_id=hackathon_id)
+            except ProblemStatement.DoesNotExist:
+                return Response({"error": "Invalid problem statement selected."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+
+        # Synchronize ProblemApplication
+        if problem_statement_id:
+            ProblemApplication.objects.update_or_create(
+                hackathon=team.hackathon,
+                user=user,
+                defaults={
+                    'problem_statement': problem,
+                    'team_name': team.name
+                }
+            )
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def submit_project(self, request, pk=None):
+        user = request.user
+        team = self.get_object()
+
+        # 1. Verify user is in the team
+        is_leader = team.leader_email == user.email
+        is_member = team.members.filter(email=user.email).exists()
+        is_admin = hasattr(user, 'profile') and user.profile.role == 'admin'
+
+        if not (is_leader or is_member or is_admin):
+            return Response({"error": "You are not a member of this team and cannot submit a project."}, status=status.HTTP_403_FORBIDDEN)
+
+        # 2. Verify payment & registration is approved
+        if not is_admin:
+            if not hasattr(team, 'application') or team.application.status != 'approved':
+                return Response({"error": "Your registration has not been approved yet. Projects can only be submitted after approval."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 3. Verify selected problem statement is set
+        if not team.problem_statement:
+            return Response({"error": "No problem statement selected for this team. Please register or select a problem statement first."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 4. Save solution
+        project_title = request.data.get('project_title', '').strip()
+        project_description = request.data.get('project_description', '').strip()
+        project_github_url = request.data.get('project_github_url', '').strip()
+        project_demo_url = request.data.get('project_demo_url', '').strip()
+        project_presentation_url = request.data.get('project_presentation_url', '').strip()
+
+        if not project_title:
+            return Response({"error": "Project Title is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not project_github_url:
+            return Response({"error": "Project GitHub URL is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.utils import timezone
+        team.project_title = project_title
+        team.project_description = project_description
+        team.project_github_url = project_github_url
+        team.project_demo_url = project_demo_url or None
+        team.project_presentation_url = project_presentation_url or None
+        team.project_submitted_at = timezone.now()
+        team.save()
+
+        # Create Notification
+        leader_user = User.objects.filter(email=team.leader_email).first()
+        if leader_user:
+            HackathonNotification.objects.create(
+                user=leader_user,
+                title="Project Solution Submitted!",
+                message=f"Your project solution for '{team.hackathon.title}' has been successfully submitted.",
+                type="project_submitted"
+            )
+
+        return Response({
+            "message": "Project solution submitted successfully.",
+            "project_title": team.project_title,
+            "project_description": team.project_description,
+            "project_github_url": team.project_github_url,
+            "project_demo_url": team.project_demo_url,
+            "project_presentation_url": team.project_presentation_url,
+            "project_submitted_at": team.project_submitted_at
+        })
+
 
 class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all().order_by('-created_at')
@@ -742,13 +881,26 @@ class AnalyticsView(views.APIView):
         for h in hackathons:
             revenue = Payment.objects.filter(team__hackathon=h, status='success').aggregate(Sum('amount'))['amount__sum'] or 0.0
             registrations = h.teams.count()
+            
+            # Problem Statement distribution
+            prob_dist = []
+            for ps in h.problem_statements.all():
+                team_count = h.teams.filter(problem_statement=ps).count()
+                prob_dist.append({
+                    "title": ps.title,
+                    "count": team_count
+                })
+
             event_performance.append({
                 "id": h.id,
                 "title": h.title,
                 "revenue": revenue,
                 "registrations": registrations,
+                "paid_registrations": h.teams.filter(payments__status='success').distinct().count(),
+                "pending_payments": h.teams.filter(payments__status='pending').distinct().count(),
                 "max_teams": h.max_teams,
-                "status": h.status
+                "status": h.status,
+                "problem_distribution": prob_dist
             })
 
         # Most Popular Hackathon

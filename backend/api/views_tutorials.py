@@ -171,7 +171,126 @@ class TutorialLessonViewSet(viewsets.ModelViewSet):
             analytics.total_reading_time += int(reading_time)
             analytics.average_reading_time = float(analytics.total_reading_time) / float(analytics.views_count)
         analytics.save()
+
+        # Log User progress if authenticated
+        user = request.user
+        if user and user.is_authenticated:
+            from .models_tutorials import UserLessonProgress
+            progress, created = UserLessonProgress.objects.get_or_create(
+                user=user,
+                lesson=lesson,
+                defaults={'language': lesson.language, 'chapter': lesson.chapter}
+            )
+            progress.save() # Auto-updates last_accessed_at due to auto_now=True
+
         return Response({'views': analytics.views_count})
+
+    @action(detail=True, methods=['post'], url_path='complete', permission_classes=[permissions.IsAuthenticated])
+    def complete_lesson(self, request, pk=None):
+        lesson = self.get_object()
+        completed = request.data.get('completed', True)
+        
+        from .models_tutorials import UserLessonProgress
+        progress, created = UserLessonProgress.objects.get_or_create(
+            user=request.user,
+            lesson=lesson,
+            defaults={'language': lesson.language, 'chapter': lesson.chapter}
+        )
+        progress.completed = completed
+        progress.save()
+        
+        return Response({'completed': progress.completed})
+
+    @action(detail=False, methods=['get'], url_path='user-progress', permission_classes=[permissions.IsAuthenticated])
+    def get_user_progress(self, request):
+        from .models_tutorials import UserLessonProgress
+        progresses = UserLessonProgress.objects.filter(user=request.user)
+        completed_slugs = [f"{p.language.slug}/{p.lesson.slug}" for p in progresses if p.completed]
+        last_accessed = None
+        
+        latest = progresses.first()
+        if latest:
+            last_accessed = {
+                'lesson_id': latest.lesson.id,
+                'lesson_title': latest.lesson.title,
+                'lesson_slug': latest.lesson.slug,
+                'chapter_id': latest.chapter.id,
+                'chapter_name': latest.chapter.name,
+                'language_id': latest.language.id,
+                'language_name': latest.language.name,
+                'language_slug': latest.language.slug,
+                'last_accessed_at': latest.last_accessed_at
+            }
+            
+        return Response({
+            'completed_slugs': completed_slugs,
+            'last_accessed': last_accessed
+        })
+
+    @action(detail=False, methods=['get'], url_path='continue-learning', permission_classes=[permissions.IsAuthenticated])
+    def continue_learning(self, request):
+        from .models_tutorials import UserLessonProgress, TutorialLesson, TutorialLanguage
+        user = request.user
+        
+        # 1. Most recently accessed incomplete lesson
+        progresses = UserLessonProgress.objects.filter(user=user).order_by('-last_accessed_at')
+        incomplete_progress = progresses.filter(completed=False).first()
+        
+        target_lesson = None
+        if incomplete_progress:
+            target_lesson = incomplete_progress.lesson
+        else:
+            # 2. Most recently accessed incomplete language/course
+            for p in progresses:
+                total_lessons_in_lang = TutorialLesson.objects.filter(language=p.language, status='published')
+                completed_lessons_in_lang = UserLessonProgress.objects.filter(user=user, language=p.language, completed=True)
+                
+                if completed_lessons_in_lang.count() < total_lessons_in_lang.count():
+                    completed_ids = completed_lessons_in_lang.values_list('lesson_id', flat=True)
+                    next_incomplete = total_lessons_in_lang.exclude(id__in=completed_ids).order_by('display_order', 'id').first()
+                    if next_incomplete:
+                        target_lesson = next_incomplete
+                        break
+                        
+        # 3. Fallback to default
+        if not target_lesson:
+            first_lang = TutorialLanguage.objects.filter(status='published').order_by('display_order', 'id').first()
+            if first_lang:
+                target_lesson = TutorialLesson.objects.filter(language=first_lang, status='published').order_by('display_order', 'id').first()
+
+        if not target_lesson:
+            return Response({'detail': 'No lessons available.'}, status=status.HTTP_404_NOT_FOUND)
+
+        lang = target_lesson.language
+        total_lessons = TutorialLesson.objects.filter(language=lang, status='published').count()
+        completed_lessons = UserLessonProgress.objects.filter(user=user, language=lang, completed=True).count()
+        progress_pct = int((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
+
+        last_accessed_str = "Recently"
+        user_progress_record = UserLessonProgress.objects.filter(user=user, lesson=target_lesson).first()
+        if user_progress_record:
+            from django.utils.timezone import now
+            delta = now() - user_progress_record.last_accessed_at
+            if delta.days > 0:
+                last_accessed_str = f"{delta.days} days ago"
+            elif delta.seconds >= 3600:
+                last_accessed_str = f"{delta.seconds // 3600} hours ago"
+            elif delta.seconds >= 60:
+                last_accessed_str = f"{delta.seconds // 60} minutes ago"
+            else:
+                last_accessed_str = "just now"
+
+        return Response({
+            'course_name': lang.name,
+            'course_slug': lang.slug,
+            'chapter_name': target_lesson.chapter.name,
+            'lesson_title': target_lesson.title,
+            'lesson_slug': target_lesson.slug,
+            'progress_percent': progress_pct,
+            'completed_lessons': completed_lessons,
+            'total_lessons': total_lessons,
+            'last_accessed': last_accessed_str
+        })
 
     @action(detail=False, methods=['post'], url_path='run-code', permission_classes=[permissions.AllowAny])
     def run_tutorial_code(self, request):

@@ -111,8 +111,8 @@ const LandingPage: React.FC = () => {
           <div className="lg:col-span-7 space-y-6 text-left">
             
             {/* Small Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold tracking-wide">
-              <Sparkles size={12} className="text-blue-500 shrink-0" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-650 dark:bg-indigo-950/40 dark:border-indigo-900/60 dark:text-indigo-400 text-xs font-semibold tracking-wide">
+              <Sparkles size={12} className="text-indigo-500 dark:text-indigo-400 shrink-0" />
               <span>Empowering developers to learn, practice & grow</span>
             </div>
 
@@ -120,7 +120,7 @@ const LandingPage: React.FC = () => {
             <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
               Code. Learn.<br />
               Compete.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-650">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-fuchsia-500 to-orange-500">
                 Build Your Future.
               </span>
             </h1>
@@ -134,7 +134,7 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-wrap gap-4 pt-2">
               <button 
                 onClick={() => navigate('/dashboard/coding')}
-                className="px-6 py-3 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 text-sm cursor-pointer flex items-center gap-2 border border-blue-700/10"
+                className="px-6 py-3 font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl transition-all shadow-lg shadow-indigo-500/15 hover:shadow-indigo-500/25 text-sm cursor-pointer flex items-center gap-2 border border-indigo-700/10"
               >
                 <span>Start Practicing</span>
                 <ChevronRight size={16} />

@@ -5,6 +5,7 @@ import Editor from '@monaco-editor/react';
 import { publicApi } from '../../services/api';
 import { tutorialsService } from '../../services/tutorials';
 import type { TutorialLesson, TutorialChapter, TutorialLanguage } from '../../services/tutorials';
+import { useAuth } from '../../context/AuthContext';
 import { setSEOMetadata } from '../../utils/seo';
 import { 
   ChevronRight, ChevronLeft, Check, Play, Copy, 
@@ -17,6 +18,7 @@ import {
 const TutorialLearningPage: React.FC = () => {
   const { langSlug, lessonSlug } = useParams<{ langSlug: string; lessonSlug: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Reading settings states
   const [fontSize, setFontSize] = useState<number>(16); // in pixels
@@ -187,12 +189,24 @@ const TutorialLearningPage: React.FC = () => {
 
   // Load completed lessons list and scroll listeners
   useEffect(() => {
-    try {
-      const completed = JSON.parse(localStorage.getItem('tutorials_completed_lessons') || '[]');
-      setCompletedSlugs(completed);
-    } catch (e) {
-      console.error(e);
-    }
+    const loadProgress = async () => {
+      if (user) {
+        try {
+          const res = await tutorialsService.getUserProgress();
+          setCompletedSlugs(res.completed_slugs);
+        } catch (e) {
+          console.error("Failed to load backend progress", e);
+        }
+      } else {
+        try {
+          const completed = JSON.parse(localStorage.getItem('tutorials_completed_lessons') || '[]');
+          setCompletedSlugs(completed);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+    loadProgress();
 
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -253,10 +267,12 @@ const TutorialLearningPage: React.FC = () => {
   const strokeDashoffset = radialCircumference - (completionRate / 100) * radialCircumference;
 
   // Toggle lesson completion status
-  const handleToggleCompletion = () => {
+  const handleToggleCompletion = async () => {
     if (!lesson) return;
-    let updated: string[];
     const key = `${langSlug}/${lesson.slug}`;
+    const isCompletedNow = !completedSlugs.includes(key);
+    
+    let updated: string[];
     if (completedSlugs.includes(key)) {
       updated = completedSlugs.filter(s => s !== key);
     } else {
@@ -264,6 +280,14 @@ const TutorialLearningPage: React.FC = () => {
     }
     setCompletedSlugs(updated);
     localStorage.setItem('tutorials_completed_lessons', JSON.stringify(updated));
+    
+    if (user) {
+      try {
+        await tutorialsService.completeLesson(lesson.id, isCompletedNow);
+      } catch (e) {
+        console.error("Failed to sync completion with backend", e);
+      }
+    }
   };
 
   // Toggle Bookmark
