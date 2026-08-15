@@ -33,6 +33,14 @@ const CodingTestEngine = lazy(() => import('./pages/student/CodingTestEngine'));
 const CodingTestResultPage = lazy(() => import('./pages/student/CodingTestResultPage'));
 const AptitudeQuestionCreateEditPage = lazy(() => import('./pages/admin/AptitudeQuestionCreateEditPage'));
 
+// Test Series Pages
+const TestSeriesHub = lazy(() => import('./pages/student/TestSeriesHub'));
+const CompanySelection = lazy(() => import('./pages/student/CompanySelection'));
+const SeriesDetailPage = lazy(() => import('./pages/student/SeriesDetailPage'));
+const TestInstructionsPage = lazy(() => import('./pages/student/TestInstructionsPage'));
+const TestSeriesEngine = lazy(() => import('./pages/student/TestSeriesEngine'));
+const TestSeriesResultPage = lazy(() => import('./pages/student/TestSeriesResultPage'));
+
 // Hackathon Pages
 const HackathonDashboard = lazy(() => import('./pages/student/HackathonDashboard'));
 const HackathonDetails = lazy(() => import('./pages/student/HackathonDetails'));
@@ -200,6 +208,64 @@ const App: React.FC = () => {
                   <DashboardLayout>
                     <AptitudeDashboard />
                   </DashboardLayout>
+                }
+              />
+              <Route
+                path="/test-series"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <TestSeriesHub />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/test-series/:companySlug"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <CompanySelection />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/test-series/:companySlug/:seriesSlug"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <SeriesDetailPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/test-series/:companySlug/:seriesSlug/test/:testId"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <TestInstructionsPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/test-series/test/:attemptId/engine"
+                element={
+                  <ProtectedRoute>
+                    <TestSeriesEngine />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/test-series/attempt/:attemptId/result"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <TestSeriesResultPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
                 }
               />
               <Route
