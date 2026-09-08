@@ -49,28 +49,76 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "CodexPetra",
-      "url": "https://codexpetra.com/",
-      "logo": "https://codexpetra.com/android-chrome-512x512.png",
-      "sameAs": [
-        "https://github.com",
-        "https://twitter.com",
-        "https://linkedin.com"
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://codexpetra.com/#organization",
+          "name": "CodexPetra",
+          "url": "https://codexpetra.com/",
+          "logo": "https://codexpetra.com/android-chrome-512x512.png",
+          "sameAs": [
+            "https://github.com",
+            "https://twitter.com",
+            "https://linkedin.com",
+            "https://instagram.com/codexpetra"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://codexpetra.com/#website",
+          "name": "CodexPetra",
+          "url": "https://codexpetra.com/",
+          "publisher": {
+            "@id": "https://codexpetra.com/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://codexpetra.com/tutorials?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "ItemList",
+          "name": "CodexPetra Platform Features & Navigation",
+          "itemListElement": [
+            {
+              "@type": "SiteNavigationElement",
+              "position": 1,
+              "name": "Tutorials & Programming",
+              "description": "Learn Python, Java, C++, JavaScript step-by-step with interactive practice.",
+              "url": "https://codexpetra.com/tutorials"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 2,
+              "name": "Internship Program",
+              "description": "Apply for virtual internships with verified certificate and real-world project experience.",
+              "url": "https://codexpetra.com/internships"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 3,
+              "name": "Aptitude & Test Series",
+              "description": "Prepare for company placement exams with comprehensive aptitude & reasoning test series.",
+              "url": "https://codexpetra.com/dashboard/aptitude"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 4,
+              "name": "About CodexPetra",
+              "description": "Know more about CodexPetra's mission to bridge education with industry skills.",
+              "url": "https://codexpetra.com/about"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 5,
+              "name": "Contact & Support",
+              "description": "Get in touch with the CodexPetra team for help, queries, and partnerships.",
+              "url": "https://codexpetra.com/contact"
+            }
+          ]
+        }
       ]
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "CodexPetra",
-      "url": "https://codexpetra.com/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://codexpetra.com/tutorials?search={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
     }
     </script>
 

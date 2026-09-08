@@ -8,10 +8,12 @@ Allow: /terms-conditions
 Allow: /dashboard/aptitude
 Allow: /internships
 
-# Disallow private and authenticated paths
+# Disallow private and utility auth paths
 Disallow: /admin/
 Disallow: /api/
 Disallow: /profile
+Disallow: /forgot-password
+Disallow: /reset-password
 Disallow: /dashboard/hackathons/*/payment
 Disallow: /dashboard/interview
 Disallow: /internships/assessment/
