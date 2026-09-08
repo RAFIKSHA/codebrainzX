@@ -6,10 +6,12 @@ import {
   Zap, Award, Sparkles, Share2, FileDown, Edit2, ChevronRight, Plus, Search,
   Star, History, Lock, ArrowUpRight, Check, CheckCircle2, Folder, BookOpen,
   MessageSquare, Trash2, Users, Eye, BookMarked, BrainCircuit, Activity,
-  FileText, CheckCircle, AlertCircle, X, ChevronDown, Filter, HelpCircle, Loader2
+  FileText, CheckCircle, AlertCircle, X, ChevronDown, Filter, HelpCircle, Loader2,
+  Palette, Moon, Sun
 } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme, THEME_OPTIONS } from '../../context/ThemeContext';
 import { setSEOMetadata } from '../../utils/seo';
 
 // Custom Brand SVG Icons (Github and LinkedIn) to handle version constraints
@@ -41,6 +43,7 @@ interface Submission {
 
 const ProfilePage: React.FC = () => {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
 
   // 1. Fetch live user credentials from auth endpoint
@@ -218,24 +221,27 @@ const ProfilePage: React.FC = () => {
   const [calendarYear, setCalendarYear] = useState('2026');
   const [calendarTooltip, setCalendarTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
 
-  // Generate rounded contribution calendar squares from database activity logs
+  // Calendar Heatmap data generator for selected year (365 days)
   const calendarData = useMemo(() => {
-    const dates = [];
-    const baseDate = new Date(Number(calendarYear), 0, 1);
-    const startDay = baseDate.getDay();
-    const dayMs = 24 * 60 * 60 * 1000;
-    
-    const cursor = new Date(baseDate.getTime() - startDay * dayMs);
-    const apiActivityMap = new Map(
-      profileStats?.activity?.map((a: any) => [a.date, a]) || []
-    );
+    const dates: Array<{ dateStr: string; day: number; month: string; solved: number; attempted: number }> = [];
+    const yearNum = parseInt(calendarYear, 10) || 2026;
+    const start = new Date(yearNum, 0, 1);
+    const end = new Date(yearNum, 11, 31);
+    const dayMs = 1000 * 60 * 60 * 24;
 
-    for (let i = 0; i < 371; i++) {
-      const formattedDate = cursor.toISOString().split('T')[0];
-      const match = apiActivityMap.get(formattedDate) as any;
-      
+    const historyMap = new Map<string, { solved: number; attempted: number }>();
+    if (profileStats?.daily_activity) {
+      profileStats.daily_activity.forEach((item: any) => {
+        historyMap.set(item.date, { solved: item.solved_count, attempted: item.attempted_count });
+      });
+    }
+
+    let cursor = new Date(start.getTime());
+    while (cursor <= end) {
+      const dateStr = cursor.toISOString().split('T')[0];
+      const match = historyMap.get(dateStr);
       dates.push({
-        date: formattedDate,
+        dateStr,
         day: cursor.getDate(),
         month: cursor.toLocaleString('default', { month: 'short' }),
         solved: match ? match.solved : 0,
@@ -270,8 +276,8 @@ const ProfilePage: React.FC = () => {
   // Helper loader page
   if (userLoading || statsLoading || subsLoading) {
     return (
-      <div className="w-full min-h-[70vh] flex flex-col items-center justify-center bg-white text-slate-800">
-        <Loader2 className="animate-spin text-purple-600 mb-2" size={28} />
+      <div className="w-full min-h-[70vh] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200">
+        <Loader2 className="animate-spin text-purple-600 dark:text-purple-400 mb-2" size={28} />
         <span className="text-xs font-bold text-slate-400">Loading verified statistics...</span>
       </div>
     );
@@ -285,24 +291,24 @@ const ProfilePage: React.FC = () => {
   const hasTopicStats = (profileStats?.topic_stats && profileStats.topic_stats.length > 0);
 
   return (
-    <div className="w-full min-h-screen bg-[#FFFFFF] text-slate-800 font-sans pb-16">
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-[#080912] text-slate-800 dark:text-slate-100 font-sans pb-16 transition-colors duration-200">
       
       {/* Edit Profile Dialog Modal overlay */}
       <AnimatePresence>
         {isEditOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-[20px] border border-[#EAEAEA] shadow-[0_10px_30px_rgba(0,0,0,0.08)] max-w-lg w-full overflow-hidden text-left"
+              className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full overflow-hidden text-left"
             >
-              <div className="px-6 py-4 border-b border-[#EAEAEA] flex items-center justify-between">
-                <h3 className="text-base font-bold text-slate-800">Edit Profile Dashboard</h3>
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-850 flex items-center justify-between">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Edit Profile Dashboard</h3>
                 <button
                   type="button"
                   onClick={() => setIsEditOpen(false)}
-                  className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -617,6 +623,68 @@ const ProfilePage: React.FC = () => {
 
             </div>
 
+          </div>
+        </div>
+
+        {/* ======================================
+            WORKSPACE APPEARANCE & FOCUS MODE PREFERENCES
+            ====================================== */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[20px] p-6 sm:p-8 shadow-sm space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-850 pb-4">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Palette size={18} className="text-purple-600 dark:text-purple-400" />
+                Appearance & Study Preferences
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Personalize your CodeBrainzX interface for late-night problem solving or marathon study sessions.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 px-3 py-1 rounded-xl shrink-0 self-start sm:self-auto">
+              Active: {theme === 'study' ? '📖 Warm Study' : theme === 'dark' ? '🌙 Midnight Dark' : '☀️ Crisp White'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {THEME_OPTIONS.map((opt) => {
+              const isActive = theme === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setTheme(opt.id)}
+                  className={`p-5 rounded-2xl border text-left transition-all cursor-pointer relative flex flex-col justify-between h-36 ${
+                    isActive
+                      ? 'border-purple-500 dark:border-purple-500 ring-2 ring-purple-500/20 bg-purple-50/40 dark:bg-purple-950/20 shadow-sm'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-950/30'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className={`p-2.5 rounded-xl ${
+                      opt.id === 'dark' ? 'bg-indigo-950 text-indigo-400 border border-indigo-800' :
+                      opt.id === 'study' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                      'bg-blue-100 text-blue-700 border border-blue-200'
+                    }`}>
+                      {opt.id === 'dark' ? <Moon size={20} /> :
+                       opt.id === 'study' ? <BookOpen size={20} /> :
+                       <Sun size={20} />}
+                    </div>
+                    {isActive && (
+                      <span className="flex items-center gap-1 text-[11px] font-extrabold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
+                        <Check size={12} /> Active
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{opt.name}</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                      {opt.subtitle}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 

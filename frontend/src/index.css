@@ -121,6 +121,36 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 250 90% 65%;
   }
+
+  .study {
+    --background: 40 45% 96%;
+    --foreground: 30 28% 12%;
+
+    --card: 40 50% 99%;
+    --card-foreground: 30 28% 12%;
+
+    --popover: 40 50% 99%;
+    --popover-foreground: 30 28% 12%;
+
+    --primary: 32 90% 48%;
+    --primary-foreground: 40 50% 99%;
+
+    --secondary: 38 35% 91%;
+    --secondary-foreground: 30 28% 12%;
+
+    --muted: 38 25% 90%;
+    --muted-foreground: 30 18% 42%;
+
+    --accent: 38 35% 90%;
+    --accent-foreground: 30 28% 12%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 40 50% 99%;
+
+    --border: 38 25% 84%;
+    --input: 38 25% 84%;
+    --ring: 32 90% 48%;
+  }
 }
 
 @layer base {
@@ -130,30 +160,131 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  /* Global input contrast configuration (Black text / White bg in Light Mode, White text / Dark bg in Dark Mode) */
+  /* Global input contrast configuration */
+  /* Light Mode */
   input, textarea, select {
     background-color: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
     border-color: #cbd5e1 !important;
   }
   
   option {
     background-color: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
   }
 
+  /* Dark Mode */
   .dark input, .dark textarea, .dark select {
     background-color: #0f172a !important;
-    color: #ffffff !important;
+    color: #f8fafc !important;
     border-color: #334155 !important;
   }
 
   .dark option {
     background-color: #0f172a !important;
-    color: #ffffff !important;
+    color: #f8fafc !important;
   }
+
+  /* Study Mode */
+  .study input, .study textarea, .study select {
+    background-color: #FFFDF8 !important;
+    color: #261E16 !important;
+    border-color: #DCD1BD !important;
+  }
+
+  .study option {
+    background-color: #FFFDF8 !important;
+    color: #261E16 !important;
+  }
+}
+
+/* ==========================================================================
+   STUDY MODE EYE-CARE ENGINE (Warm Parchment & Sepia Harmony)
+   ========================================================================== */
+.study {
+  background-color: #FAF6EE !important;
+  color: #261E16 !important;
+}
+
+.study body {
+  background-color: #FAF6EE !important;
+  color: #261E16 !important;
+}
+
+/* Study mode card surfaces & window backgrounds */
+.study .bg-white,
+.study .bg-slate-50,
+.study .bg-slate-100,
+.study .bg-gray-50,
+.study .bg-neutral-50,
+.study .bg-\[\#f8fafc\],
+.study .bg-\[\#FFFFFF\] {
+  background-color: #FFFDF9 !important;
+}
+
+/* Study mode internal dark fallbacks convert to warm panels */
+.study .dark\:bg-slate-900,
+.study .dark\:bg-slate-950,
+.study .dark\:bg-\[\#07080e\],
+.study .dark\:bg-\[\#0c0e17\],
+.study .dark\:bg-\[\#07080d\],
+.study .dark\:bg-\[\#0c0d14\],
+.study .dark\:bg-\[\#090a0f\],
+.study .dark\:bg-\[\#080912\],
+.study .dark\:bg-\[\#0e101f\] {
+  background-color: #FFFDF9 !important;
+}
+
+/* Study mode borders */
+.study .border-slate-100,
+.study .border-slate-200,
+.study .border-slate-300,
+.study .border-slate-800,
+.study .border-slate-850,
+.study .border-gray-200,
+.study .border-\[\#e2e8f0\],
+.study .border-\[\#EAEAEA\] {
+  border-color: #E6DCCB !important;
+}
+
+/* Study mode typography */
+.study .text-slate-950,
+.study .text-slate-900,
+.study .text-slate-800,
+.study .text-black,
+.study .dark\:text-white {
+  color: #261E16 !important;
+}
+
+.study .text-slate-700,
+.study .text-slate-600,
+.study .dark\:text-slate-200,
+.study .dark\:text-slate-300 {
+  color: #4A3E31 !important;
+}
+
+.study .text-slate-500,
+.study .text-slate-400,
+.study .dark\:text-slate-400,
+.study .dark\:text-slate-500 {
+  color: #7C6E5E !important;
+}
+
+/* Study mode warm interactive hovers */
+.study .hover\:bg-slate-50:hover,
+.study .hover\:bg-slate-100:hover,
+.study .dark\:hover\:bg-slate-900:hover {
+  background-color: #F4EEDF !important;
+}
+
+/* Study mode code blocks */
+.study code, .study pre {
+  background-color: #F4EEDF !important;
+  color: #A04000 !important;
+  border-color: #E2D7C3 !important;
 }
 
 /* Custom Scrollbar Styles for the premium IDE look */
@@ -173,4 +304,20 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+.study ::-webkit-scrollbar-thumb {
+  background: rgba(180, 150, 110, 0.3);
+}
+
+.study ::-webkit-scrollbar-thumb:hover {
+  background: rgba(180, 150, 110, 0.5);
 }

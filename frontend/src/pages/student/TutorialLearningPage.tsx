@@ -6,6 +6,7 @@ import { publicApi } from '../../services/api';
 import { tutorialsService } from '../../services/tutorials';
 import type { TutorialLesson, TutorialChapter, TutorialLanguage } from '../../services/tutorials';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { setSEOMetadata } from '../../utils/seo';
 import { 
   ChevronRight, ChevronLeft, Check, Play, Copy, 
@@ -21,6 +22,7 @@ const TutorialLearningPage: React.FC = () => {
   const { langSlug, lessonSlug } = useParams<{ langSlug: string; lessonSlug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   // If user is learning Python, render the dedicated concept-based learning journey
   if (langSlug?.toLowerCase() === 'python') {
@@ -29,13 +31,17 @@ const TutorialLearningPage: React.FC = () => {
 
   // Reading settings states
   const [fontSize, setFontSize] = useState<number>(16); // in pixels
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true); // editor dark mode
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => theme === 'dark'); // editor dark mode
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [completedSlugs, setCompletedSlugs] = useState<string[]>([]);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
   const [mobileLessonsOpen, setMobileLessonsOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsDarkMode(theme === 'dark');
+  }, [theme]);
 
   // Table of Contents Outline
   const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>([]);

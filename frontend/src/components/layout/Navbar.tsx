@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
-import { Sun, Moon, Menu, X, LogOut, LayoutDashboard, Bell, User, Sparkles, Code, BookOpen, Users } from 'lucide-react';
+import { useTheme, THEME_OPTIONS } from '../../context/ThemeContext';
+import { Sun, Moon, Menu, X, LogOut, LayoutDashboard, Bell, User, Sparkles, Code, BookOpen, Users, Palette, Check } from 'lucide-react';
 import api from '../../services/api';
 import Logo from '../brand/Logo';
 
 const Navbar: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -27,6 +27,9 @@ const Navbar: React.FC = () => {
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const themeDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
     if (!user) return;
@@ -55,6 +58,9 @@ const Navbar: React.FC = () => {
       }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
         setProfileMenuOpen(false);
+      }
+      if (themeDropdownRef.current && !themeDropdownRef.current.contains(e.target as Node)) {
+        setThemeMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", clickOutside);
@@ -183,14 +189,81 @@ const Navbar: React.FC = () => {
           {/* Right Side Action Buttons */}
           <div className="hidden md:flex items-center gap-4 shrink-0">
             
-            {/* Theme Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-905 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all cursor-pointer"
-              aria-label="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
+            {/* Appearance / Theme Dropdown Selector */}
+            <div className="relative" ref={themeDropdownRef}>
+              <button
+                onClick={() => setThemeMenuOpen(!themeMenuOpen)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200/80 dark:border-slate-800 transition-all cursor-pointer shadow-2xs"
+                aria-label="Appearance Mode"
+                title={`Theme: ${theme === 'dark' ? 'Midnight Dark' : theme === 'study' ? 'Warm Study Mode' : 'Crisp White'}`}
+              >
+                {theme === 'dark' ? (
+                  <Moon size={15} className="text-indigo-400" />
+                ) : theme === 'study' ? (
+                  <BookOpen size={15} className="text-amber-600" />
+                ) : (
+                  <Sun size={15} className="text-amber-500" />
+                )}
+                <span className="hidden xl:inline capitalize text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                  {theme === 'study' ? 'Study' : theme === 'dark' ? 'Dark' : 'White'}
+                </span>
+              </button>
+
+              {themeMenuOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-850 shadow-2xl z-50 overflow-hidden p-2 text-left">
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-850 flex items-center justify-between">
+                    <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5">
+                      <Palette size={13} className="text-purple-600 dark:text-purple-400" /> Appearance Mode
+                    </span>
+                    <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                      3 Modes
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 pt-2">
+                    {THEME_OPTIONS.map(opt => {
+                      const isActive = theme === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          onClick={() => {
+                            setTheme(opt.id);
+                            setThemeMenuOpen(false);
+                          }}
+                          className={`w-full p-2.5 rounded-xl text-left flex items-start gap-3 transition-all cursor-pointer border ${
+                            isActive
+                              ? 'bg-purple-50/70 dark:bg-purple-950/40 border-purple-300 dark:border-purple-800/80 shadow-2xs'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-900 border-transparent'
+                          }`}
+                        >
+                          <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${
+                            opt.id === 'dark' ? 'bg-indigo-950/60 text-indigo-400' :
+                            opt.id === 'study' ? 'bg-amber-100 text-amber-800' :
+                            'bg-blue-50 text-blue-600'
+                          }`}>
+                            {opt.id === 'dark' ? <Moon size={16} /> :
+                             opt.id === 'study' ? <BookOpen size={16} /> :
+                             <Sun size={16} />}
+                          </div>
+
+                          <div className="flex-grow min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className={`text-xs font-bold ${isActive ? 'text-purple-700 dark:text-purple-300' : 'text-slate-800 dark:text-slate-200'}`}>
+                                {opt.name}
+                              </span>
+                              {isActive && <Check size={14} className="text-purple-600 dark:text-purple-400 shrink-0" />}
+                            </div>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+                              {opt.subtitle}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Notification Dropdown */}
             {user && (
@@ -378,8 +451,11 @@ const Navbar: React.FC = () => {
               onClick={toggleTheme}
               className="p-1.5 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-all cursor-pointer"
               aria-label="Toggle Theme"
+              title={`Theme: ${theme}`}
             >
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+              {theme === 'dark' ? <Moon size={17} className="text-indigo-400" /> :
+               theme === 'study' ? <BookOpen size={17} className="text-amber-600" /> :
+               <Sun size={17} className="text-amber-500" />}
             </button>
 
             {/* Notification on Mobile */}
@@ -513,6 +589,54 @@ const Navbar: React.FC = () => {
               </Link>
             </div>
           )}
+
+          {/* Mobile Appearance Mode Segmented Control */}
+          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Palette size={13} className="text-purple-600 dark:text-purple-400" />
+                <span>Appearance Mode</span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                {theme === 'study' ? 'Warm Study' : theme === 'dark' ? 'Midnight' : 'White'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
+              <button
+                onClick={() => setTheme('dark')}
+                className={`py-2 px-1 rounded-lg text-xs font-bold flex flex-col items-center gap-1 transition-all ${
+                  theme === 'dark'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'
+                }`}
+              >
+                <Moon size={14} />
+                <span className="text-[10px]">Dark</span>
+              </button>
+              <button
+                onClick={() => setTheme('light')}
+                className={`py-2 px-1 rounded-lg text-xs font-bold flex flex-col items-center gap-1 transition-all ${
+                  theme === 'light'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'
+                }`}
+              >
+                <Sun size={14} />
+                <span className="text-[10px]">White</span>
+              </button>
+              <button
+                onClick={() => setTheme('study')}
+                className={`py-2 px-1 rounded-lg text-xs font-bold flex flex-col items-center gap-1 transition-all ${
+                  theme === 'study'
+                    ? 'bg-amber-700 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'
+                }`}
+              >
+                <BookOpen size={14} />
+                <span className="text-[10px]">Study</span>
+              </button>
+            </div>
+          </div>
 
           {/* Quick Hub Links */}
           <div className="space-y-1">
