@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { tutorialsService } from '../../services/tutorials';
 import type { TutorialLanguage } from '../../services/tutorials';
-import { setSEOMetadata } from '../../utils/seo';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 import { Search, ArrowRight, Lock, BookOpen } from 'lucide-react';
 import {
   PythonLogo,
@@ -167,10 +167,14 @@ const TutorialsHomePage: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Programming Tutorials | Learn Coding Step-by-Step | CodeXPetra',
+      title: 'Programming Tutorials & Documentation | CodexPetra',
       description:
         'Explore comprehensive programming tutorials in Python, Java, C++, JavaScript and more. Well-structured tutorials, hands-on coding practice, and interactive compilers.',
-      canonicalUrl: window.location.href,
+      canonicalUrl: 'https://codexpetra.com/tutorials',
+      structuredData: getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Programming Tutorials', url: '/tutorials' },
+      ]),
     });
   }, []);
 
@@ -298,13 +302,13 @@ const TutorialsHomePage: React.FC = () => {
                 {/* Action Button */}
                 <div className="w-full mt-5">
                   {lang.isAvailable ? (
-                    <button
-                      onClick={() => navigate(`/tutorials/${lang.slug}`)}
+                    <Link
+                      to={`/tutorials/${lang.slug}`}
                       className="w-full py-2.5 px-3 rounded-xl border border-purple-400/50 dark:border-purple-600/50 text-purple-600 dark:text-purple-400 text-xs font-semibold hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm group-hover:bg-purple-50 dark:group-hover:bg-purple-950/30 cursor-pointer"
                     >
                       <span>Start Learning</span>
                       <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-                    </button>
+                    </Link>
                   ) : (
                     <button
                       disabled

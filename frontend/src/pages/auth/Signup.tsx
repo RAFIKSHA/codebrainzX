@@ -37,6 +37,8 @@ const Signup: React.FC = () => {
     setSEOMetadata({
       title: 'Sign Up | CodexPetra',
       description: 'Create a free student account on CodexPetra to start learning algorithms, practicing aptitude, and participating in hackathons.',
+      canonicalUrl: 'https://codexpetra.com/signup',
+      noindex: true,
     });
     // Redirect if already logged in
     if (user) {
@@ -210,18 +212,18 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="flex-grow flex items-center justify-center px-4 py-16 bg-slate-50 dark:bg-[#07080c] transition-colors duration-200 min-h-[calc(100vh-4rem)] relative overflow-hidden">
+    <div className="flex-grow flex items-center justify-center px-4 py-16 bg-slate-50 dark:bg-[#020204] transition-colors duration-200 min-h-[calc(100vh-4rem)] relative overflow-hidden">
       {/* Background ambient lighting */}
-      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-indigo-600/5 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-blue-600/5 dark:bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-indigo-600/5 dark:bg-purple-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
-      <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-8 relative z-10">
+      <div className="w-full max-w-md bg-white/90 dark:bg-[#08090e]/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden p-8 relative z-10">
         
         {/* Header Block */}
         <div className="text-center mb-8 flex flex-col items-center">
           <Logo showText={false} iconSize={36} className="mb-3" />
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Create Account</h2>
-          <p className="text-xs text-slate-500 mt-1.5 font-medium">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium">
             {!otpSent 
               ? 'Start your structured programming path today' 
               : 'Enter verification OTP sent to your email'}
@@ -229,7 +231,7 @@ const Signup: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/15 border border-red-200/60 dark:border-red-900/40 rounded-xl flex items-start gap-2.5 text-xs text-red-650 dark:text-red-400 font-semibold leading-relaxed">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200/60 dark:border-red-900/40 rounded-xl flex items-start gap-2.5 text-xs text-red-650 dark:text-red-400 font-semibold leading-relaxed">
             <AlertCircle size={16} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -253,7 +255,7 @@ const Signup: React.FC = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-955/20 border border-slate-250 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs disabled:opacity-50 font-bold"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#0c0d14] border border-slate-250 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-indigo-500/30 focus:border-blue-500 dark:focus:border-indigo-500 transition-all text-xs disabled:opacity-50 font-bold"
                 />
               </div>
             </div>
@@ -273,7 +275,7 @@ const Signup: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-955/20 border border-slate-250 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs disabled:opacity-50 font-bold"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#0c0d14] border border-slate-250 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-indigo-500/30 focus:border-blue-500 dark:focus:border-indigo-500 transition-all text-xs disabled:opacity-50 font-bold"
                 />
               </div>
             </div>
@@ -293,7 +295,7 @@ const Signup: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong password"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-955/20 border border-slate-250 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs disabled:opacity-50 font-bold"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#0c0d14] border border-slate-250 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-indigo-500/30 focus:border-blue-500 dark:focus:border-indigo-500 transition-all text-xs disabled:opacity-50 font-bold"
                 />
               </div>
 
@@ -301,21 +303,21 @@ const Signup: React.FC = () => {
               {password && (
                 <div className="mt-2.5 space-y-1.5">
                   <div className="flex justify-between items-center text-[10px] font-bold">
-                    <span className="text-slate-455 uppercase tracking-wider">Strength:</span>
+                    <span className="text-slate-455 dark:text-slate-400 uppercase tracking-wider">Strength:</span>
                     <span className={`capitalize ${strengthScore <= 2 ? 'text-red-500' : strengthScore <= 4 ? 'text-amber-500' : 'text-emerald-500'}`}>
                       {getStrengthLabel()}
                     </span>
                   </div>
-                  <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-950 rounded-full overflow-hidden flex gap-0.5">
-                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 1 ? getStrengthColor() : 'bg-slate-200 dark:bg-slate-955'}`} />
-                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 2 ? getStrengthColor() : 'bg-slate-200 dark:bg-slate-955'}`} />
-                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 3 ? getStrengthColor() : 'bg-slate-200 dark:bg-slate-955'}`} />
-                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 4 ? getStrengthColor() : 'bg-slate-200 dark:bg-slate-955'}`} />
-                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 5 ? getStrengthColor() : 'bg-slate-200 dark:bg-slate-955'}`} />
+                  <div className="h-1.5 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden flex gap-0.5">
+                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 1 ? getStrengthColor() : 'bg-slate-200 dark:bg-white/10'}`} />
+                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 2 ? getStrengthColor() : 'bg-slate-200 dark:bg-white/10'}`} />
+                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 3 ? getStrengthColor() : 'bg-slate-200 dark:bg-white/10'}`} />
+                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 4 ? getStrengthColor() : 'bg-slate-200 dark:bg-white/10'}`} />
+                    <div className={`h-full flex-1 transition-colors ${strengthScore >= 5 ? getStrengthColor() : 'bg-slate-200 dark:bg-white/10'}`} />
                   </div>
 
                   {/* Requirements Checklist */}
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-2 text-[10px] text-slate-500 dark:text-slate-450 font-bold border-t border-slate-100 dark:border-slate-850">
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-white/10">
                     <div className="flex items-center gap-1.5">
                       {rules.length ? <Check size={11} className="text-emerald-500" /> : <X size={11} className="text-slate-400" />}
                       <span>Min 8 characters</span>
@@ -344,7 +346,7 @@ const Signup: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -360,13 +362,13 @@ const Signup: React.FC = () => {
           /* Step 2: Verification Code Input Stage */
           <form onSubmit={handleVerifyOtp} className="space-y-5">
             <div className="text-center space-y-1 pb-1">
-              <span className="inline-block p-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full">
+              <span className="inline-block p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-800">
                 <ShieldCheck size={20} />
               </span>
-              <h4 className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Verify Passcode</h4>
-              <p className="text-xs text-slate-500 leading-normal">
+              <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">Verify Passcode</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
                 We have sent a verification code to <br />
-                <strong className="text-slate-850 dark:text-slate-350">{email}</strong>
+                <strong className="text-slate-850 dark:text-white">{email}</strong>
               </p>
             </div>
 
@@ -383,7 +385,7 @@ const Signup: React.FC = () => {
                   onChange={(e) => handleOtpChange(e.target, idx)}
                   onKeyDown={(e) => handleOtpKeyDown(e, idx)}
                   onPaste={handleOtpPaste}
-                  className="w-12 h-12 text-center text-lg font-black bg-slate-50 dark:bg-slate-955/30 border border-slate-250 dark:border-slate-850 rounded-xl text-blue-600 dark:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono"
+                  className="w-12 h-12 text-center text-lg font-black bg-slate-50 dark:bg-[#0c0d14] border border-slate-250 dark:border-white/10 rounded-xl text-blue-600 dark:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-indigo-500/30 focus:border-blue-500 dark:focus:border-indigo-500 transition-all font-mono"
                 />
               ))}
             </div>
@@ -392,7 +394,7 @@ const Signup: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-75"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-75"
               >
                 {loading ? (
                   <>
@@ -404,14 +406,14 @@ const Signup: React.FC = () => {
                 )}
               </button>
 
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-bold">
                 {resendCooldown > 0 ? (
                   <span>Resend code in <strong className="font-mono">{resendCooldown}s</strong></span>
                 ) : (
                   <button
                     type="button"
                     onClick={handleRequestOtp}
-                    className="font-black text-blue-600 dark:text-blue-400 hover:underline cursor-pointer text-xs"
+                    className="font-black text-blue-600 dark:text-indigo-400 hover:underline cursor-pointer text-xs"
                   >
                     Resend Code
                   </button>
@@ -433,9 +435,9 @@ const Signup: React.FC = () => {
         {!otpSent && (
           <div className="space-y-4 mt-6">
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-[1px] bg-slate-150 dark:bg-slate-850"></div>
-              <span className="text-[10px] font-black uppercase text-slate-450 tracking-wider font-mono">or continue with</span>
-              <div className="flex-1 h-[1px] bg-slate-150 dark:bg-slate-850"></div>
+              <div className="flex-1 h-[1px] bg-slate-150 dark:bg-white/10"></div>
+              <span className="text-[10px] font-black uppercase text-slate-450 dark:text-slate-400 tracking-wider font-mono">or continue with</span>
+              <div className="flex-1 h-[1px] bg-slate-150 dark:bg-white/10"></div>
             </div>
 
             {/* GIS Google button target */}
@@ -445,9 +447,9 @@ const Signup: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-8 border-t border-slate-100 dark:border-slate-850 pt-6 text-center text-xs text-slate-500 font-semibold">
+        <div className="mt-8 border-t border-slate-100 dark:border-white/10 pt-6 text-center text-xs text-slate-500 dark:text-slate-400 font-semibold">
           Already have an account?{' '}
-          <Link to="/login" className="font-black text-blue-600 dark:text-blue-400 hover:underline uppercase tracking-wider text-[10px] ml-1">
+          <Link to="/login" className="font-black text-blue-600 dark:text-indigo-400 hover:underline uppercase tracking-wider text-[10px] ml-1">
             Sign In
           </Link>
         </div>

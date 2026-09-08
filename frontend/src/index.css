@@ -35,15 +35,23 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Custom extended slate steps to guarantee no text is invisible */
+  /* Custom extended slate steps to guarantee high contrast and no invisible text */
+  --color-slate-105: #f1f5f9;
   --color-slate-150: #e2e8f0;
+  --color-slate-250: #cbd5e1;
   --color-slate-350: #cbd5e1;
+  --color-slate-355: #94a3b8;
   --color-slate-450: #94a3b8;
+  --color-slate-455: #64748b;
   --color-slate-550: #64748b;
   --color-slate-650: #475569;
+  --color-slate-655: #334155;
   --color-slate-750: #334155;
-  --color-slate-850: #1e293b;
-  --color-slate-950: #0f172a;
+  --color-slate-755: #1e293b;
+  --color-slate-850: #12141d;
+  --color-slate-905: #090a10;
+  --color-slate-950: #050609;
+  --color-slate-955: #020306;
 
   /* Custom overrides for blue palette to match the logo color combination */
   --color-blue-50: #f5f3ff;
@@ -93,32 +101,32 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
+    --background: 240 10% 2%;
+    --foreground: 0 0% 98%;
 
-    --card: 224 71% 7%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 6% 5.5%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 224 71% 6%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 6% 6.5%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 250 90% 65%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 240 5% 10%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 240 5% 12%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 240 6% 12%;
+    --input: 240 6% 12%;
     --ring: 250 90% 65%;
   }
 
@@ -176,15 +184,20 @@
     color: #0f172a !important;
   }
 
-  /* Dark Mode */
+  /* Dark Mode (Obsidian Inputs & Glow) */
   .dark input, .dark textarea, .dark select {
-    background-color: #0f172a !important;
+    background-color: #08090e !important;
     color: #f8fafc !important;
-    border-color: #334155 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .dark input:focus, .dark textarea:focus, .dark select:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
   }
 
   .dark option {
-    background-color: #0f172a !important;
+    background-color: #0b0c12 !important;
     color: #f8fafc !important;
   }
 
@@ -199,6 +212,95 @@
     background-color: #FFFDF8 !important;
     color: #261E16 !important;
   }
+}
+
+/* ==========================================================================
+   OBSIDIAN TRUE BLACK ENGINE (AMOLED-Ready & High Contrast Aesthetics)
+   ========================================================================== */
+.dark {
+  background-color: #020204 !important;
+  color: #f8fafc !important;
+}
+
+.dark body {
+  background-color: #020204 !important;
+  color: #f8fafc !important;
+}
+
+/* Base surface containers in dark mode */
+.dark .bg-white {
+  background-color: #0a0b10 !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-gray-50,
+.dark .bg-neutral-50,
+.dark .bg-\[\#f8fafc\],
+.dark .bg-\[\#FFFFFF\] {
+  background-color: #0d0e15 !important;
+}
+
+/* Ensure all hardcoded navy/slate dark backgrounds unify to deep obsidian black */
+.dark .dark\:bg-slate-900,
+.dark .dark\:bg-slate-950,
+.dark .dark\:bg-\[\#07080e\],
+.dark .dark\:bg-\[\#0c0e17\],
+.dark .dark\:bg-\[\#07080d\],
+.dark .dark\:bg-\[\#0c0d14\],
+.dark .dark\:bg-\[\#090a0f\],
+.dark .dark\:bg-\[\#080912\],
+.dark .dark\:bg-\[\#0e101f\],
+.dark .dark\:bg-\[\#0b0c14\] {
+  background-color: #05060a !important;
+}
+
+/* Dark mode crisp borders */
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .dark\:border-slate-800,
+.dark .dark\:border-slate-850,
+.dark .dark\:border-slate-900 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* High-contrast crisp typography in dark mode */
+.dark .text-slate-950,
+.dark .text-slate-900,
+.dark .text-black,
+.dark .dark\:text-white {
+  color: #ffffff !important;
+}
+
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .dark\:text-slate-200,
+.dark .dark\:text-slate-300 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .dark\:text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Interactive hover highlights in dark mode */
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover,
+.dark .dark\:hover\:bg-slate-900:hover,
+.dark .dark\:hover\:bg-slate-800:hover {
+  background-color: #12141f !important;
+}
+
+/* Dark mode code blocks */
+.dark code, .dark pre {
+  background-color: #07080c !important;
+  color: #a5b4fc !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* ==========================================================================
@@ -289,8 +391,8 @@
 
 /* Custom Scrollbar Styles for the premium IDE look */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -307,11 +409,11 @@
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .study ::-webkit-scrollbar-thumb {

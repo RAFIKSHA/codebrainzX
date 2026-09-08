@@ -2,25 +2,38 @@
  * SEO Utility for dynamic metadata and structured schemas injection
  */
 
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
 interface SEOProps {
   title: string;
   description: string;
   keywords?: string;
   canonicalUrl?: string;
   ogType?: string;
-  structuredData?: Record<string, any>;
+  noindex?: boolean;
+  structuredData?: Record<string, any> | Array<Record<string, any>>;
 }
+
+const CANONICAL_DOMAIN = 'https://codexpetra.com';
 
 export const setSEOMetadata = ({
   title,
   description,
-  keywords = 'coding practice, learn programming, codexpetra, python practice, java compiler, online ide, aptitude preparation, hackathons',
+  keywords = 'coding practice, learn programming, codexpetra, python practice, java compiler, online ide, aptitude preparation, hackathons, test series, interview prep',
   canonicalUrl,
   ogType = 'website',
+  noindex = false,
   structuredData,
 }: SEOProps) => {
-  // 1. Set Title
-  document.title = `${title} | CodexPetra`;
+  // 1. Set Title with deduplication check
+  if (title.toLowerCase().includes('codexpetra')) {
+    document.title = title;
+  } else {
+    document.title = `${title} | CodexPetra`;
+  }
 
   // 2. Set Meta Description
   let metaDesc = document.querySelector('meta[name="description"]');
@@ -40,7 +53,16 @@ export const setSEOMetadata = ({
   }
   metaKeywords.setAttribute('content', keywords);
 
-  // 4. Set Open Graph Title
+  // 4. Set Robots (Index / Noindex)
+  let robotsMeta = document.querySelector('meta[name="robots"]');
+  if (!robotsMeta) {
+    robotsMeta = document.createElement('meta');
+    robotsMeta.setAttribute('name', 'robots');
+    document.head.appendChild(robotsMeta);
+  }
+  robotsMeta.setAttribute('content', noindex ? 'noindex, follow' : 'index, follow');
+
+  // 5. Set Open Graph Title
   let ogTitle = document.querySelector('meta[property="og:title"]');
   if (!ogTitle) {
     ogTitle = document.createElement('meta');
@@ -49,7 +71,7 @@ export const setSEOMetadata = ({
   }
   ogTitle.setAttribute('content', title);
 
-  // 5. Set Open Graph Description
+  // 6. Set Open Graph Description
   let ogDesc = document.querySelector('meta[property="og:description"]');
   if (!ogDesc) {
     ogDesc = document.createElement('meta');
@@ -58,7 +80,7 @@ export const setSEOMetadata = ({
   }
   ogDesc.setAttribute('content', description);
 
-  // 6. Set Open Graph Type
+  // 7. Set Open Graph Type
   let ogTypeMeta = document.querySelector('meta[property="og:type"]');
   if (!ogTypeMeta) {
     ogTypeMeta = document.createElement('meta');
@@ -67,20 +89,29 @@ export const setSEOMetadata = ({
   }
   ogTypeMeta.setAttribute('content', ogType);
 
-  // 7. Canonical URL
-  let canonical = document.querySelector('link[rel="canonical"]');
-  if (canonicalUrl) {
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute('href', canonicalUrl);
-  } else if (canonical) {
-    canonical.remove();
-  }
+  // 8. Canonical URL calculation
+  const targetCanonical = canonicalUrl 
+    ? canonicalUrl 
+    : `${CANONICAL_DOMAIN}${window.location.pathname}`;
 
-  // 8. Inject Structured Schema (JSON-LD)
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', targetCanonical);
+
+  // 9. Open Graph URL
+  let ogUrlMeta = document.querySelector('meta[property="og:url"]');
+  if (!ogUrlMeta) {
+    ogUrlMeta = document.createElement('meta');
+    ogUrlMeta.setAttribute('property', 'og:url');
+    document.head.appendChild(ogUrlMeta);
+  }
+  ogUrlMeta.setAttribute('content', targetCanonical);
+
+  // 10. Inject Structured Schema (JSON-LD)
   const schemaId = 'seo-structured-data';
   const existingSchema = document.getElementById(schemaId);
   if (existingSchema) {
@@ -97,6 +128,22 @@ export const setSEOMetadata = ({
 };
 
 /**
+ * Generates BreadcrumbList Schema
+ */
+export const getBreadcrumbSchema = (items: BreadcrumbItem[]) => {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': items.map((item, index) => ({
+      '@type': 'ListItem',
+      'position': index + 1,
+      'name': item.name,
+      'item': item.url.startsWith('http') ? item.url : `${CANONICAL_DOMAIN}${item.url}`,
+    })),
+  };
+};
+
+/**
  * Generates Course Schema for Topic lists
  */
 export const getCourseSchema = (topicName: string, description: string, url: string) => {
@@ -108,9 +155,9 @@ export const getCourseSchema = (topicName: string, description: string, url: str
     'provider': {
       '@type': 'Organization',
       'name': 'CodexPetra',
-      'sameAs': window.location.origin,
+      'sameAs': CANONICAL_DOMAIN,
     },
-    'url': url,
+    'url': url.startsWith('http') ? url : `${CANONICAL_DOMAIN}${url}`,
   };
 };
 
@@ -127,5 +174,36 @@ export const getQuestionSchema = (questionName: string, statement: string, topic
       '@type': 'Thing',
       'name': topicName,
     },
+  };
+};
+
+/**
+ * Generates Organization Schema
+ */
+export const getOrganizationSchema = () => {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': 'CodexPetra',
+    'url': CANONICAL_DOMAIN,
+    'logo': `${CANONICAL_DOMAIN}/android-chrome-512x512.png`,
+    'sameAs': [
+      'https://github.com',
+      'https://twitter.com',
+      'https://linkedin.com'
+    ],
+  };
+};
+
+/**
+ * Generates ContactPage Schema
+ */
+export const getContactPageSchema = () => {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    'name': 'Contact CodexPetra',
+    'description': 'Get in touch with the CodexPetra support and developer relations team.',
+    'url': `${CANONICAL_DOMAIN}/contact`,
   };
 };

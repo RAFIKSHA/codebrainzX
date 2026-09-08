@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
 import type { AptitudeDashboardData, AptitudeCategory, AptitudeTest, AptitudeTrainer } from '../../services/aptitude';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 const AptitudeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +40,18 @@ const AptitudeDashboard: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { 
+    fetch(); 
+    setSEOMetadata({
+      title: 'Aptitude & Reasoning Practice | CodexPetra',
+      description: 'Master quantitative aptitude, logical reasoning, and verbal ability with categorized practice questions, mock tests, and company placement papers.',
+      canonicalUrl: 'https://codexpetra.com/dashboard/aptitude',
+      structuredData: getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Aptitude Practice', url: '/dashboard/aptitude' },
+      ]),
+    });
+  }, []);
 
   const handleStartTest = async (testId: number) => {
     try {

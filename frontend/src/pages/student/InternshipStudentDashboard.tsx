@@ -76,11 +76,11 @@ const InternshipStudentDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#080912] text-slate-900 dark:text-slate-100 py-10 md:py-16 transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020204] text-slate-900 dark:text-slate-100 py-10 md:py-16 transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-6">
           <div>
             <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold uppercase tracking-wide">
               Candidate Portal
@@ -102,7 +102,7 @@ const InternshipStudentDashboard: React.FC = () => {
                 placeholder="Search Application ID..."
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
-                className="pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-[#0e101f] border border-slate-200 dark:border-slate-800 text-xs font-mono focus:outline-none focus:border-blue-500 w-52 sm:w-64"
+                className="pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-[#08090e] border border-slate-200 dark:border-white/10 text-xs font-mono focus:outline-none focus:border-blue-500 w-52 sm:w-64"
               />
             </div>
             <button

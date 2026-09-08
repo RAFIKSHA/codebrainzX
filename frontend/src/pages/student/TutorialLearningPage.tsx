@@ -7,7 +7,7 @@ import { tutorialsService } from '../../services/tutorials';
 import type { TutorialLesson, TutorialChapter, TutorialLanguage } from '../../services/tutorials';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { setSEOMetadata } from '../../utils/seo';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 import { 
   ChevronRight, ChevronLeft, Check, Play, Copy, 
   Download, Maximize2, Minimize2, Sun, Moon, Type, Printer, 
@@ -179,7 +179,13 @@ const TutorialLearningPage: React.FC = () => {
       setSEOMetadata({
         title: lesson.seo_title || `${lesson.title} - ${language?.name || ''} Tutorial`,
         description: lesson.seo_description || `Learn ${lesson.title} in our free ${language?.name || ''} course. Example codes, inline quizzes, and interactive practice exercises.`,
-        canonicalUrl: window.location.origin + `/tutorials/${langSlug}/${lesson.slug}`,
+        canonicalUrl: `https://codexpetra.com/tutorials/${langSlug}/${lesson.slug}`,
+        structuredData: getBreadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'Tutorials', url: '/tutorials' },
+          { name: language?.name || langSlug || '', url: `/tutorials/${langSlug}` },
+          { name: lesson.title, url: `/tutorials/${langSlug}/${lesson.slug}` },
+        ]),
       });
 
       // 5. Scan Headings for Table of Contents after render

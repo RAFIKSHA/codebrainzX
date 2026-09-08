@@ -14,10 +14,10 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'dark',
-    name: 'Midnight Dark',
-    subtitle: 'Obsidian Slate & Low-Glare Focus',
+    name: 'Obsidian Black',
+    subtitle: 'AMOLED Jet Black & Neon Focus',
     icon: 'Moon',
-    badge: 'Pro Dark',
+    badge: 'True Black',
     badgeBg: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
   },
   {

@@ -13,6 +13,10 @@ const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const About = lazy(() => import('./pages/public/About'));
+const Contact = lazy(() => import('./pages/public/Contact'));
+const PrivacyPolicy = lazy(() => import('./pages/public/PrivacyPolicy'));
+const TermsConditions = lazy(() => import('./pages/public/TermsConditions'));
 const LearningSections = lazy(() => import('./pages/student/LearningSections'));
 const DsaRoadmap = lazy(() => import('./pages/student/DsaRoadmap'));
 const PracticePlayground = lazy(() => import('./pages/student/PracticePlayground'));
@@ -153,6 +157,40 @@ const App: React.FC = () => {
                   </Layout>
                 }
               />
+              <Route
+                path="/about"
+                element={
+                  <Layout>
+                    <About />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/contact"
+                element={
+                  <Layout>
+                    <Contact />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/privacy-policy"
+                element={
+                  <Layout>
+                    <PrivacyPolicy />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/terms-conditions"
+                element={
+                  <Layout>
+                    <TermsConditions />
+                  </Layout>
+                }
+              />
+              <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+              <Route path="/terms" element={<Navigate to="/terms-conditions" replace />} />
 
               {/* Internship Program Funnel Routes */}
               <Route

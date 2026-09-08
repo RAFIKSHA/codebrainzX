@@ -8,7 +8,7 @@ import {
   MapPin, Clock, CheckCircle2, ChevronRight
 } from 'lucide-react';
 import { internshipService, type InternshipProgram } from '../../services/internship';
-import { setSEOMetadata } from '../../utils/seo';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 import heroImg from '../../assets/internship_hero.jpg';
 
 const InternshipLandingPage: React.FC = () => {
@@ -19,7 +19,12 @@ const InternshipLandingPage: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Internship Program 2026 | CodexPetra',
-      description: 'Build Real Solutions. Create Real Impact. Join the CodexPetra performance-driven internship program.'
+      description: 'Build real-world developer solutions, solve challenging technical problems, and gain hands-on engineering experience with the CodexPetra Internship Program.',
+      canonicalUrl: 'https://codexpetra.com/internships',
+      structuredData: getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Internships 2026', url: '/internships' },
+      ]),
     });
 
     const fetchData = async () => {

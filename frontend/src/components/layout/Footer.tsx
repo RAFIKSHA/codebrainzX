@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950 py-12 transition-colors duration-200 mt-auto">
+    <footer className="border-t border-slate-200/80 dark:border-white/8 bg-white dark:bg-[#020204] py-12 transition-colors duration-200 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
           
@@ -48,40 +48,43 @@ const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
               <li>
-                <Link to="/tutorials" className="hover:text-blue-650 dark:hover:text-blue-400 transition-colors">Tutorials</Link>
+                <Link to="/tutorials" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Programming Tutorials</Link>
               </li>
               <li>
-                <Link to="/dashboard/coding" className="hover:text-blue-650 dark:hover:text-blue-400 transition-colors">Practice coding</Link>
+                <Link to="/dashboard/coding" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Coding Practice</Link>
               </li>
               <li>
-                <Link to="/dashboard/aptitude" className="hover:text-blue-655 dark:hover:text-blue-400 transition-colors">Aptitude & reasoning</Link>
+                <Link to="/dashboard/aptitude" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Aptitude & Reasoning</Link>
               </li>
               <li>
-                <Link to="/dashboard/hackathons" className="hover:text-blue-655 dark:hover:text-blue-400 transition-colors">Live Hackathons</Link>
+                <Link to="/test-series" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Test Series</Link>
               </li>
               <li>
-                <Link to="/dashboard/coding?tab=companies" className="hover:text-blue-655 dark:hover:text-blue-400 transition-colors">Target Companies</Link>
+                <Link to="/internships" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Internships 2026</Link>
               </li>
             </ul>
           </div>
 
-          {/* Resources Column */}
+          {/* Resources & Company Column */}
           <div className="col-span-1 md:col-span-4 space-y-3">
             <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest">
-              Resources
+              Company & Help
             </h4>
             <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-blue-655 dark:hover:text-blue-400 transition-colors">Documentation</a>
+                <Link to="/about" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">About CodexPetra</Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-blue-655 dark:hover:text-blue-400 transition-colors">Help Center</a>
+                <Link to="/contact" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Contact Us</Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-blue-655 dark:hover:text-blue-400 transition-colors">API Status</a>
+                <Link to="/tutorials" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Developer Documentation</Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-blue-655 dark:hover:text-blue-400 transition-colors">Submit Feedback</a>
+                <Link to="/privacy-policy" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Privacy Policy</Link>
+              </li>
+              <li>
+                <Link to="/terms-conditions" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Terms & Conditions</Link>
               </li>
             </ul>
           </div>
@@ -89,14 +92,14 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Bottom border & copyright */}
-        <div className="pt-6 border-t border-slate-100 dark:border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="pt-6 border-t border-slate-100 dark:border-white/8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[10px] text-slate-400 dark:text-slate-500">
             &copy; {year} CodexPetra. Built for developers. All rights reserved.
           </p>
           <div className="flex gap-4 text-[10px] text-slate-400 dark:text-slate-500">
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-blue-650 dark:hover:text-blue-405 transition-colors">Privacy Policy</a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-blue-650 dark:hover:text-blue-405 transition-colors">Terms of Service</a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-blue-650 dark:hover:text-blue-405 transition-colors">Security</a>
+            <Link to="/privacy-policy" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Privacy Policy</Link>
+            <Link to="/terms-conditions" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Terms of Service</Link>
+            <Link to="/contact" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Support</Link>
           </div>
         </div>
 

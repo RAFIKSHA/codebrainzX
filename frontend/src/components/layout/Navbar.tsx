@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white/75 dark:bg-slate-950/75 backdrop-blur-md border-b border-slate-100 dark:border-slate-900/60 transition-colors duration-200">
+    <nav className="sticky top-0 z-50 w-full bg-white/80 dark:bg-[#030407]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-white/8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
@@ -193,9 +193,9 @@ const Navbar: React.FC = () => {
             <div className="relative" ref={themeDropdownRef}>
               <button
                 onClick={() => setThemeMenuOpen(!themeMenuOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200/80 dark:border-slate-800 transition-all cursor-pointer shadow-2xs"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200/80 dark:border-white/10 transition-all cursor-pointer shadow-2xs"
                 aria-label="Appearance Mode"
-                title={`Theme: ${theme === 'dark' ? 'Midnight Dark' : theme === 'study' ? 'Warm Study Mode' : 'Crisp White'}`}
+                title={`Theme: ${theme === 'dark' ? 'Obsidian Black' : theme === 'study' ? 'Warm Study Mode' : 'Crisp White'}`}
               >
                 {theme === 'dark' ? (
                   <Moon size={15} className="text-indigo-400" />
@@ -205,12 +205,12 @@ const Navbar: React.FC = () => {
                   <Sun size={15} className="text-amber-500" />
                 )}
                 <span className="hidden xl:inline capitalize text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                  {theme === 'study' ? 'Study' : theme === 'dark' ? 'Dark' : 'White'}
+                  {theme === 'study' ? 'Study' : theme === 'dark' ? 'Black' : 'White'}
                 </span>
               </button>
 
               {themeMenuOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-850 shadow-2xl z-50 overflow-hidden p-2 text-left">
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#08090e] rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl z-50 overflow-hidden p-2 text-left">
                   <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-850 flex items-center justify-between">
                     <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5">
                       <Palette size={13} className="text-purple-600 dark:text-purple-400" /> Appearance Mode
@@ -537,7 +537,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-850 bg-white dark:bg-[#0c0d14] shadow-2xl px-4 py-5 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto animate-fadeIn">
+        <div className="md:hidden border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#040508] shadow-2xl px-4 py-5 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto animate-fadeIn">
           
           {/* User Profile Card (if logged in) */}
           {user ? (
@@ -591,27 +591,27 @@ const Navbar: React.FC = () => {
           )}
 
           {/* Mobile Appearance Mode Segmented Control */}
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 space-y-2">
+          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#07080d] border border-slate-200 dark:border-white/10 space-y-2">
             <div className="flex items-center justify-between px-1">
               <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Palette size={13} className="text-purple-600 dark:text-purple-400" />
                 <span>Appearance Mode</span>
               </span>
               <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                {theme === 'study' ? 'Warm Study' : theme === 'dark' ? 'Midnight' : 'White'}
+                {theme === 'study' ? 'Warm Study' : theme === 'dark' ? 'Obsidian' : 'White'}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-white dark:bg-[#030407] rounded-xl border border-slate-200/80 dark:border-white/10">
               <button
                 onClick={() => setTheme('dark')}
                 className={`py-2 px-1 rounded-lg text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                   theme === 'dark'
                     ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'
                 }`}
               >
                 <Moon size={14} />
-                <span className="text-[10px]">Dark</span>
+                <span className="text-[10px]">Black</span>
               </button>
               <button
                 onClick={() => setTheme('light')}

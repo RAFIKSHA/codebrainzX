@@ -13,7 +13,7 @@ import { ConceptLessonPanel } from './ConceptLessonPanel';
 import { FullRoadmapModal } from './FullRoadmapModal';
 import { PracticeModal } from './PracticeModal';
 import { DSAConnectionModal } from './DSAConnectionModal';
-import { setSEOMetadata } from '../../../utils/seo';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../../utils/seo';
 import { useAuth } from '../../../context/AuthContext';
 import { tutorialsService } from '../../../services/tutorials';
 
@@ -57,7 +57,13 @@ export const PythonJourneyPage: React.FC = () => {
     setSEOMetadata({
       title: `${activeConcept.title} - Python Concept Journey | CodexPetra`,
       description: activeConcept.definition,
-      canonicalUrl: `${window.location.origin}/tutorials/python/${activeConcept.id}`,
+      canonicalUrl: `https://codexpetra.com/tutorials/python/${activeConcept.id}`,
+      structuredData: getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Tutorials', url: '/tutorials' },
+        { name: 'Python', url: '/tutorials/python' },
+        { name: activeConcept.title, url: `/tutorials/python/${activeConcept.id}` },
+      ]),
     });
   }, [activeConcept]);
 

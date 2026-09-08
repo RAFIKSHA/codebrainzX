@@ -32,6 +32,8 @@ const Login: React.FC = () => {
     setSEOMetadata({
       title: 'Sign In | CodexPetra',
       description: 'Log in to your CodexPetra account to continue solving coding problems, practicing aptitude, and participating in hackathons.',
+      canonicalUrl: 'https://codexpetra.com/login',
+      noindex: true,
     });
     
     const savedEmail = localStorage.getItem('remember_email');
@@ -131,22 +133,22 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex-grow flex items-center justify-center px-4 py-16 bg-slate-50 dark:bg-[#07080c] transition-colors duration-200 min-h-[calc(100vh-4rem)] relative overflow-hidden">
+    <div className="flex-grow flex items-center justify-center px-4 py-16 bg-slate-50 dark:bg-[#020204] transition-colors duration-200 min-h-[calc(100vh-4rem)] relative overflow-hidden">
       {/* Background ambient lighting */}
-      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-indigo-600/5 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-blue-600/5 dark:bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-indigo-600/5 dark:bg-purple-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
-      <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-8 relative z-10">
+      <div className="w-full max-w-md bg-white/90 dark:bg-[#08090e]/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden p-8 relative z-10">
         
         {/* Header Block */}
         <div className="text-center mb-8 flex flex-col items-center">
           <Logo showText={false} iconSize={36} className="mb-3" />
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Welcome to CodexPetra</h2>
-          <p className="text-xs text-slate-500 mt-1.5 font-medium">Sign in to solve coding problems and track progression</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium">Sign in to solve coding problems and track progression</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/15 border border-red-200/60 dark:border-red-900/40 rounded-xl flex items-start gap-2.5 text-xs text-red-650 dark:text-red-400 font-semibold leading-relaxed">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200/60 dark:border-red-900/40 rounded-xl flex items-start gap-2.5 text-xs text-red-650 dark:text-red-400 font-semibold leading-relaxed">
             <AlertCircle size={16} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -169,7 +171,7 @@ const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email or username"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-955/20 border border-slate-250 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs disabled:opacity-50 font-bold"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#0c0d14] border border-slate-250 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-indigo-500/30 focus:border-blue-500 dark:focus:border-indigo-500 transition-all text-xs disabled:opacity-50 font-bold"
               />
             </div>
           </div>
@@ -197,12 +199,12 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter account password"
-                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-955/20 border border-slate-250 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/20 focus:border-blue-500 transition-all text-xs disabled:opacity-50 font-bold"
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#0c0d14] border border-slate-250 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-455 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-indigo-500/30 focus:border-blue-500 dark:focus:border-indigo-500 transition-all text-xs disabled:opacity-50 font-bold"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-455 hover:text-slate-600 dark:hover:text-slate-350 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-455 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -216,7 +218,7 @@ const Login: React.FC = () => {
               id="remember"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-850 focus:ring-blue-500 text-blue-600 cursor-pointer"
+              className="w-4 h-4 rounded bg-slate-50 dark:bg-[#0c0d14] border border-slate-200 dark:border-white/10 focus:ring-blue-500 text-blue-600 cursor-pointer"
             />
             <label htmlFor="remember" className="text-xs font-semibold text-slate-550 dark:text-slate-400 cursor-pointer select-none">
               Remember email
@@ -226,7 +228,7 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -242,9 +244,9 @@ const Login: React.FC = () => {
         {/* Separator / Social Login Section */}
         <div className="space-y-4 mt-6">
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-[1px] bg-slate-150 dark:bg-slate-850"></div>
-            <span className="text-[10px] font-black uppercase text-slate-455 tracking-wider font-mono">or continue with</span>
-            <div className="flex-1 h-[1px] bg-slate-150 dark:bg-slate-850"></div>
+            <div className="flex-1 h-[1px] bg-slate-150 dark:bg-white/10"></div>
+            <span className="text-[10px] font-black uppercase text-slate-455 dark:text-slate-400 tracking-wider font-mono">or continue with</span>
+            <div className="flex-1 h-[1px] bg-slate-150 dark:bg-white/10"></div>
           </div>
 
           {/* GIS Google button target */}
@@ -253,9 +255,9 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-slate-100 dark:border-slate-850 pt-6 text-center text-xs text-slate-500 font-semibold">
+        <div className="mt-8 border-t border-slate-100 dark:border-white/10 pt-6 text-center text-xs text-slate-500 dark:text-slate-400 font-semibold">
           New to CodexPetra?{' '}
-          <Link to="/signup" className="font-black text-blue-600 dark:text-blue-400 hover:underline uppercase tracking-wider text-[10px] ml-1">
+          <Link to="/signup" className="font-black text-blue-600 dark:text-indigo-400 hover:underline uppercase tracking-wider text-[10px] ml-1">
             Create an account
           </Link>
         </div>

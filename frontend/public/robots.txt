@@ -1,6 +1,20 @@
 User-agent: *
 Allow: /
+Allow: /tutorials/
+Allow: /about
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms-conditions
+Allow: /dashboard/aptitude
+Allow: /internships
+
+# Disallow private and authenticated paths
 Disallow: /admin/
 Disallow: /api/
+Disallow: /profile
+Disallow: /dashboard/hackathons/*/payment
+Disallow: /dashboard/interview
+Disallow: /internships/assessment/
 
-Sitemap: https://www.codexpetra.com/sitemap.xml
+Sitemap: https://codexpetra.com/sitemap.xml
+

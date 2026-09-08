@@ -103,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
 
   return (
     <aside 
-      className={`hidden md:flex flex-col sticky top-16 h-[calc(100vh-4rem)] bg-white/70 dark:bg-[#0b0c14]/80 backdrop-blur-lg border-r border-slate-200 dark:border-slate-850 shrink-0 transition-all duration-300 z-30 select-none overflow-y-auto overflow-x-hidden justify-between ${
+      className={`hidden md:flex flex-col sticky top-16 h-[calc(100vh-4rem)] bg-white/80 dark:bg-[#030407]/90 backdrop-blur-lg border-r border-slate-200/80 dark:border-white/8 shrink-0 transition-all duration-300 z-30 select-none overflow-y-auto overflow-x-hidden justify-between ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           )}
           <button 
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-550 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50 cursor-pointer transition-colors"
+            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-550 dark:text-slate-300 border border-slate-200/50 dark:border-white/10 cursor-pointer transition-colors"
             title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
@@ -136,11 +136,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                 to={item.path}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group relative cursor-pointer ${
                   active 
-                    ? 'bg-blue-50/80 text-blue-650 dark:bg-blue-950/30 dark:text-blue-450 border-l-4 border-blue-600 dark:border-blue-500 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
+                    ? 'bg-blue-50/80 text-blue-650 dark:bg-indigo-950/40 dark:text-indigo-300 border-l-4 border-blue-600 dark:border-indigo-400 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-white/5 border-l-4 border-transparent'
                 }`}
               >
-                <div className={`shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`}>
+                <div className={`shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-blue-600 dark:text-indigo-400' : ''}`}>
                   <Icon size={18} />
                 </div>
                 {!collapsed && (
@@ -207,11 +207,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       </div>
 
       {/* Sidebar Footer */}
-      <div className="p-4 border-t border-slate-250/40 dark:border-slate-850/60 flex flex-col gap-2 bg-slate-50/20 dark:bg-slate-950/20">
+      <div className="p-4 border-t border-slate-250/40 dark:border-white/8 flex flex-col gap-2 bg-slate-50/20 dark:bg-[#020204]">
         {/* User Card */}
         {user && !collapsed && (
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 mb-2">
-            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center justify-center font-bold text-sm shrink-0">
+          <div className="flex items-center gap-3 p-2 rounded-xl bg-white/40 dark:bg-[#08090e] border border-slate-200/50 dark:border-white/10 mb-2">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-indigo-950/70 text-blue-600 dark:text-indigo-300 border border-blue-200 dark:border-indigo-800 flex items-center justify-center font-bold text-sm shrink-0">
               {user.username.charAt(0).toUpperCase()}
             </div>
             <div className="overflow-hidden">

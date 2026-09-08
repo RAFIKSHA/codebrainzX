@@ -2432,7 +2432,7 @@ const AdminDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-[#07080d] text-slate-800 dark:text-slate-200 transition-colors duration-200 font-sans w-full">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-[#020204] text-slate-800 dark:text-slate-200 transition-colors duration-200 font-sans w-full">
       
       {/* Toast Alert */}
       {toast && (
@@ -2445,7 +2445,7 @@ const AdminDashboard: React.FC = () => {
       )}
 
       {/* Mobile Top Header Bar on Small Screens */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-[#0c0d14] border-b border-slate-200 dark:border-slate-850 sticky top-16 z-30 shadow-xs">
+      <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-[#050609] border-b border-slate-200 dark:border-white/10 sticky top-16 z-30 shadow-xs">
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setMobileAdminMenuOpen(!mobileAdminMenuOpen)}
@@ -2476,7 +2476,7 @@ const AdminDashboard: React.FC = () => {
       )}
 
       {/* Mobile Navigation Drawer */}
-      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0c0d14] border-r border-slate-200 dark:border-slate-850 shadow-2xl p-4 flex flex-col justify-between transition-transform duration-300 ${
+      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#050609] border-r border-slate-200 dark:border-white/10 shadow-2xl p-4 flex flex-col justify-between transition-transform duration-300 ${
         mobileAdminMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="space-y-4 pt-16 overflow-y-auto">
@@ -2524,7 +2524,7 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Desktop Left Sidebar Menu */}
-      <aside className="hidden lg:flex w-64 border-r border-slate-200 dark:border-slate-850 bg-white/70 dark:bg-[#0b0c14]/80 backdrop-blur-lg flex-col p-4 gap-2 justify-between shrink-0 h-screen sticky top-0 overflow-y-auto z-30">
+      <aside className="hidden lg:flex w-64 border-r border-slate-200/80 dark:border-white/8 bg-white/80 dark:bg-[#030407]/90 backdrop-blur-lg flex-col p-4 gap-2 justify-between shrink-0 h-screen sticky top-0 overflow-y-auto z-30">
         <div className="space-y-6">
           <div className="flex items-center gap-2 px-2 py-3 border-b border-slate-100 dark:border-slate-850">
             <LayoutDashboard size={20} className="text-blue-650 dark:text-blue-400 animate-pulse" />
