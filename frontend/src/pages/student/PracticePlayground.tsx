@@ -14,7 +14,7 @@ import {
 import {
   BookOpen, Lock, Unlock, CheckCircle2, Circle, Star, Heart, ThumbsUp,
   History, ChevronRight, ChevronLeft, Loader2, AlertCircle,
-  Search, Flame, Trophy, HelpCircle, Layers, ArrowRight, Sparkles, Award
+  Search, Flame, Trophy, HelpCircle, Layers, ArrowRight, Sparkles, Award, CodeXml
 } from 'lucide-react';
 
 interface Level {
@@ -242,25 +242,56 @@ const PracticePlayground: React.FC = () => {
 
   return (
     <div className="space-y-6 select-none animate-fade-in -mt-2">
+      {/* Top Module Switcher Bar (DSA Roadmap, Practice Bank, Online Tests) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50 dark:bg-slate-900/40 p-2 sm:p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+          <button
+            onClick={() => navigate('/dashboard/coding/dsa')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-white dark:hover:bg-slate-800 transition cursor-pointer"
+          >
+            <Sparkles size={14} className="text-purple-500" />
+            <span>Structured DSA Roadmap</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-extrabold">19 Steps</span>
+          </button>
+          
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/60 dark:border-slate-700 cursor-default"
+          >
+            <CodeXml size={14} className="text-blue-500" />
+            <span>Practice Problems Bank</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/dashboard/coding/tests')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-white dark:hover:bg-slate-800 transition cursor-pointer"
+          >
+            <Trophy size={14} className="text-amber-500" />
+            <span>Online Mock Tests</span>
+          </button>
+        </div>
+
+        <button
+          onClick={() => navigate('/dashboard/coding/dsa')}
+          className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm shadow-purple-500/10 shrink-0"
+        >
+          <BookOpen size={13} /> Open 19-Step DSA Roadmap
+        </button>
+      </div>
+
       {/* Header breadcrumbs */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="space-y-1">
           <nav className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             <Link to="/dashboard" className="hover:text-slate-605 dark:hover:text-white transition-colors">Dashboard</Link>
             <ChevronRight size={10} className="text-slate-650" />
-            <span className="text-blue-600 dark:text-blue-400">Practice Playground</span>
+            <Link to="/dashboard/coding/dsa" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Coding Arena</Link>
+            <ChevronRight size={10} className="text-slate-650" />
+            <span className="text-blue-600 dark:text-blue-400">Freestyle Practice</span>
           </nav>
           <h1 className="text-xl sm:text-2xl font-black text-slate-905 dark:text-white mt-1 leading-tight">
             Freestyle Coding Playground
           </h1>
         </div>
-
-        <button
-          onClick={() => navigate('/dashboard/coding/dsa')}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-sm shadow-purple-500/10"
-        >
-          <BookOpen size={13} /> View Structured DSA Roadmap
-        </button>
       </div>
 
       {/* Tabs list */}
@@ -280,7 +311,7 @@ const PracticePlayground: React.FC = () => {
               className={`px-4 py-2 rounded-2xl text-xs font-bold transition cursor-pointer ${
                 active
                   ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-450 hover:bg-slate-50 dark:hover:bg-slate-850/50'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850/50'
               }`}
             >
               {t.label}
@@ -297,6 +328,31 @@ const PracticePlayground: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Main workspace */}
           <div className="lg:col-span-9 space-y-6">
+            
+            {/* Prominent DSA Roadmap Link Banner */}
+            <div className="bg-gradient-to-r from-purple-900/15 via-indigo-900/10 to-purple-900/15 dark:from-purple-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 border border-purple-200/80 dark:border-purple-800/60 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-900/50 border border-purple-200 dark:border-purple-700/50 flex items-center justify-center text-purple-600 dark:text-purple-300 shrink-0 shadow-xs">
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    Looking for a Structured Learning Path?
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-extrabold uppercase">19 Steps</span>
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                    Follow the guided DSA Roadmap curriculum from Programming Basics to Advanced DP & Graphs.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/dashboard/coding/dsa')}
+                className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
+              >
+                <span>Explore DSA Roadmap</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
             
             {/* Filter Search Bar */}
             {(activeTab === 'all' || activeTab === 'bookmarks') && (

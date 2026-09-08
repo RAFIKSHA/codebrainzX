@@ -59,8 +59,8 @@ export const Logo: React.FC<LogoProps> = ({
 
       {/* Brand Typography: CODEXPETRA */}
       {showText && (
-        <span className="font-extrabold text-lg tracking-widest bg-gradient-to-r from-slate-900 to-slate-750 dark:from-white dark:to-slate-200 bg-clip-text text-transparent uppercase font-sans">
-          CodexPetra
+        <span className="font-black text-lg tracking-wider text-slate-900 dark:text-white uppercase font-sans">
+          CODEXPETRA
         </span>
       )}
     </div>

@@ -294,17 +294,16 @@ const HackathonRegister: React.FC = () => {
   };
 
   const addMember = () => {
-    if (!hackathon) return;
-    if (members.length + 1 >= hackathon.max_team_members) {
-      alert(`This hackathon only allows a maximum of ${hackathon.max_team_members} members per team.`);
+    if (members.length >= 4) {
+      alert("You can add a maximum of 4 co-members (5 members total including Leader).");
       return;
     }
     setMembers([...members, { name: '', email: '', phone: '', college: '' }]);
   };
 
   const removeMember = (index: number) => {
-    if (members.length <= 2) {
-      alert("A minimum of 3 team members (1 leader + at least 2 co-members) is required.");
+    if (index < 2) {
+      alert("The first 2 co-members (Co-Member #2 and #3) are mandatory and cannot be removed.");
       return;
     }
     setMembers(members.filter((_, i) => i !== index));
@@ -334,12 +333,45 @@ const HackathonRegister: React.FC = () => {
       if (!leaderRollNumber.trim()) return "Leader Roll Number is required.";
     }
     if (s === 4) {
-      if (members.length < 2) return "A minimum of 3 team members (1 leader + at least 2 co-members) is required to apply.";
-      for (let i = 0; i < members.length; i++) {
+      if (members.length < 2) return "At least 2 co-members are required (3 team members minimum including Leader).";
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const seenEmails = new Set<string>();
+      if (leaderEmail.trim()) {
+        seenEmails.add(leaderEmail.trim().toLowerCase());
+      }
+
+      // Mandatory Co-Members (#2 & #3)
+      for (let i = 0; i < 2; i++) {
         const m = members[i];
-        if (!m.name.trim()) return `Member ${i + 2} Name is required.`;
-        if (!m.email.trim()) return `Member ${i + 2} Email is required.`;
-        if (m.email.trim() === leaderEmail.trim()) return `Member ${i + 2} Email cannot be identical to Team Leader email.`;
+        if (!m || !m.name.trim()) return `Co-Member #${i + 2} (Mandatory): Full Name is required.`;
+        if (!m.email.trim()) return `Co-Member #${i + 2} (Mandatory): Email Address is required.`;
+        if (!emailRegex.test(m.email.trim())) return `Co-Member #${i + 2}: Please enter a valid email address.`;
+
+        const lowerEmail = m.email.trim().toLowerCase();
+        if (seenEmails.has(lowerEmail)) {
+          return `Co-Member #${i + 2} Email cannot be duplicate of Team Leader or another member.`;
+        }
+        seenEmails.add(lowerEmail);
+      }
+
+      // Optional Co-Members (#4 & #5)
+      for (let i = 2; i < members.length; i++) {
+        const m = members[i];
+        const hasName = !!m.name.trim();
+        const hasEmail = !!m.email.trim();
+
+        if (hasName || hasEmail) {
+          if (!hasName) return `Co-Member #${i + 2} (Optional): Please provide Full Name or clear this slot.`;
+          if (!hasEmail) return `Co-Member #${i + 2} (Optional): Please provide Email Address or clear this slot.`;
+          if (!emailRegex.test(m.email.trim())) return `Co-Member #${i + 2}: Please enter a valid email address.`;
+
+          const lowerEmail = m.email.trim().toLowerCase();
+          if (seenEmails.has(lowerEmail)) {
+            return `Co-Member #${i + 2} Email cannot be duplicate of Team Leader or another member.`;
+          }
+          seenEmails.add(lowerEmail);
+        }
       }
     }
     if (s === 6) {
@@ -419,12 +451,14 @@ const HackathonRegister: React.FC = () => {
           github_url: githubUrl || null,
           linkedin_url: linkedinUrl || null,
           resume_url: resumeUrl || null,
-          members: members.map((m, idx) => ({
-            name: m.name,
-            email: m.email,
-            phone: `99000${idx}${Math.floor(1000 + Math.random() * 9000)}`,
-            college: college
-          }))
+          members: members
+            .filter(m => m.name.trim() && m.email.trim())
+            .map((m, idx) => ({
+              name: m.name.trim(),
+              email: m.email.trim(),
+              phone: m.phone?.trim() || `99000${idx}${Math.floor(1000 + Math.random() * 9000)}`,
+              college: college
+            }))
         };
 
         const teamRes = await api.post('/hackathon-teams/', teamPayload);
@@ -977,69 +1011,113 @@ const HackathonRegister: React.FC = () => {
         {/* STEP 4: MEMBERS DETAIL */}
         {step === 4 && (
           <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-850 pb-4">
               <div>
-                <h3 className="text-sm font-black text-slate-850 dark:text-white flex items-center gap-2">
-                  <User size={16} className="text-blue-600" /> Co-Members Directory
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-1 font-semibold">
-                  Add details of additional team members. A minimum of 3 members (Leader + at least 2 co-members) is mandatory, up to {hackathon.max_team_members} members maximum.
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-black text-slate-850 dark:text-white flex items-center gap-2">
+                    <User size={16} className="text-blue-600" /> Co-Members Directory
+                  </h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-200/40">
+                    2 Mandatory * + 2 Optional
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1 font-semibold leading-relaxed">
+                  Add details of additional team members. <strong>2 co-members are mandatory (*)</strong> (minimum 3 members total including Leader). You can optionally add up to 2 additional co-members (maximum 4 co-members / 5 members total).
                 </p>
               </div>
-              {members.length + 1 < hackathon.max_team_members && (
+              {members.length < 4 && (
                 <button
                   type="button"
                   onClick={addMember}
-                  className="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all shrink-0 cursor-pointer self-start sm:self-auto"
                 >
-                  <Plus size={13} /> Add Member
+                  <Plus size={14} /> Add Co-Member
                 </button>
               )}
             </div>
 
             <div className="space-y-4">
-              {members.map((member, idx) => (
-                <div key={idx} className="p-5 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl relative space-y-4 shadow-sm animate-slide-in">
-                  <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-2">
-                    <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Co-Member #{idx + 2}</span>
-                    {members.length > 2 && (
-                      <button
-                        type="button"
-                        onClick={() => removeMember(idx)}
-                        className="text-red-500 hover:text-red-700 p-1 hover:bg-red-500/5 rounded-lg transition-colors cursor-pointer"
-                        title="Remove member"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    )}
-                  </div>
+              {members.map((member, idx) => {
+                const isMandatory = idx < 2;
+                return (
+                  <div 
+                    key={idx} 
+                    className={`p-5 rounded-2xl relative space-y-4 shadow-sm animate-slide-in border transition-all ${
+                      isMandatory 
+                        ? 'bg-slate-50/70 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800' 
+                        : 'bg-white dark:bg-slate-900/60 border-dashed border-blue-300/80 dark:border-blue-900/50'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Co-Member #{idx + 2}
+                        </span>
+                        {isMandatory ? (
+                          <span className="px-2 py-0.5 text-[9px] font-black uppercase rounded bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200/50">
+                            Mandatory *
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 text-[9px] font-black uppercase rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                            Optional
+                          </span>
+                        )}
+                      </div>
+                      
+                      {!isMandatory && (
+                        <button
+                          type="button"
+                          onClick={() => removeMember(idx)}
+                          className="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-bold"
+                          title="Remove optional member"
+                        >
+                          <Trash2 size={14} /> Remove
+                        </button>
+                      )}
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-550 block mb-1">Full Name *</label>
-                      <input 
-                        type="text"
-                        required
-                        value={member.name}
-                        onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
-                        placeholder="e.g. Jane Doe"
-                        className="w-full px-3 py-2 text-xs border border-slate-250 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-808 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-550 block mb-1">Email Address *</label>
-                      <input 
-                        type="email"
-                        required
-                        value={member.email}
-                        onChange={(e) => handleMemberChange(idx, 'email', e.target.value)}
-                        placeholder="e.g. jane.doe@college.edu"
-                        className="w-full px-3 py-2 text-xs border border-slate-250 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-808 focus:outline-none"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-550 block mb-1">
+                          Full Name {isMandatory ? '*' : '(Optional)'}
+                        </label>
+                        <input 
+                          type="text"
+                          required={isMandatory}
+                          value={member.name}
+                          onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
+                          placeholder={isMandatory ? "e.g. Jane Doe" : "e.g. Jane Doe (Leave blank to skip)"}
+                          className="w-full px-3.5 py-2.5 text-xs border border-slate-250 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-808 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-550 block mb-1">
+                          Email Address {isMandatory ? '*' : '(Optional)'}
+                        </label>
+                        <input 
+                          type="email"
+                          required={isMandatory}
+                          value={member.email}
+                          onChange={(e) => handleMemberChange(idx, 'email', e.target.value)}
+                          placeholder={isMandatory ? "e.g. jane.doe@college.edu" : "e.g. jane.doe@college.edu"}
+                          className="w-full px-3.5 py-2.5 text-xs border border-slate-250 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-808 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
+              {members.length < 4 && (
+                <button
+                  type="button"
+                  onClick={addMember}
+                  className="w-full py-3.5 border-2 border-dashed border-blue-300/80 hover:border-blue-500 dark:border-blue-900/60 dark:hover:border-blue-700 bg-blue-50/20 hover:bg-blue-50/50 dark:bg-blue-950/10 dark:hover:bg-blue-950/20 rounded-2xl text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <Plus size={16} />
+                  Add Optional Co-Member ({members.length}/4 Co-Members)
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -1218,18 +1296,29 @@ const HackathonRegister: React.FC = () => {
               {/* Box 3: Co-members */}
               <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl space-y-2 shadow-sm md:col-span-2">
                 <h4 className="font-black text-slate-850 dark:text-white border-b border-slate-150/40 dark:border-slate-850 pb-1 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
-                  <Users size={12} className="text-blue-500" /> Registered Co-Members ({members.length})
+                  <Users size={12} className="text-blue-500" /> Registered Co-Members ({members.filter(m => m.name.trim() && m.email.trim()).length})
                 </h4>
-                {members.length === 0 ? (
+                {members.filter(m => m.name.trim() && m.email.trim()).length === 0 ? (
                   <p className="italic text-slate-455">No additional team members added.</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-                    {members.map((m, i) => (
-                      <div key={i} className="p-2.5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 rounded-xl">
-                        <span className="font-bold text-slate-900 dark:text-white block text-[11px]">#{i+2}: {m.name}</span>
-                        <span className="text-[10px] text-slate-455 block mt-0.5">{m.email}</span>
-                      </div>
-                    ))}
+                    {members
+                      .filter(m => m.name.trim() && m.email.trim())
+                      .map((m, i) => (
+                        <div key={i} className="p-2.5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 rounded-xl flex items-center justify-between">
+                          <div>
+                            <span className="font-bold text-slate-900 dark:text-white block text-[11px]">#{i+2}: {m.name}</span>
+                            <span className="text-[10px] text-slate-455 block mt-0.5">{m.email}</span>
+                          </div>
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                            i < 2 
+                              ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200/40' 
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                          }`}>
+                            {i < 2 ? 'Mandatory' : 'Optional'}
+                          </span>
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>

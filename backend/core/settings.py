@@ -15,7 +15,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-b5jqwl)-_l-8b7w!))xc&
 
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,codebrainzx.onrender.com').split(',')
 
 # Application definition
 
@@ -127,7 +127,14 @@ SIMPLE_JWT = {
 }
 
 # CORS whitelist
-CORS_ALLOW_ALL_ORIGINS = True
+# Explicit origins are more secure than CORS_ALLOW_ALL_ORIGINS=True.
+# Add any new frontend domains to CORS_ALLOWED_ORIGINS env var (comma-separated).
+_default_cors_origins = 'http://localhost:5173,http://localhost:3000,https://codexpetra.com,https://www.codexpetra.com'
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('CORS_ALLOWED_ORIGINS', _default_cors_origins).split(',')
+    if origin.strip()
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Internationalization

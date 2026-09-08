@@ -15,10 +15,17 @@ import {
   HelpCircle as QuizIcon, BookMarked
 } from 'lucide-react';
 
+import { PythonJourneyPage } from '../../components/tutorials/python-journey/PythonJourneyPage';
+
 const TutorialLearningPage: React.FC = () => {
   const { langSlug, lessonSlug } = useParams<{ langSlug: string; lessonSlug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // If user is learning Python, render the dedicated concept-based learning journey
+  if (langSlug?.toLowerCase() === 'python') {
+    return <PythonJourneyPage />;
+  }
 
   // Reading settings states
   const [fontSize, setFontSize] = useState<number>(16); // in pixels

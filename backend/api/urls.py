@@ -30,6 +30,11 @@ from .views_tutorials import (
     TutorialPracticeQuestionViewSet, TutorialLessonResourceViewSet,
     TutorialMediaViewSet, TutorialAdminAnalyticsView
 )
+from .views_internship import (
+    InternshipProgramViewSet, ScholarshipRuleViewSet, InternshipAssessmentViewSet,
+    InternshipApplicationViewSet, InternshipAttemptViewSet,
+    InternshipQuestionBankHelperViewSet, InternshipAdminAnalyticsView
+)
 
 router = DefaultRouter()
 router.register('coding/tests', CodingTestViewSet, basename='coding-test')
@@ -85,6 +90,14 @@ router.register('tutorials/practices', TutorialPracticeQuestionViewSet, basename
 router.register('tutorials/resources', TutorialLessonResourceViewSet, basename='tutorial-resource')
 router.register('tutorials/media', TutorialMediaViewSet, basename='tutorial-media')
 
+# Internship Module routers
+router.register('internships/programs', InternshipProgramViewSet, basename='internship-program')
+router.register('internships/scholarship-rules', ScholarshipRuleViewSet, basename='internship-scholarship-rule')
+router.register('internships/assessments', InternshipAssessmentViewSet, basename='internship-assessment')
+router.register('internships/applications', InternshipApplicationViewSet, basename='internship-application')
+router.register('internships/attempts', InternshipAttemptViewSet, basename='internship-attempt')
+router.register('internships/admin/question-bank', InternshipQuestionBankHelperViewSet, basename='internship-admin-question-bank')
+
 urlpatterns = [
     # Auth endpoints
     path('auth/register/send-otp/', RegisterSendOTPView.as_view(), name='register-send-otp'),
@@ -106,6 +119,9 @@ urlpatterns = [
     # Custom Tutorials endpoints
     path('tutorials/admin/analytics/', TutorialAdminAnalyticsView.as_view(), name='tutorial-admin-analytics'),
     
+    # Custom Internship endpoints
+    path('admin/internships/analytics/', InternshipAdminAnalyticsView.as_view(), name='internship-admin-analytics'),
+
     # Resource endpoints
     path('', include(router.urls)),
 ]

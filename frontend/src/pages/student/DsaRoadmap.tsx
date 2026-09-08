@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
@@ -10,9 +10,9 @@ import {
   type EnrichedQuestion
 } from '../../utils/codingHelpers';
 import {
-  ChevronRight, CheckCircle2, Circle, Flame, Trophy, Sparkles, BookOpen, ArrowRight,
+  ChevronRight, CheckCircle2, Circle, Flame, Trophy, Sparkles,
   Terminal, Code, Binary, Boxes, Workflow, Database, Hash, GitBranch, Cpu, Share2,
-  ListTree, Network, Zap, Award, Loader2, HelpCircle, AlertCircle, LayoutGrid
+  ListTree, Layers, Network, Zap, Award, Loader2, HelpCircle, LayoutGrid
 } from 'lucide-react';
 
 import dsaHeroImg from '../../assets/dsa_illustration.jpg';
@@ -219,8 +219,44 @@ const DsaRoadmap: React.FC = () => {
   return (
     <div className="bg-[#fcfdff] dark:bg-[#08090d] min-h-screen text-[#0f172a] dark:text-slate-100 font-sans antialiased">
       {/* Container - Full-Width max-width of 1480px */}
-      <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+      <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
+        {/* Top Module Switcher Bar (DSA Roadmap, Practice Bank, Online Tests) */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-[#0c0d14] p-2 sm:p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-850 shadow-xs">
+          <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+            <button
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80 shadow-xs cursor-default"
+            >
+              <Sparkles size={14} className="text-purple-500" />
+              <span>Structured DSA Roadmap</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-200/80 dark:bg-purple-900 text-purple-800 dark:text-purple-200 font-extrabold">19 Steps</span>
+            </button>
+            
+            <button
+              onClick={() => navigate('/dashboard/coding/problems')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer"
+            >
+              <Code size={14} className="text-blue-500" />
+              <span>Practice Problems Bank</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/dashboard/coding/tests')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer"
+            >
+              <Trophy size={14} className="text-amber-500" />
+              <span>Online Mock Tests</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => navigate('/dashboard/coding/problems')}
+            className="w-full sm:w-auto px-4 py-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm shrink-0"
+          >
+            <LayoutGrid size={13} /> Open Freestyle Practice
+          </button>
+        </div>
+
         {/* ── Wide DSA Hero/Header Section ── */}
         <div className="relative bg-gradient-to-r from-slate-900 via-slate-950 to-[#121320] text-white rounded-[24px] overflow-hidden p-8 sm:p-10 shadow-lg border border-slate-800 flex flex-col md:flex-row justify-between items-center gap-8 min-h-[300px]">
           {/* Decorative gradients */}
@@ -332,7 +368,7 @@ const DsaRoadmap: React.FC = () => {
                   onClick={() => navigate('/dashboard/coding/problems')}
                   className="w-full py-2.5 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer text-center flex items-center justify-center gap-1.5"
                 >
-                  <LayoutGrid size={12} /> View Full Roadmap
+                  <LayoutGrid size={12} /> Explore Problem Bank
                 </button>
               </div>
             </div>
@@ -389,6 +425,7 @@ const DsaRoadmap: React.FC = () => {
                     </div>
                   </div>
                 ) : (
+                  <div className="max-h-[560px] overflow-y-auto pr-1 -mr-1 scroll-smooth" style={{ scrollbarWidth: 'thin', scrollbarColor: '#e2e8f0 transparent' }}>
                   <div className="space-y-3.5 pt-1">
                     {currentModule.questionsList.map((q) => {
                       const isSolved = q.solved;
@@ -457,6 +494,7 @@ const DsaRoadmap: React.FC = () => {
                         </div>
                       );
                     })}
+                  </div>
                   </div>
                 )}
 

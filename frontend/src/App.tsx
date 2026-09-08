@@ -55,6 +55,16 @@ const TutorialLearningPage = lazy(() => import('./pages/student/TutorialLearning
 const TutorialsAdminPanel = lazy(() => import('./pages/admin/TutorialsAdminPanel'));
 const ProfilePage = lazy(() => import('./pages/student/ProfilePage'));
 
+// Internship Pages
+const InternshipLandingPage = lazy(() => import('./pages/student/InternshipLandingPage'));
+const InternshipApplicationPage = lazy(() => import('./pages/student/InternshipApplicationPage'));
+const InternshipConfirmationPage = lazy(() => import('./pages/student/InternshipConfirmationPage'));
+const InternshipAssessmentInstructionsPage = lazy(() => import('./pages/student/InternshipAssessmentInstructionsPage'));
+const InternshipAssessmentEngine = lazy(() => import('./pages/student/InternshipAssessmentEngine'));
+const InternshipResultPage = lazy(() => import('./pages/student/InternshipResultPage'));
+const InternshipStudentDashboard = lazy(() => import('./pages/student/InternshipStudentDashboard'));
+const InternshipAdminPanel = lazy(() => import('./pages/admin/InternshipAdminPanel'));
+
 // Placeholder Pages
 import { 
   InterviewDashboard, McqDashboard, 
@@ -144,6 +154,64 @@ const App: React.FC = () => {
                 }
               />
 
+              {/* Internship Program Funnel Routes */}
+              <Route
+                path="/internships"
+                element={
+                  <Layout>
+                    <InternshipLandingPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/internships/:slug/apply"
+                element={
+                  <Layout>
+                    <InternshipApplicationPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/internships/application/:applicationId/confirmation"
+                element={
+                  <Layout>
+                    <InternshipConfirmationPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/internships/assessment/:applicationId/instructions"
+                element={
+                  <Layout>
+                    <InternshipAssessmentInstructionsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/internships/assessment/:attemptId/engine"
+                element={<InternshipAssessmentEngine />}
+              />
+              <Route
+                path="/internships/assessment/:attemptId/result"
+                element={
+                  <Layout>
+                    <InternshipResultPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/internships/dashboard"
+                element={
+                  <DashboardLayout>
+                    <InternshipStudentDashboard />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/dashboard/internships"
+                element={<Navigate to="/internships/dashboard" replace />}
+              />
+
               {/* Student Protected Routes */}
               <Route
                 path="/dashboard"
@@ -161,6 +229,16 @@ const App: React.FC = () => {
                   <ProtectedRoute>
                     <DashboardLayout>
                       <ProfilePage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/coding"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <DsaRoadmap />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }
@@ -329,11 +407,7 @@ const App: React.FC = () => {
               />
               <Route
                 path="/dashboard/aptitude/test/:testId"
-                element={
-                  <Layout showFooter={false}>
-                    <AptitudeTestEngine />
-                  </Layout>
-                }
+                element={<AptitudeTestEngine />}
               />
               <Route
                 path="/dashboard/aptitude/result/:attemptId"
@@ -499,6 +573,16 @@ const App: React.FC = () => {
                   <AdminRoute>
                     <Layout>
                       <AptitudeQuestionCreateEditPage />
+                    </Layout>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/internships"
+                element={
+                  <AdminRoute>
+                    <Layout>
+                      <InternshipAdminPanel />
                     </Layout>
                   </AdminRoute>
                 }

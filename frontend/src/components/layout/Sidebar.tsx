@@ -5,7 +5,7 @@ import { tutorialsService } from '../../services/tutorials';
 import type { TutorialLanguage } from '../../services/tutorials';
 import { 
   LayoutDashboard, CodeXml, Brain, Users, FileText, Trophy, 
-  BookOpen, Bot, User, LogOut, ChevronLeft, ChevronRight 
+  BookOpen, Bot, User, LogOut, ChevronLeft, ChevronRight, GraduationCap, Briefcase
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -80,6 +80,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       icon: Users,
       disabled: false,
       match: (pathname: string) => pathname.startsWith('/dashboard/hackathons'),
+    },
+    {
+      name: 'Internships',
+      path: '/internships',
+      icon: GraduationCap,
+      disabled: false,
+      match: (pathname: string) => pathname.startsWith('/internships') || pathname.startsWith('/dashboard/internships'),
     },
   ];
 

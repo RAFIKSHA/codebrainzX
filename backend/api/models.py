@@ -6,6 +6,10 @@ from .models_tutorials import (
     TutorialQuiz, TutorialQuizQuestion, TutorialPracticeQuestion,
     TutorialLessonResource, TutorialMedia, TutorialLessonAnalytics
 )
+from .models_internship import (
+    InternshipProgram, ScholarshipRule, InternshipAssessment,
+    InternshipApplication, InternshipAttempt, InternshipQuestionResponse
+)
 
 class Profile(models.Model):
     ROLE_CHOICES = (
