@@ -371,18 +371,47 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile Drawer Menu Toggle */}
-          <div className="flex items-center gap-2.5 md:hidden">
+          {/* Mobile Right Action Buttons */}
+          <div className="flex items-center gap-2 md:hidden">
+            {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-1.5 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer"
+              className="p-1.5 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-all cursor-pointer"
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
+
+            {/* Notification on Mobile */}
+            {user && (
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="p-1.5 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-all relative cursor-pointer"
+                aria-label="Notifications"
+              >
+                <Bell size={17} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
+                )}
+              </button>
+            )}
+
+            {/* Direct Profile Icon for Logged in User on Mobile */}
+            {user && (
+              <Link
+                to="/profile"
+                className="w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center font-bold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-[11px] shadow-xs"
+                title="View Profile"
+              >
+                {user.username.charAt(0).toUpperCase()}
+              </Link>
+            )}
+
+            {/* Hamburger / Close Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer"
+              className="p-1.5 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-all cursor-pointer"
+              aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -391,100 +420,246 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile Notifications Panel Dropdown */}
+      {notifOpen && (
+        <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl px-4 py-3 animate-fadeIn">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-900">
+            <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+              <Bell size={14} className="text-blue-600 dark:text-blue-400" /> Notifications
+            </span>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="text-[10px] text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold cursor-pointer"
+              >
+                Mark all read
+              </button>
+            )}
+          </div>
+          <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900 mt-2">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-xs text-slate-400">No notifications yet.</div>
+            ) : (
+              notifications.map((notif) => (
+                <div
+                  key={notif.id}
+                  onClick={() => !notif.is_read && markAsRead(notif.id)}
+                  className={`p-2.5 text-left rounded-lg transition-colors cursor-pointer ${
+                    notif.is_read ? 'text-slate-500' : 'bg-blue-50/50 dark:bg-blue-950/20 text-blue-600'
+                  }`}
+                >
+                  <div className="text-[11px] font-bold">{notif.title}</div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                    {notif.message}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950 shadow-lg px-4 py-4 space-y-3">
-          <div className="space-y-1">
-            <Link
-              to="/tutorials"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
-            >
-              Tutorials
-            </Link>
-            <Link
-              to="/dashboard/coding"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
-            >
-              Practice
-            </Link>
-            <Link
-              to="/dashboard/aptitude"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
-            >
-              Aptitude
-            </Link>
-            <Link
-              to="/dashboard/hackathons"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
-            >
-              Hackathons
-            </Link>
-            <Link
-              to="/test-series"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
-            >
-              Test Series
-            </Link>
-            <Link
-              to="/internships"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900"
-            >
-              Internships 2026
-            </Link>
-          </div>
-
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-850 bg-white dark:bg-[#0c0d14] shadow-2xl px-4 py-5 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto animate-fadeIn">
+          
+          {/* User Profile Card (if logged in) */}
           {user ? (
-            <div className="border-t border-slate-100 dark:border-slate-900 pt-3">
-              <div className="flex items-center px-3 py-2">
-                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center font-bold text-blue-600 dark:text-blue-405 mr-3 text-xs border border-blue-150 dark:border-blue-900">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-200/50 dark:border-purple-800/50 flex items-center justify-between">
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 min-w-0"
+              >
+                <div className="w-10 h-10 rounded-full bg-purple-600 text-white font-black text-sm flex items-center justify-center shadow-sm shrink-0">
                   {user.username.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-800 dark:text-white leading-none">{user.username}</div>
-                  <div className="text-[10px] text-slate-400 mt-1">{user.email}</div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate flex items-center gap-1.5">
+                    <span>{user.username}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                      {user.role}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                    {user.email || 'View Profile & Stats →'}
+                  </div>
                 </div>
-              </div>
-              {isAdmin && (
-                <Link
-                  to="/admin/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 text-sm font-semibold text-amber-600 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg"
-                >
-                  Admin Panel
-                </Link>
-              )}
-              <button
-                onClick={handleLogout}
-                className="w-full text-left flex items-center gap-2 px-3 py-2 mt-2 rounded-lg text-sm font-semibold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20"
+              </Link>
+
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-xl bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 text-xs font-bold shrink-0 hover:scale-105 transition-transform"
               >
-                <LogOut size={16} />
-                Sign Out
-              </button>
+                <User size={14} />
+              </Link>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 pt-3 border-t border-slate-100 dark:border-slate-900">
+            <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-100 dark:border-slate-850">
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg"
+                className="py-2.5 text-center text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl"
               >
                 Sign In
               </Link>
               <Link
                 to="/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm"
+                className="py-2.5 text-center text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-sm"
               >
                 Sign Up
               </Link>
             </div>
           )}
+
+          {/* Quick Hub Links */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 block mb-1">
+              Main Menu
+            </span>
+            <Link
+              to="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <LayoutDashboard size={16} className="text-purple-600 dark:text-purple-400" />
+              <span>Dashboard Hub</span>
+            </Link>
+            <Link
+              to="/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <User size={16} className="text-blue-600 dark:text-blue-400" />
+              <span>My Profile & Stats</span>
+            </Link>
+            <Link
+              to="/dashboard/coding/dsa"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <Code size={16} className="text-indigo-600 dark:text-indigo-400" />
+              <span>DSA Learning Roadmap</span>
+            </Link>
+            <Link
+              to="/dashboard/coding/problems"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <Code size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <span>Practice Playground</span>
+            </Link>
+            <Link
+              to="/dashboard/aptitude"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <Sparkles size={16} className="text-amber-600 dark:text-amber-400" />
+              <span>Aptitude Practice</span>
+            </Link>
+            <Link
+              to="/tutorials"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <BookOpen size={16} className="text-purple-600 dark:text-purple-400" />
+              <span>Programming Tutorials</span>
+            </Link>
+            <Link
+              to="/dashboard/hackathons"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <Users size={16} className="text-pink-600 dark:text-pink-400" />
+              <span>Hackathons</span>
+            </Link>
+            <Link
+              to="/test-series"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+              <Sparkles size={16} className="text-teal-600 dark:text-teal-400" />
+              <span>Test Series</span>
+            </Link>
+            <Link
+              to="/internships"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/40"
+            >
+              <div className="flex items-center gap-3">
+                <Sparkles size={16} />
+                <span>Internships 2026</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase bg-blue-600 text-white">
+                New
+              </span>
+            </Link>
+          </div>
+
+          {/* Admin Panels Section (if admin) */}
+          {user && isAdmin && (
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-850 space-y-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-500 dark:text-amber-400 px-2 block mb-1">
+                Admin Control Panels
+              </span>
+              <Link
+                to="/admin/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+              >
+                <LayoutDashboard size={14} className="text-amber-500" />
+                <span>CMS Central Dashboard</span>
+              </Link>
+              <Link
+                to="/admin/internships"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-900"
+              >
+                <Sparkles size={14} />
+                <span>Internships Admin</span>
+              </Link>
+              <Link
+                to="/admin/tutorials"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-slate-100 dark:hover:bg-slate-900"
+              >
+                <BookOpen size={14} />
+                <span>Tutorials CMS</span>
+              </Link>
+              <Link
+                to="/admin/aptitude"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+              >
+                <Sparkles size={14} />
+                <span>Aptitude Admin</span>
+              </Link>
+              <Link
+                to="/admin/hackathons"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+              >
+                <Users size={14} />
+                <span>Hackathons Admin</span>
+              </Link>
+            </div>
+          )}
+
+          {/* User Log Out (if logged in) */}
+          {user && (
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-850">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+              >
+                <LogOut size={14} />
+                <span>Sign Out from CodexPetra</span>
+              </button>
+            </div>
+          )}
+
         </div>
       )}
     </nav>

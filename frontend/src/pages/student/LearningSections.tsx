@@ -146,44 +146,44 @@ const LearningSections: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#f8fafc] dark:bg-[#090a0f] min-h-screen -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 font-sans text-slate-800 dark:text-slate-100 flex flex-col gap-8">
+    <div className="bg-[#f8fafc] dark:bg-[#090a0f] min-h-screen -m-3 sm:-m-6 lg:-m-8 p-3 sm:p-6 lg:p-8 font-sans text-slate-800 dark:text-slate-100 flex flex-col gap-6 sm:gap-8">
       
       {/* ── SECTION 1: TOP HERO / WELCOME SECTION ── */}
-      <div className="bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-[20px] p-8 sm:p-12 md:p-14 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col justify-center min-h-[340px] md:min-h-[380px]">
+      <div className="bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-[20px] p-6 sm:p-10 md:p-14 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] relative overflow-hidden flex flex-col justify-center min-h-[300px] md:min-h-[360px]">
         
         {/* Left Side Content */}
-        <div className="space-y-6 md:w-7/12 relative z-10">
+        <div className="space-y-5 sm:space-y-6 md:w-7/12 relative z-10">
           <div className="space-y-2">
-            <span className="text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400 block">
+            <span className="text-xs sm:text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400 block">
               <span className="text-[#4f46e5] font-bold">Welcome</span> back, {user?.username || 'Learner'} 👋
             </span>
-            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-[#0f172a] dark:text-white tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-black text-[#0f172a] dark:text-white tracking-tight leading-tight">
               Practice. Learn. Succeed.
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-lg">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-lg">
               CodexPetra is your all-in-one platform to practice coding, improve aptitude and build real-world skills.
             </p>
           </div>
 
           {/* Action buttons */}
-          <div className="flex flex-wrap gap-4 pt-1">
+          <div className="flex flex-wrap gap-3 pt-1">
             <button
               onClick={() => navigate('/dashboard/coding')}
-              className="px-6 py-3 rounded-lg bg-[#4f46e5] hover:bg-[#4338ca] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+              className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Start Practicing</span>
               <ArrowRight size={14} />
             </button>
             <a
               href="#explore-sections"
-              className="px-6 py-3 rounded-lg border border-[#e2e8f0] dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 bg-white text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center"
+              className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl border border-[#e2e8f0] dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 bg-white dark:bg-[#0c0d14] text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center"
             >
               Explore Platform
             </a>
           </div>
 
           {/* Value Points in Row */}
-          <div className="flex flex-wrap items-center gap-8 mt-10 pt-8 border-t border-slate-100 dark:border-slate-850/60">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-8 mt-6 sm:mt-10 pt-6 sm:pt-8 border-t border-slate-100 dark:border-slate-850/60">
             {[
               { icon: FileCode, label: 'Curated Content', desc: 'High quality, exam ready' },
               { icon: CheckSquare, label: 'Track Progress', desc: 'Measure and improve' },
@@ -191,9 +191,9 @@ const LearningSections: React.FC = () => {
             ].map((item, idx) => {
               const Icon = item.icon;
               return (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="w-10 h-10 border border-[#e2e8f0] dark:border-slate-800 bg-white dark:bg-[#0c0d14] rounded-lg flex items-center justify-center text-slate-400 shrink-0">
-                    <Icon size={16} className="text-slate-500 dark:text-slate-400" />
+                <div key={idx} className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 border border-[#e2e8f0] dark:border-slate-800 bg-white dark:bg-[#0c0d14] rounded-lg flex items-center justify-center text-slate-400 shrink-0">
+                    <Icon size={15} className="text-slate-500 dark:text-slate-400" />
                   </div>
                   <div className="space-y-0.5">
                     <h4 className="text-xs font-black text-slate-800 dark:text-white leading-tight">{item.label}</h4>
@@ -209,12 +209,12 @@ const LearningSections: React.FC = () => {
         <img
           src={heroImg}
           alt="Workspace layout - laptop, black cup, books"
-          className="absolute right-0 bottom-0 top-0 h-full w-full hidden md:block object-cover object-right select-none z-0"
+          className="absolute right-0 bottom-0 top-0 h-full w-full hidden md:block object-cover object-right select-none z-0 opacity-40 lg:opacity-100"
         />
       </div>
 
       {/* ── SECTION 2: CONTINUE LEARNING & EXPLORE ROW ── */}
-      <div id="explore-sections" className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div id="explore-sections" className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         
         {/* Left Col: Continue Learning */}
         <div className="lg:col-span-5 flex flex-col space-y-4">
@@ -228,7 +228,7 @@ const LearningSections: React.FC = () => {
             <div className="bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-2xl p-6 shadow-sm animate-pulse space-y-4 h-[220px]" />
           ) : !continueLearning || continueLearning.completed_lessons === 0 && continueLearning.progress_percent === 0 ? (
             /* Empty State */
-            <div className="bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-2xl p-8 shadow-sm flex flex-col items-center justify-center text-center space-y-4 h-[220px]">
+            <div className="bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col items-center justify-center text-center space-y-4 min-h-[220px]">
               <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-950/20 text-[#4f46e5] flex items-center justify-center">
                 <Sparkles size={22} />
               </div>
@@ -245,39 +245,39 @@ const LearningSections: React.FC = () => {
             </div>
           ) : (
             /* Continue Card */
-            <div className="bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-2xl p-6 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] flex flex-col justify-between min-h-[220px] hover:border-purple-300 dark:hover:border-purple-900 transition-all duration-200">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
+            <div className="bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-2xl p-5 sm:p-6 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] flex flex-col justify-between min-h-[220px] hover:border-purple-300 dark:hover:border-purple-900 transition-all duration-200">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex items-start gap-3.5 sm:gap-4 min-w-0">
                   {renderLanguageIcon(continueLearning.course_slug)}
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold tracking-wider text-[#4f46e5] dark:text-[#8b5cf6] uppercase block">
+                  <div className="space-y-1 min-w-0">
+                    <span className="text-[10px] font-bold tracking-wider text-[#4f46e5] dark:text-[#8b5cf6] uppercase block truncate">
                       {continueLearning.course_name}
                     </span>
-                    <h3 className="text-base font-bold text-[#0f172a] dark:text-white leading-snug">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0f172a] dark:text-white leading-snug truncate">
                       {continueLearning.lesson_title}
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                       {continueLearning.chapter_name}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-1 shrink-0">
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
                   <button
                     onClick={() => navigate(`/tutorials/${continueLearning.course_slug}/${continueLearning.lesson_slug}`)}
-                    className="px-4 py-2 border border-purple-200 dark:border-purple-900/40 text-purple-650 dark:text-purple-400 rounded-lg text-xs font-semibold hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all flex items-center gap-1 cursor-pointer"
+                    className="px-3.5 py-2 border border-purple-200 dark:border-purple-900/40 text-purple-650 dark:text-purple-400 rounded-lg text-xs font-semibold hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Continue Learning</span>
+                    <span>Continue</span>
                     <ArrowRight size={12} />
                   </button>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">
                     Last accessed {continueLearning.last_accessed}
                   </span>
                 </div>
               </div>
 
               {/* Progress bar */}
-              <div className="flex items-center gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-850/60">
+              <div className="flex items-center gap-4 mt-5 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-850/60">
                 <div className="w-full bg-[#f1f5f9] dark:bg-slate-850 h-2 rounded-full overflow-hidden">
                   <div
                     className="bg-[#4f46e5] h-full rounded-full transition-all duration-500"
@@ -306,7 +306,7 @@ const LearningSections: React.FC = () => {
           </div>
 
           {/* 5 Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4">
             {[
               {
                 title: 'DSA Roadmap',

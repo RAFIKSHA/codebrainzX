@@ -35,6 +35,7 @@ const TutorialLearningPage: React.FC = () => {
   const [completedSlugs, setCompletedSlugs] = useState<string[]>([]);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
+  const [mobileLessonsOpen, setMobileLessonsOpen] = useState<boolean>(false);
 
   // Table of Contents Outline
   const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>([]);
@@ -596,6 +597,83 @@ const TutorialLearningPage: React.FC = () => {
         style={{ width: `${scrollProgress}%` }}
       ></div>
 
+      {/* Mobile Chapter & Lesson Drawer Toggle (Visible on < lg) */}
+      <div className="lg:hidden fixed bottom-6 left-4 z-40 print:hidden">
+        <button
+          onClick={() => setMobileLessonsOpen(true)}
+          className="px-4 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xl flex items-center gap-2 cursor-pointer border border-blue-400/40"
+        >
+          <BookMarked size={14} />
+          <span>Curriculum Outline</span>
+        </button>
+      </div>
+
+      {/* Mobile Lessons Backdrop & Drawer */}
+      {mobileLessonsOpen && (
+        <div
+          onClick={() => setMobileLessonsOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-xs animate-fadeIn"
+        />
+      )}
+
+      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0c0d14] border-r border-slate-200 dark:border-slate-850 shadow-2xl p-4 flex flex-col justify-between transition-transform duration-300 ${
+        mobileLessonsOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="space-y-4 pt-16 overflow-y-auto">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-850">
+            <div className="flex items-center gap-2">
+              <BookMarked className="text-blue-600" size={18} />
+              <h3 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wider truncate">
+                {language?.name} Outline
+              </h3>
+            </div>
+            <button onClick={() => setMobileLessonsOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+              <XCircle size={18} />
+            </button>
+          </div>
+
+          <div className="space-y-4 pt-1">
+            {chapters?.map((chap) => {
+              const chapLessons = sortedLessons.filter(l => l.chapter === chap.id);
+              if (chapLessons.length === 0) return null;
+
+              return (
+                <div key={chap.id} className="space-y-1">
+                  <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 block">
+                    {chap.name}
+                  </span>
+                  <div className="space-y-0.5">
+                    {chapLessons.map((l) => {
+                      const isActive = l.slug === activeLessonSlug;
+                      const isCompleted = completedSlugs.includes(`${langSlug}/${l.slug}`);
+                      return (
+                        <Link
+                          key={l.id}
+                          to={`/tutorials/${langSlug}/${l.slug}`}
+                          onClick={() => setMobileLessonsOpen(false)}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-semibold transition-all ${
+                            isActive
+                              ? 'bg-blue-50/80 text-blue-650 dark:bg-blue-950/30 dark:text-blue-450 border-l-4 border-blue-600 dark:border-blue-500 font-bold shadow-sm'
+                              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
+                          }`}
+                        >
+                          <span className="truncate mr-2">{l.title}</span>
+                          {isCompleted && (
+                            <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 border border-emerald-600 shadow-sm animate-scale-in">
+                              <Check size={10} strokeWidth={3} />
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* LEFT SIDEBAR: Dynamic chapters & outline list */}
       <aside className="hidden lg:block w-72 border-r border-slate-200 dark:border-slate-850 bg-white/70 dark:bg-[#0b0c14]/80 backdrop-blur-md sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-y-auto select-none p-4 space-y-4 print:hidden">
         <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -626,7 +704,7 @@ const TutorialLearningPage: React.FC = () => {
                         className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-semibold transition-all ${
                           isActive
                             ? 'bg-blue-50/80 text-blue-650 dark:bg-blue-950/30 dark:text-blue-450 border-l-4 border-blue-600 dark:border-blue-500 font-bold shadow-sm'
-                            : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
+                            : 'text-slate-650 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
                         }`}
                       >
                         <span className="truncate mr-2">{l.title}</span>
@@ -646,7 +724,7 @@ const TutorialLearningPage: React.FC = () => {
       </aside>
 
       {/* CORE SPLIT GRID LAYOUT */}
-      <div className="flex-1 flex min-w-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 flex min-w-0 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
         {/* CENTER READER CONTENT: GitBook constraints max-w-3xl */}
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-3xl border-r border-slate-100 dark:border-slate-850/50 print:p-0 print:border-none">

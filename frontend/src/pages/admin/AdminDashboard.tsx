@@ -235,6 +235,7 @@ const AdminDashboard: React.FC = () => {
   const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
   const [editingContentId, setEditingContentId] = useState<number | null>(null);
   const [dynamicFormData, setDynamicFormData] = useState<Record<string, any>>({});
+  const [mobileAdminMenuOpen, setMobileAdminMenuOpen] = useState(false);
 
   // Form states: Topic
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
@@ -2413,8 +2414,25 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const adminNavItems = [
+    { key: 'dashboard', label: 'Dashboard', icon: <Database size={16} /> },
+    { key: 'create-content', label: 'Create Content', icon: <Plus size={16} /> },
+    { key: 'tutorials-cms', label: 'Tutorials CMS', icon: <BookOpen size={16} />, path: '/admin/tutorials' },
+    { key: 'aptitude', label: 'Aptitude Practice', icon: <Brain size={16} /> },
+    { key: 'categories', label: 'Categories', icon: <Layers size={16} /> },
+    { key: 'topics', label: 'Topics', icon: <Layers size={16} /> },
+    { key: 'levels', label: 'Levels', icon: <Layers size={16} /> },
+    { key: 'users', label: 'Users', icon: <Users size={16} /> },
+    { key: 'contests', label: 'Contests', icon: <Trophy size={16} /> },
+    { key: 'hackathons', label: 'Hackathons', icon: <Trophy size={16} /> },
+    { key: 'courses', label: 'Courses', icon: <BookOpen size={16} /> },
+    { key: 'test-series', label: 'Test Series CMS', icon: <Trophy size={16} /> },
+    { key: 'analytics', label: 'Analytics', icon: <Database size={16} /> },
+    { key: 'settings', label: 'Settings', icon: <Settings size={16} /> }
+  ];
+
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#07080d] text-slate-800 dark:text-slate-200 transition-colors duration-200 font-sans w-full">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-[#07080d] text-slate-800 dark:text-slate-200 transition-colors duration-200 font-sans w-full">
       
       {/* Toast Alert */}
       {toast && (
@@ -2426,8 +2444,87 @@ const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Left Sidebar Menu */}
-      <aside className="w-64 border-r border-slate-200 dark:border-slate-850 bg-white/70 dark:bg-[#0b0c14]/80 backdrop-blur-lg flex flex-col p-4 gap-2 justify-between shrink-0 h-screen sticky top-0 overflow-y-auto z-30">
+      {/* Mobile Top Header Bar on Small Screens */}
+      <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-[#0c0d14] border-b border-slate-200 dark:border-slate-850 sticky top-16 z-30 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setMobileAdminMenuOpen(!mobileAdminMenuOpen)}
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 transition-colors"
+            title="Toggle Admin Menu"
+          >
+            {mobileAdminMenuOpen ? <X size={18} /> : <LayoutDashboard size={18} className="text-blue-600" />}
+          </button>
+          <div>
+            <span className="text-[10px] font-extrabold uppercase text-slate-400 block tracking-wider leading-none">CMS Panel</span>
+            <span className="text-xs font-bold text-slate-800 dark:text-white capitalize">{activeMenu.replace('-', ' ')}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-black uppercase bg-amber-500/10 text-amber-600 border border-amber-500/20">
+            Admin
+          </span>
+        </div>
+      </div>
+
+      {/* Mobile Backdrop Overlay */}
+      {mobileAdminMenuOpen && (
+        <div 
+          onClick={() => setMobileAdminMenuOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-xs animate-fadeIn"
+        />
+      )}
+
+      {/* Mobile Navigation Drawer */}
+      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0c0d14] border-r border-slate-200 dark:border-slate-850 shadow-2xl p-4 flex flex-col justify-between transition-transform duration-300 ${
+        mobileAdminMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="space-y-4 pt-16 overflow-y-auto">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-850 px-2">
+            <div className="flex items-center gap-2">
+              <LayoutDashboard size={18} className="text-blue-600" />
+              <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">CMS Admin Menu</span>
+            </div>
+            <button onClick={() => setMobileAdminMenuOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+              <X size={16} />
+            </button>
+          </div>
+
+          <nav className="space-y-1">
+            {adminNavItems.map(item => (
+              <button
+                key={item.key}
+                onClick={() => {
+                  setMobileAdminMenuOpen(false);
+                  if (item.path) {
+                    navigate(item.path);
+                    return;
+                  }
+                  setActiveMenu(item.key as any);
+                  setViewState('list');
+                  setEditingContentId(null);
+                  setEditingQuestionId(null);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeMenu === item.key
+                    ? 'bg-blue-50/80 text-blue-650 dark:bg-blue-950/30 dark:text-blue-450 border-l-4 border-blue-600 dark:border-blue-500 shadow-sm font-bold'
+                    : 'text-slate-650 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
+                }`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="p-2 border-t border-slate-100 dark:border-slate-850 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+          <span>Logged in as Admin</span>
+        </div>
+      </div>
+
+      {/* Desktop Left Sidebar Menu */}
+      <aside className="hidden lg:flex w-64 border-r border-slate-200 dark:border-slate-850 bg-white/70 dark:bg-[#0b0c14]/80 backdrop-blur-lg flex-col p-4 gap-2 justify-between shrink-0 h-screen sticky top-0 overflow-y-auto z-30">
         <div className="space-y-6">
           <div className="flex items-center gap-2 px-2 py-3 border-b border-slate-100 dark:border-slate-850">
             <LayoutDashboard size={20} className="text-blue-650 dark:text-blue-400 animate-pulse" />
@@ -2437,22 +2534,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           <nav className="space-y-1">
-            {[
-              { key: 'dashboard', label: 'Dashboard', icon: <Database size={16} /> },
-              { key: 'create-content', label: 'Create Content', icon: <Plus size={16} /> },
-              { key: 'tutorials-cms', label: 'Tutorials CMS', icon: <BookOpen size={16} />, path: '/admin/tutorials' },
-              { key: 'aptitude', label: 'Aptitude Practice', icon: <Brain size={16} /> },
-              { key: 'categories', label: 'Categories', icon: <Layers size={16} /> },
-              { key: 'topics', label: 'Topics', icon: <Layers size={16} /> },
-              { key: 'levels', label: 'Levels', icon: <Layers size={16} /> },
-              { key: 'users', label: 'Users', icon: <Users size={16} /> },
-              { key: 'contests', label: 'Contests', icon: <Trophy size={16} /> },
-              { key: 'hackathons', label: 'Hackathons', icon: <Trophy size={16} /> },
-              { key: 'courses', label: 'Courses', icon: <BookOpen size={16} /> },
-              { key: 'test-series', label: 'Test Series CMS', icon: <Trophy size={16} /> },
-              { key: 'analytics', label: 'Analytics', icon: <Database size={16} /> },
-              { key: 'settings', label: 'Settings', icon: <Settings size={16} /> }
-            ].map(item => (
+            {adminNavItems.map(item => (
               <button
                 key={item.key}
                 onClick={() => {
@@ -2484,7 +2566,7 @@ const AdminDashboard: React.FC = () => {
       </aside>
 
       {/* Right Content Area */}
-      <main className="flex-grow p-6 md:p-8 overflow-y-auto">
+      <main className="flex-grow p-4 sm:p-6 md:p-8 overflow-y-auto min-w-0">
       
         {(viewState === 'create' && selectedSection === 'coding') && (
         <div className="flex flex-col xl:flex-row gap-6 w-full h-[calc(100vh-8rem)] min-h-[650px] overflow-hidden text-slate-800 dark:text-slate-200">

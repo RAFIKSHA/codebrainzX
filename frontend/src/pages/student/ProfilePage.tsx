@@ -650,7 +650,7 @@ const ProfilePage: React.FC = () => {
               }}
             ></div>
 
-            <div className="grid grid-cols-2 md:grid-cols-7 gap-6 relative z-10">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 sm:gap-6 relative z-10">
               {milestones.map((m, idx) => {
                 const IconWrapper = m.unlocked ? 'border-purple-200 text-purple-600' : 'border-[#EAEAEA] text-slate-350 grayscale';
                 
@@ -658,12 +658,12 @@ const ProfilePage: React.FC = () => {
                   <div key={idx} className="flex flex-col items-center text-center group cursor-pointer relative">
                     
                     {/* Circle Indicator */}
-                    <div className={`w-12 h-12 rounded-full bg-white border-2 flex items-center justify-center shadow-sm transition-all duration-200 group-hover:scale-105 ${IconWrapper}`}>
-                      <span className="text-lg">{m.unlocked ? '🔥' : '🔒'}</span>
+                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border-2 flex items-center justify-center shadow-sm transition-all duration-200 group-hover:scale-105 ${IconWrapper}`}>
+                      <span className="text-base sm:text-lg">{m.unlocked ? '🔥' : '🔒'}</span>
                     </div>
 
-                    <span className="text-[10px] font-bold text-slate-400 mt-3 uppercase tracking-wider">{m.days}</span>
-                    <span className={`text-xs font-bold mt-1 ${m.unlocked ? 'text-slate-700' : 'text-slate-400'}`}>{m.title}</span>
+                    <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 mt-2 sm:mt-3 uppercase tracking-wider">{m.days}</span>
+                    <span className={`text-[11px] sm:text-xs font-bold mt-0.5 sm:mt-1 ${m.unlocked ? 'text-slate-700' : 'text-slate-400'}`}>{m.title}</span>
 
                     <div className="absolute bottom-full mb-3 hidden group-hover:block w-48 p-2.5 bg-slate-900 text-white rounded-lg text-[10px] leading-relaxed shadow-xl border border-slate-750 z-20 text-left">
                       <span className="block font-bold text-purple-400 mb-0.5">{m.title}</span>
@@ -747,8 +747,8 @@ const ProfilePage: React.FC = () => {
             {/* ======================================
                 ACTIVITY CALENDAR
                 ====================================== */}
-            <div className="bg-white border border-[#EAEAEA] rounded-[20px] p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-4">
+            <div className="bg-white border border-[#EAEAEA] rounded-[20px] p-5 sm:p-8 shadow-sm space-y-5 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAEAEA] pb-4">
                 <div>
                   <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
                     <CalendarIcon size={18} className="text-purple-600" />
@@ -758,6 +758,7 @@ const ProfilePage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <span className="sm:hidden text-[10px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded">Swipe ↔</span>
                   <select
                     value={calendarYear}
                     onChange={(e) => setCalendarYear(e.target.value)}
@@ -770,7 +771,7 @@ const ProfilePage: React.FC = () => {
               </div>
 
               {/* Grid representation of weeks */}
-              <div className="overflow-x-auto select-none pt-2">
+              <div className="overflow-x-auto select-none pt-2 pb-2">
                 <div className="min-w-[700px] space-y-2">
                   <div className="grid grid-cols-[repeat(53,1fr)] gap-1 text-[8px] text-slate-400 font-bold px-1.5">
                     {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, idx) => (
@@ -821,7 +822,7 @@ const ProfilePage: React.FC = () => {
 
               {/* Heatmap footer */}
               <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400 border-t border-[#EAEAEA] pt-4 font-semibold">
-                <div className="flex items-center gap-6">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6">
                   <div>
                     <span>Current Streak: </span>
                     <strong className="text-slate-700">{profileStats?.daily_streak || 0} active days</strong>

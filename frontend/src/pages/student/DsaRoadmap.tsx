@@ -315,10 +315,28 @@ const DsaRoadmap: React.FC = () => {
             <Loader2 className="animate-spin text-[#4f46e5] w-10 h-10" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
             
-            {/* COLUMN 1: LEFT ROADMAP TIMELINE (19 Topics, scrolls independently if needed) */}
-            <div className="lg:col-span-3 bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[20px] p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-4">
+            {/* Mobile Topic Selector Dropdown (visible on screens < lg) */}
+            <div className="lg:hidden bg-white dark:bg-[#0c0d14] border border-slate-200 dark:border-slate-850 rounded-2xl p-4 shadow-sm space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
+                Jump to DSA Topic ({mappedRoadmap.findIndex(m => m.id === selectedRoadmapId) + 1}/19)
+              </label>
+              <select
+                value={selectedRoadmapId}
+                onChange={(e) => selectModule(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+              >
+                {mappedRoadmap.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.number}. {item.name} ({item.solved}/{item.total})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* COLUMN 1: LEFT ROADMAP TIMELINE (Hidden on mobile dropdown, visible on desktop) */}
+            <div className="hidden lg:block lg:col-span-3 bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[20px] p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-4">
               <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-850/60">
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-455 block">
                   ROADMAP
@@ -366,7 +384,7 @@ const DsaRoadmap: React.FC = () => {
               <div className="pt-2 border-t border-slate-100 dark:border-slate-850/60">
                 <button
                   onClick={() => navigate('/dashboard/coding/problems')}
-                  className="w-full py-2.5 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer text-center flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 border border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer text-center flex items-center justify-center gap-1.5"
                 >
                   <LayoutGrid size={12} /> Explore Problem Bank
                 </button>
@@ -374,17 +392,17 @@ const DsaRoadmap: React.FC = () => {
             </div>
 
             {/* COLUMN 2: CENTER WORKSPACE (Widest center path with comfortable breathing room) */}
-            <div className="lg:col-span-6 space-y-8">
+            <div className="lg:col-span-6 space-y-6 sm:space-y-8">
               
               {/* CURRENT CONCEPT CARD */}
-              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-6">
+              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-5 sm:p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-5 sm:space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-[16px] bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 flex items-center justify-center text-[#4f46e5] dark:text-purple-400 shrink-0 shadow-xs">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-[16px] bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 flex items-center justify-center text-[#4f46e5] dark:text-purple-400 shrink-0 shadow-xs">
                     {React.createElement(currentModule.icon, { size: 20 })}
                   </div>
                   <div className="space-y-0.5">
                     <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">CURRENT CONCEPT</span>
-                    <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white leading-tight">{currentModule.name}</h2>
+                    <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-tight">{currentModule.name}</h2>
                   </div>
                 </div>
 
@@ -410,7 +428,7 @@ const DsaRoadmap: React.FC = () => {
               </div>
 
               {/* TOPICS IN THIS CONCEPT LIST */}
-              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-6">
+              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-5 sm:p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-5 sm:space-y-6">
                 <div className="pb-4 border-b border-slate-100 dark:border-slate-850/60 flex items-center justify-between">
                   <h3 className="text-xs font-black text-slate-455 uppercase tracking-widest">TOPICS IN THIS CONCEPT</h3>
                   <span className="text-[10px] font-mono font-bold text-slate-400">{currentModule.questionsList.length} Questions</span>
@@ -426,17 +444,17 @@ const DsaRoadmap: React.FC = () => {
                   </div>
                 ) : (
                   <div className="max-h-[560px] overflow-y-auto pr-1 -mr-1 scroll-smooth" style={{ scrollbarWidth: 'thin', scrollbarColor: '#e2e8f0 transparent' }}>
-                  <div className="space-y-3.5 pt-1">
+                  <div className="space-y-3 pt-1">
                     {currentModule.questionsList.map((q) => {
                       const isSolved = q.solved;
                       return (
                         <div
                           key={q.id}
-                          className="flex items-center justify-between p-4 bg-slate-50/40 dark:bg-slate-955/15 border border-slate-150/70 dark:border-slate-850/60 rounded-2xl hover:border-purple-300 dark:hover:border-purple-900 hover:bg-slate-50/75 dark:hover:bg-slate-955/25 transition-all duration-200 shadow-2xs group"
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 bg-slate-50/40 dark:bg-slate-955/15 border border-slate-150/70 dark:border-slate-850/60 rounded-2xl hover:border-purple-300 dark:hover:border-purple-900 hover:bg-slate-50/75 dark:hover:bg-slate-955/25 transition-all duration-200 shadow-2xs group"
                         >
-                          <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-4">
+                          <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
                             {/* Checkbox Status */}
-                            <div className={`shrink-0 ${isSolved ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-700'}`}>
+                            <div className={`shrink-0 mt-0.5 sm:mt-0 ${isSolved ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-700'}`}>
                               {isSolved ? (
                                 <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
                                   <CheckCircle2 size={13} className="stroke-[3]" />
@@ -454,7 +472,7 @@ const DsaRoadmap: React.FC = () => {
                                 {q.title}
                               </Link>
                               
-                              <div className="flex flex-wrap items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                 {/* Difficulty Badge */}
                                 <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
                                   q.level_name === 'basic' || q.level_name === 'easy'
@@ -468,21 +486,21 @@ const DsaRoadmap: React.FC = () => {
                                 
                                 {/* Tags */}
                                 {q.tags && q.tags.slice(0, 2).map((t: string) => (
-                                  <span key={t} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[8px] font-bold rounded-md">{t}</span>
+                                  <span key={t} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[8px] font-bold rounded-md">{t}</span>
                                 ))}
                               </div>
                             </div>
                           </div>
 
                           {/* Solved Status Ratio + Button */}
-                          <div className="flex items-center gap-5 shrink-0 select-none">
+                          <div className="flex items-center gap-3 self-end sm:self-auto shrink-0 select-none">
                             <span className="text-[10px] font-mono font-bold text-slate-455 hidden sm:block">
                               {isSolved ? '1 / 1' : '0 / 1'}
                             </span>
                             
                             <Link
                               to={`/questions/${q.id}`}
-                              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 text-center min-w-[70px] shadow-2xs ${
+                              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 text-center min-w-[65px] sm:min-w-[70px] shadow-2xs ${
                                 isSolved
                                   ? 'border border-purple-200 text-[#4f46e5] bg-purple-50/20 hover:bg-purple-50 dark:border-purple-900/40 dark:text-purple-400 dark:hover:bg-purple-950/20'
                                   : 'border border-blue-200 text-blue-650 bg-blue-50/20 hover:bg-blue-50 dark:border-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-950/20'
