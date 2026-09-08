@@ -54,12 +54,42 @@
     <priority>0.85</priority>
   </url>
 
+  <!-- Coding Practice & DSA Roadmap -->
+  <url>
+    <loc>https://codexpetra.com/dashboard/coding</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://codexpetra.com/dashboard/coding/problems</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- Mega Hackathons & Contests -->
+  <url>
+    <loc>https://codexpetra.com/dashboard/hackathons</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Company Test Series -->
+  <url>
+    <loc>https://codexpetra.com/test-series</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
   <!-- Internships -->
   <url>
     <loc>https://codexpetra.com/internships</loc>
     <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.90</priority>
   </url>
 
   <!-- Trust & Company Pages -->

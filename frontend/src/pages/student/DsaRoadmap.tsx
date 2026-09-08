@@ -112,9 +112,11 @@ const DsaRoadmap: React.FC = () => {
   const { data: submissions, isLoading: subsLoading } = useQuery<Submission[]>({
     queryKey: ['recentSubmissions'],
     queryFn: async () => {
+      if (!user) return [];
       const response = await api.get('/submissions/');
       return response.data;
-    }
+    },
+    enabled: !!user
   });
 
   // Enrich questions

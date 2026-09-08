@@ -226,7 +226,11 @@ const HackathonDetails: React.FC = () => {
   };
 
   const handleApplyToProblem = async (ps: ProblemStatement) => {
-    if (!hackathon || !user) return;
+    if (!hackathon) return;
+    if (!user) {
+      navigate('/login', { state: { from: window.location.pathname } });
+      return;
+    }
     if (!window.confirm(`Apply to "${ps.title}"?\nYou can only apply to one problem statement per hackathon.`)) return;
     setApplyingId(ps.id); setPsError(null);
     try {

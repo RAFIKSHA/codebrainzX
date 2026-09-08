@@ -271,34 +271,32 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              {/* Coding & DSA Public/Student Accessible Routes */}
               <Route
                 path="/dashboard/coding"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <DsaRoadmap />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <DsaRoadmap />
+                  </DashboardLayout>
                 }
               />
+              <Route path="/coding" element={<Navigate to="/dashboard/coding" replace />} />
+              <Route path="/practice" element={<Navigate to="/dashboard/coding/problems" replace />} />
+              <Route path="/roadmap" element={<Navigate to="/dashboard/coding" replace />} />
               <Route
                 path="/dashboard/coding/dsa"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <DsaRoadmap />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <DsaRoadmap />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/coding/problems"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <PracticePlayground />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <PracticePlayground />
+                  </DashboardLayout>
                 }
               />
               <Route
@@ -340,31 +338,25 @@ const App: React.FC = () => {
               <Route
                 path="/test-series"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <TestSeriesHub />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <TestSeriesHub />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/test-series/:companySlug"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <CompanySelection />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <CompanySelection />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/test-series/:companySlug/:seriesSlug"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <SeriesDetailPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <SeriesDetailPage />
+                  </DashboardLayout>
                 }
               />
               <Route
@@ -493,24 +485,22 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/hackathons" element={<Navigate to="/dashboard/hackathons" replace />} />
+              <Route path="/hackathons/:slug" element={<Navigate to="/dashboard/hackathons/:slug" replace />} />
               <Route
                 path="/dashboard/hackathons"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <HackathonDashboard />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <HackathonDashboard />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/dashboard/hackathons/:slug"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <HackathonDetails />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <HackathonDetails />
+                  </DashboardLayout>
                 }
               />
               <Route
@@ -536,21 +526,17 @@ const App: React.FC = () => {
               <Route
                 path="/topics/:topicId/level/:levelName"
                 element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <LevelQuestions />
-                    </DashboardLayout>
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <LevelQuestions />
+                  </DashboardLayout>
                 }
               />
               <Route
                 path="/questions/:questionId"
                 element={
-                  <ProtectedRoute>
-                    <Layout showFooter={false}>
-                      <QuestionPage />
-                    </Layout>
-                  </ProtectedRoute>
+                  <Layout showFooter={false}>
+                    <QuestionPage />
+                  </Layout>
                 }
               />
 

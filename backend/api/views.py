@@ -549,7 +549,7 @@ class TopicViewSet(viewsets.ModelViewSet):
 class QuestionLevelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = QuestionLevel.objects.all()
     serializer_class = QuestionLevelSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
@@ -560,7 +560,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return QuestionDetailSerializer
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'run_code', 'submit_code']:
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        if self.action in ['run_code', 'submit_code']:
             return [permissions.IsAuthenticated()]
         return [IsAdminUser()]
 

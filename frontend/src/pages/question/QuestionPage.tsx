@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Editor from '@monaco-editor/react';
 import api from '../../services/api';
 import { setSEOMetadata, getQuestionSchema } from '../../utils/seo';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   ArrowLeft, Terminal, Play, CheckCircle2, AlertTriangle, HelpCircle,
   RefreshCw, FileCode, Clock, HardDrive, History, Loader2, Maximize2, Minimize2,
-  Settings, Check, X, ShieldAlert, Cpu, Sparkles, BookOpen
+  Settings, Check, X, ShieldAlert, Cpu, Sparkles, BookOpen, LogIn
 } from 'lucide-react';
 
 interface Language {
@@ -58,6 +59,9 @@ interface Submission {
 const QuestionPage: React.FC = () => {
   const { questionId } = useParams<{ questionId: string }>();
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const [selectedLang, setSelectedLang] = useState<Language | null>(null);
@@ -72,6 +76,9 @@ const QuestionPage: React.FC = () => {
   const [isDescFullscreen, setIsDescFullscreen] = useState(false);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
   const [isConsoleExpanded, setIsConsoleExpanded] = useState(false);
+  const [fontSize, setFontSize] = useState(14);
+  const [activePanel, setActivePanel] = useState<'description' | 'hints' | 'submissions' | 'editorial'>('description');
+  const [activeTestCaseIdx, setActiveTestCaseIdx] = useState(0);
 
   // Sync editor theme with global theme
   useEffect(() => {
@@ -88,7 +95,7 @@ const QuestionPage: React.FC = () => {
   });
 
   // Fetch question details
-  const { data: question, isLoading: qLoading, error: qError } = useQuery<Question>({
+  const { data: question, isLoading: qLoading, isError: qError } = useQuery<Question>({
     queryKey: ['question', questionId],
     queryFn: async () => {
       const response = await api.get(`/questions/${questionId}/`);
@@ -96,13 +103,15 @@ const QuestionPage: React.FC = () => {
     }
   });
 
-  // Fetch question submissions history
+  // Fetch submissions history for this question
   const { data: submissions, refetch: refetchSubmissions } = useQuery<Submission[]>({
     queryKey: ['submissions', questionId],
     queryFn: async () => {
+      if (!user) return [];
       const response = await api.get(`/submissions/?question=${questionId}`);
       return response.data;
-    }
+    },
+    enabled: !!user
   });
 
   // Load starter code or saved progress on question load
@@ -164,13 +173,17 @@ const QuestionPage: React.FC = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      setConsoleLog({ type: 'run', ...data });
+      setConsoleLog({
+        type: data.overall_status === 'passed' ? 'success' : 'error',
+        message: data.overall_status === 'passed' ? 'All public test cases passed successfully!' : 'Code execution failed or produced mismatched output.',
+        details: data
+      });
       setActiveConsoleTab('results');
     },
     onError: (err: any) => {
       setConsoleLog({
         type: 'error',
-        message: err.response?.data?.error || 'Execution failed. Please verify compilation parameters.'
+        message: err.response?.data?.error || 'Execution failed. Compilation server might be temporarily busy.'
       });
       setActiveConsoleTab('results');
     }
@@ -183,9 +196,12 @@ const QuestionPage: React.FC = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      setConsoleLog({ type: 'submit', ...data });
+      setConsoleLog({
+        type: data.overall_status === 'accepted' ? 'success' : 'error',
+        message: data.overall_status === 'accepted' ? '🎉 Accepted! Solution verified across full test case suite.' : 'Wrong Answer or Runtime Error during evaluation.',
+        details: data
+      });
       setActiveConsoleTab('results');
-      // Refresh queries to update solved stats
       queryClient.invalidateQueries({ queryKey: ['question', questionId] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       refetchSubmissions();
@@ -200,6 +216,10 @@ const QuestionPage: React.FC = () => {
   });
 
   const handleRun = () => {
+    if (!user) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
     if (!selectedLang) return;
     setConsoleLog(null);
     runMutation.mutate({
@@ -209,6 +229,10 @@ const QuestionPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
+    if (!user) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
     if (!selectedLang) return;
     setConsoleLog(null);
     submitMutation.mutate({
