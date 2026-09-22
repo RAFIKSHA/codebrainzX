@@ -13,6 +13,7 @@ const TestSeriesResultPage: React.FC = () => {
     setSEOMetadata({
       title: 'Practice Test Series Results | CodexPetra',
       description: 'Review your placement test metrics, accuracy, correct answers, and official solutions explanation.',
+      noindex: true,
     });
   }, []);
 

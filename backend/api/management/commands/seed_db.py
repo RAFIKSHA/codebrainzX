@@ -103,59 +103,7 @@ class Command(BaseCommand):
             'java': "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextLine()) {\n            String s = sc.nextLine();\n            System.out.println(new StringBuilder(s).reverse().toString());\n        }\n    }\n}"
         }
 
-        # Question 1: Sum of Array (Topic: Arrays, Level: Basic)
-        q1, created = Question.objects.get_or_create(
-            slug='sum-of-array',
-            defaults={
-                'topic': topic_objs['Arrays'],
-                'level': levels_map['Arrays']['basic'],
-                'title': 'Sum of Array',
-                'statement': 'Given a series of whitespace-separated integers (or a list depending on language), return the sum of all elements.\n\n### Example\n- Input: `1 2 3` or `[1, 2, 3]`\n- Output: `6`',
-                'constraints': '1 <= array length <= 1000\n-10^5 <= value <= 10^5',
-                'starter_code': json.dumps(starter_code_sum_array),
-                'time_limit': 2.0,
-                'memory_limit': 256.0,
-                'is_published': True,
-                'order': 1
-            }
-        )
-        if created:
-            self.stdout.write("Created question: Sum of Array")
-            # Test Cases
-            TestCase.objects.create(question=q1, input_data="1 2 3", expected_output="6", is_hidden=False)
-            TestCase.objects.create(question=q1, input_data="5 10 -5", expected_output="10", is_hidden=False)
-            TestCase.objects.create(question=q1, input_data="-10 -20", expected_output="-30", is_hidden=True)
 
-        # Question 2: Find Maximum (Topic: Arrays, Level: Easy)
-        # Note: Unlocked after solving Sum of Array
-        starter_code_max_arr = {
-            'python': "def solve(arr):\n    return max(arr)\n\nimport sys, json\nif __name__ == '__main__':\n    arr = [int(x) for x in sys.stdin.read().split()]\n    print(solve(arr))",
-            'javascript': "const fs = require('fs');\nconst arr = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nconsole.log(Math.max(...arr));",
-            'cpp': "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\nint main() {\n    int val, m = -999999;\n    while(cin >> val) m = max(m, val);\n    cout << m << endl;\n    return 0;\n}",
-            'c': "#include <stdio.h>\nint main() {\n    int val, max = -999999;\n    while(scanf(\"%d\", &val) != EOF) {\n        if (val > max) max = val;\n    }\n    printf(\"%d\\n\", max);\n    return 0;\n}",
-            'java': "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int max = Integer.MIN_VALUE;\n        while(sc.hasNextInt()) {\n            int v = sc.nextInt();\n            if (v > max) max = v;\n        }\n        System.out.println(max);\n    }\n}"
-        }
-        
-        q2, created = Question.objects.get_or_create(
-            slug='find-maximum-element',
-            defaults={
-                'topic': topic_objs['Arrays'],
-                'level': levels_map['Arrays']['easy'],
-                'title': 'Find Maximum Element',
-                'statement': 'Given a series of whitespace-separated integers, return the maximum value in the sequence.',
-                'constraints': '1 <= sequence length <= 5000\n-10^6 <= value <= 10^6',
-                'starter_code': json.dumps(starter_code_max_arr),
-                'time_limit': 2.0,
-                'memory_limit': 256.0,
-                'is_published': True,
-                'order': 2
-            }
-        )
-        if created:
-            self.stdout.write("Created question: Find Maximum Element")
-            TestCase.objects.create(question=q2, input_data="1 5 3", expected_output="5", is_hidden=False)
-            TestCase.objects.create(question=q2, input_data="-1 -20 -3", expected_output="-1", is_hidden=False)
-            TestCase.objects.create(question=q2, input_data="100 200 50", expected_output="200", is_hidden=True)
 
         # Question 3: Reverse String (Topic: Strings, Level: Basic)
         q3, created = Question.objects.get_or_create(
@@ -173,10 +121,8 @@ class Command(BaseCommand):
                 'order': 1
             }
         )
-        if created:
-            self.stdout.write("Created question: Reverse String")
-            TestCase.objects.create(question=q3, input_data="hello", expected_output="olleh", is_hidden=False)
-            TestCase.objects.create(question=q3, input_data="codexpetra", expected_output="artepxedoc", is_hidden=False)
-            TestCase.objects.create(question=q3, input_data="racecar", expected_output="racecar", is_hidden=True)
+        # 5. Seed 10 Array questions with driver code
+        from django.core.management import call_command
+        call_command('seed_array_questions')
 
         self.stdout.write("Database seeded successfully!")

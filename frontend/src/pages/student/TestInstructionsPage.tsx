@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ArrowLeft, Clock, HelpCircle, ShieldAlert, Award, FileText, CheckCircle } from 'lucide-react';
@@ -9,6 +9,14 @@ const TestInstructionsPage: React.FC = () => {
   const { companySlug, seriesSlug, testId } = useParams<{ companySlug: string; seriesSlug: string; testId: string }>();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setSEOMetadata({
+      title: 'Test Instructions | CodexPetra Test Series',
+      description: 'Review rules, guidelines and scoring criteria before starting your practice test series.',
+      noindex: true,
+    });
+  }, []);
 
   const { data: companies } = useQuery({
     queryKey: ['testSeriesCompanies'],

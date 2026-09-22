@@ -184,7 +184,8 @@ export const tutorialsService = {
   },
 
   getContinueLearning: async () => {
-    const res = await api.get<{
+    const client = localStorage.getItem('access_token') ? api : publicApi;
+    const res = await client.get<{
       course_name: string;
       course_slug: string;
       chapter_name: string;
@@ -197,6 +198,7 @@ export const tutorialsService = {
     }>('/tutorials/lessons/continue-learning/');
     return res.data;
   },
+
 
   // --- Admin CRUD APIs ---
   // Languages

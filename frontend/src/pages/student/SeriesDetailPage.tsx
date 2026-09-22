@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Clock, Award, BookOpen, Calendar, HelpCircle, ArrowRight, Play, CheckCircle2, Trophy, AlertCircle } from 'lucide-react';
 import testSeriesService from '../../services/testSeries';
-import { setSEOMetadata } from '../../utils/seo';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 const SeriesDetailPage: React.FC = () => {
   const { companySlug, seriesSlug } = useParams<{ companySlug: string; seriesSlug: string }>();
@@ -26,11 +26,18 @@ const SeriesDetailPage: React.FC = () => {
   useEffect(() => {
     if (series) {
       setSEOMetadata({
-        title: `${series.name} - Placement Prep | CodexPetra`,
-        description: `Unlock access to ${series.name} test series. Solve company coding and aptitude question banks.`,
+        title: `${series.name} - Test Series | CodexPetra`,
+        description: `Access ${series.name} test series with company-specific coding assessments, aptitude test banks, and comprehensive syllabus.`,
+        canonicalUrl: `https://codexpetra.com/test-series/${companySlug}/${seriesSlug}`,
+        structuredData: getBreadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'Test Series', url: '/test-series' },
+          { name: company?.name || companySlug || '', url: `/test-series/${companySlug}` },
+          { name: series.name, url: `/test-series/${companySlug}/${seriesSlug}` },
+        ]),
       });
     }
-  }, [series]);
+  }, [series, companySlug, seriesSlug, company]);
 
   const { data: tests, isLoading: isTestsLoading } = useQuery({
     queryKey: ['testSeriesTests', series?.id],

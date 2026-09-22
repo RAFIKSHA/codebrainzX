@@ -147,20 +147,7 @@ const AptitudeDashboard: React.FC = () => {
                 <div className="space-y-3">
                   {/* Trainer Avatar + Info */}
                   <div className="flex items-center gap-3">
-                    {t.profile_image ? (
-                      <img
-                        src={t.profile_image}
-                        alt={t.name}
-                        className="w-12 h-12 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0">
-                        {t.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </div>
-                    )}
+                    <TrainerAvatar name={t.name} image={t.profile_image} size="md" />
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {t.name}
@@ -178,6 +165,7 @@ const AptitudeDashboard: React.FC = () => {
                     </p>
                   )}
                 </div>
+
 
                 {/* Footer stats & link */}
                 <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
@@ -485,4 +473,55 @@ const LeaderboardSidebar: React.FC = () => {
   );
 };
 
+// ── Trainer Avatar Component ──
+export const TrainerAvatar: React.FC<{ name: string; image?: string | null; size?: 'sm' | 'md' | 'lg' }> = ({ name, image, size = 'md' }) => {
+
+  const [imgFailed, setImgFailed] = useState(false);
+  
+  const sizeClasses = {
+    sm: 'w-10 h-10 text-xs',
+    md: 'w-12 h-12 text-sm',
+    lg: 'w-20 h-20 text-2xl'
+  }[size];
+
+  const roundedClass = size === 'lg' ? 'rounded-2xl' : 'rounded-full';
+
+  // Sanitize image URL to prevent localhost mixed content issues
+  const sanitizedImage = React.useMemo(() => {
+    if (!image) return null;
+    let url = image.trim();
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      if (url.startsWith('http://localhost:8000') || url.startsWith('http://127.0.0.1:8000')) {
+        return url.replace(/^http:\/\/(localhost|127\.0\.0\.1):8000/, 'https://codebrainzx.onrender.com');
+      }
+      if (url.startsWith('http://')) {
+        return 'https://' + url.slice(7);
+      }
+    }
+    return url;
+  }, [image]);
+
+  if (sanitizedImage && !imgFailed) {
+    return (
+      <img
+        src={sanitizedImage}
+        alt={name}
+        className={`${sizeClasses} ${roundedClass} object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-sm`}
+        onError={() => setImgFailed(true)}
+      />
+    );
+  }
+
+  const initials = name
+    ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'TR';
+
+  return (
+    <div className={`${sizeClasses} ${roundedClass} bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center shadow-sm shrink-0`}>
+      {initials}
+    </div>
+  );
+};
+
 export default AptitudeDashboard;
+

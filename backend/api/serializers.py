@@ -194,7 +194,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
     editorial = serializers.CharField(required=False, allow_blank=True)
     hints = serializers.CharField(required=False, allow_blank=True)
     tags = serializers.CharField(required=False, allow_blank=True)
-    companies = serializers.CharField(required=False, allow_blank=True)
+    driver_code = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     class Meta:
         model = Question
@@ -202,7 +202,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'id', 'topic', 'topic_slug', 'level', 'level_name', 'title', 'slug',
             'statement', 'constraints', 'input_format', 'output_format', 'notes',
             'official_solution', 'editorial', 'hints', 'tags', 'companies',
-            'examples', 'starter_code', 'time_limit', 'memory_limit',
+            'examples', 'starter_code', 'driver_code', 'time_limit', 'memory_limit',
             'is_published', 'order', 'test_cases', 'solved', 'meta_title', 
             'meta_description', 'meta_keywords', 'updated_at'
         )

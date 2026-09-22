@@ -102,7 +102,8 @@ const InternshipAdminPanel: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Internship Recruitment Hub | Admin Portal',
-      description: 'Manage CodexPetra internship programs, entrance assessments, scholarship rule engine, and candidate recruitment funnel.'
+      description: 'Manage CodexPetra internship programs, entrance assessments, scholarship rule engine, and candidate recruitment funnel.',
+      noindex: true,
     });
 
     loadAllData();

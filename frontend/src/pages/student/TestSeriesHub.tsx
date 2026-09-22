@@ -1,17 +1,20 @@
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { Code, Brain, ArrowRight, Globe, Layers, Trophy } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Code, Brain, ArrowRight, Globe, Layers, Trophy, CheckCircle2, Target, BarChart2, ShieldCheck } from 'lucide-react';
 import testSeriesService from '../../services/testSeries';
-import { setSEOMetadata } from '../../utils/seo';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 const TestSeriesHub: React.FC = () => {
-  const navigate = useNavigate();
-
   useEffect(() => {
     setSEOMetadata({
-      title: 'Practice Company Test Series | CodexPetra',
-      description: 'Prepare smarter with structured coding and aptitude test series built around real company placement requirements.',
+      title: 'Test Series | Placement & Competitive Exam Preparation | CodexPetra',
+      description: 'Practice company-specific mock test series for TCS, Infosys, Wipro, Amazon, and top tech companies with timed simulations and in-depth performance analytics.',
+      canonicalUrl: 'https://codexpetra.com/test-series',
+      structuredData: getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Test Series', url: '/test-series' },
+      ]),
     });
   }, []);
 
@@ -25,18 +28,6 @@ const TestSeriesHub: React.FC = () => {
     queryFn: testSeriesService.getCompanies,
   });
 
-  const getCategoryIcon = (iconName: string) => {
-    switch (iconName.toLowerCase()) {
-      case 'code':
-        return <Code size={24} className="text-purple-600 dark:text-purple-400" />;
-      case 'brain':
-      case 'aptitude':
-        return <Brain size={24} className="text-amber-500 dark:text-amber-400" />;
-      default:
-        return <Layers size={24} className="text-purple-600 dark:text-purple-400" />;
-    }
-  };
-
   const isLoading = isCatsLoading || isCompsLoading;
 
   return (
@@ -44,11 +35,14 @@ const TestSeriesHub: React.FC = () => {
       
       {/* Header Section */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/50 text-purple-700 dark:text-purple-300 text-xs font-bold uppercase tracking-wider">
+          <Layers size={13} /> Placement Preparation Portal
+        </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
-          Test Series
+          Company Test Series
         </h1>
         <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-          Prepare smarter with structured coding and aptitude test series built around real company requirements.
+          Prepare smarter with structured coding and aptitude test series built around real company recruitment patterns and online assessments.
         </p>
       </div>
 
@@ -62,10 +56,10 @@ const TestSeriesHub: React.FC = () => {
           categories
             ?.filter((cat) => cat.is_active)
             .map((cat) => (
-              <div
+              <Link
                 key={cat.id}
-                onClick={() => navigate(`/test-series?type=${cat.type}`)}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-850/80 bg-white dark:bg-slate-900/60 p-8 transition-all hover:scale-[1.01] hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md"
+                to={`/test-series?type=${cat.type}`}
+                className="group relative block overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-850/80 bg-white dark:bg-slate-900/60 p-8 transition-all hover:scale-[1.01] hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md"
               >
                 <div className="flex items-start gap-4">
                   <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-2xl group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
@@ -76,15 +70,15 @@ const TestSeriesHub: React.FC = () => {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-slate-950 dark:text-white">
+                    <h3 className="text-xl font-bold text-slate-950 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                       {cat.name}
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {cat.description || (cat.type === 'coding' ? 'DSA, Algorithms & Programming' : 'Quantitative, Logical & Verbal Reasoning')}
+                      {cat.description || (cat.type === 'coding' ? 'DSA, Algorithms & Programming Tests' : 'Quantitative, Logical & Verbal Reasoning Tests')}
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
         )}
       </div>
@@ -95,7 +89,7 @@ const TestSeriesHub: React.FC = () => {
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Browse by Companies
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Access practice material customized specifically for recruitment patterns of top tech firms.
           </p>
         </div>
@@ -109,10 +103,10 @@ const TestSeriesHub: React.FC = () => {
         ) : companies && companies.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {companies.map((company) => (
-              <div
+              <Link
                 key={company.id}
-                onClick={() => navigate(`/test-series/${company.slug}`)}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-850/80 bg-white dark:bg-slate-900/60 p-6 transition-all hover:scale-[1.02] hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md flex flex-col justify-between min-h-[170px]"
+                to={`/test-series/${company.slug}`}
+                className="group relative block overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-850/80 bg-white dark:bg-slate-900/60 p-6 transition-all hover:scale-[1.02] hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md flex flex-col justify-between min-h-[170px]"
               >
                 {/* Top Section */}
                 <div className="flex items-start justify-between gap-3">
@@ -165,17 +159,62 @@ const TestSeriesHub: React.FC = () => {
                     <ArrowRight size={13} />
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
           <div className="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-2xl">
             <Trophy size={40} className="mx-auto text-slate-350 dark:text-slate-700 mb-3" />
             <h3 className="text-sm font-bold text-slate-850 dark:text-slate-300">No Companies Configured</h3>
-            <p className="text-xs text-slate-400 mt-1">Please log in as Admin and add companies to this workspace.</p>
+            <p className="text-xs text-slate-400 mt-1">Please check back soon as new placement series are added regularly.</p>
           </div>
         )}
       </div>
+
+      {/* Public Informational & Benefits Section for SEO and Users */}
+      <div className="pt-8 border-t border-slate-200 dark:border-slate-850">
+        <div className="text-center max-w-2xl mx-auto mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+            Why Prepare with CodexPetra Test Series?
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Built for engineering students and job-seekers preparing for on-campus and off-campus tech drives.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-850 bg-white dark:bg-slate-900/40 space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <Target size={20} />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Company-Specific Patterns</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Curated tests matching exact question formats, time constraints, and sectional cut-offs of top tech recruiters.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-850 bg-white dark:bg-slate-900/40 space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <BarChart2 size={20} />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Real-Time Performance Analytics</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Detailed scorecards with topic-wise accuracy, speed metrics, and rank comparisons against all candidates.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-850 bg-white dark:bg-slate-900/40 space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <ShieldCheck size={20} />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Live Code Evaluation</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Multi-language compiled test cases with hidden edge cases to ensure code quality meets industry benchmarks.
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

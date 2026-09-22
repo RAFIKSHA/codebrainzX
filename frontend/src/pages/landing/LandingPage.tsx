@@ -15,8 +15,8 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'CodexPetra | Practice Coding, Aptitude & Learn',
-      description: 'Master coding challenges, aptitude preparation, programming tutorials, and company test series with CodexPetra - the ultimate learning ecosystem for developers.',
+      title: 'CodexPetra | Practice Coding, Aptitude, Tutorials & Placements',
+      description: 'Master coding challenges, topic-wise aptitude preparation, programming tutorials, company test series, and virtual internships with CodexPetra - the ultimate learning ecosystem.',
       canonicalUrl: 'https://codexpetra.com/',
       structuredData: getOrganizationSchema(),
     });
@@ -63,7 +63,7 @@ const LandingPage: React.FC = () => {
       description: "Master algorithms and data structures. Complete curated sheets for specific organizations and levels.",
       icon: <Code className="text-blue-600 dark:text-blue-400" size={28} />,
       bgColor: "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40",
-      cta: "Start Practicing",
+      cta: "Practice Coding Questions",
       path: "/dashboard/coding"
     },
     {
@@ -71,23 +71,39 @@ const LandingPage: React.FC = () => {
       description: "No login required! Browse placements topics, read explanations, solve practice questions, and take mock tests.",
       icon: <Brain className="text-emerald-600 dark:text-emerald-400" size={28} />,
       bgColor: "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40",
-      cta: "Explore Aptitude",
+      cta: "Start Aptitude Practice",
       path: "/dashboard/aptitude"
     },
     {
-      title: "Learn Tutorials",
+      title: "Coding Tutorials",
       description: "Interactive language courses from core variables to advanced system architectures in Python, Java, C++, and JS.",
       icon: <BookOpen className="text-purple-500 dark:text-purple-400" size={28} />,
       bgColor: "bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40",
-      cta: "Browse Tutorials",
+      cta: "Explore Coding Tutorials",
       path: "/tutorials"
+    },
+    {
+      title: "Company Test Series",
+      description: "Practice mock placement tests customized for recruitment patterns of TCS, Infosys, Wipro, Amazon, and top tech firms.",
+      icon: <Layers className="text-teal-600 dark:text-teal-400" size={28} />,
+      bgColor: "bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40",
+      cta: "Explore Test Series",
+      path: "/test-series"
+    },
+    {
+      title: "Virtual Internships",
+      description: "Apply for virtual student internships with verified certificates, real-world development projects, and mentor support.",
+      icon: <Sparkles className="text-indigo-600 dark:text-indigo-400" size={28} />,
+      bgColor: "bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40",
+      cta: "View Internships",
+      path: "/internships"
     },
     {
       title: "Mega Hackathons",
       description: "Compete with developer communities. Collaborate, build real projects under time constraints, and claim grand prize pools.",
       icon: <Trophy className="text-amber-500 dark:text-amber-400" size={28} />,
       bgColor: "bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40",
-      cta: "View Hackathons",
+      cta: "Explore Hackathons",
       path: "/dashboard/hackathons"
     }
   ];
@@ -133,20 +149,20 @@ const LandingPage: React.FC = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-4 pt-2">
-              <button 
-                onClick={() => navigate('/dashboard/coding')}
+              <Link 
+                to="/dashboard/coding"
                 className="px-6 py-3 font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl transition-all shadow-lg shadow-indigo-500/15 hover:shadow-indigo-500/25 text-sm cursor-pointer flex items-center gap-2 border border-indigo-700/10"
               >
-                <span>Start Practicing</span>
+                <span>Practice Coding Questions</span>
                 <ChevronRight size={16} />
-              </button>
+              </Link>
               
-              <button 
-                onClick={() => navigate('/dashboard/hackathons')}
+              <Link 
+                to="/dashboard/hackathons"
                 className="px-6 py-3 font-bold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 rounded-xl transition-all text-sm cursor-pointer"
               >
                 Explore Hackathons
-              </button>
+              </Link>
             </div>
 
             {/* Platform Statistics */}
@@ -303,13 +319,13 @@ const LandingPage: React.FC = () => {
           </p>
         </div>
 
-        {/* 4 Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 6 Primary Sections Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {popularSections.map((s, idx) => (
             <motion.div 
               key={idx}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className={`rounded-2xl p-6 flex flex-col justify-between h-72 ${s.bgColor} shadow-sm shadow-blue-500/2 hover:shadow-xl transition-shadow`}
+              className={`rounded-2xl p-6 flex flex-col justify-between min-h-[290px] ${s.bgColor} shadow-sm shadow-blue-500/2 hover:shadow-xl transition-shadow`}
             >
               <div className="space-y-4">
                 <div className="w-12 h-12 bg-white dark:bg-[#0e1017] rounded-xl shadow-sm border border-slate-105 dark:border-white/10 flex items-center justify-center shrink-0">
@@ -323,13 +339,13 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <button 
-                onClick={() => navigate(s.path)}
-                className="w-full mt-4 py-2 bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              <Link 
+                to={s.path}
+                className="w-full mt-4 py-2.5 bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer group"
               >
                 <span>{s.cta}</span>
-                <ChevronRight size={13} />
-              </button>
+                <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+              </Link>
             </motion.div>
           ))}
         </div>

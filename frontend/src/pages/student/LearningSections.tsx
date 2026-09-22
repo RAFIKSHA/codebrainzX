@@ -41,28 +41,32 @@ const LearningSections: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Set SEO Metadata
+  // Set SEO Metadata (noindex private student hub)
   useEffect(() => {
     setSEOMetadata({
-      title: 'Practice coding, Aptitude & Learn | CodexPetra',
+      title: 'Student Learning Dashboard | CodexPetra',
       description: 'CodexPetra student dashboard hub. Track progress, practice aptitude, solve coding questions and access structured lessons.',
+      noindex: true,
     });
   }, []);
 
   // Fetch Continue Learning data
   const { data: continueLearning, isLoading: continueLearningLoading } = useQuery({
-    queryKey: ['continue-learning'],
+    queryKey: ['continue-learning', user?.id],
     queryFn: async () => {
       try {
-        return await tutorialsService.getContinueLearning();
+        const data = await tutorialsService.getContinueLearning();
+        if (!data || !data.course_name) return null;
+        return data;
       } catch (err: any) {
-        if (err.response?.status === 404) {
-          return null; // safe fallback
-        }
-        throw err;
+        // Safe fallback for guest / unauthenticated / 403 / 404
+        return null;
       }
-    }
+    },
+    retry: 1,
+    staleTime: 1000 * 60 * 5,
   });
+
 
   // Fetch Hackathons
   const { data: hackathons, isLoading: hackathonsLoading } = useQuery<Hackathon[]>({

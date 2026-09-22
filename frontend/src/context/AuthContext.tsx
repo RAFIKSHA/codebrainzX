@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import api from '../services/api';
+import api, { publicApi } from '../services/api';
 
 export interface User {
   id: number;
@@ -56,7 +56,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (username: string, password: string): Promise<User> => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/login/', { username, password });
+      // Clear any stale/expired tokens before fresh login
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+
+      const response = await publicApi.post('/auth/login/', { username, password });
       const { access, refresh, user: userData } = response.data;
       
       localStorage.setItem('access_token', access);
@@ -71,9 +75,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-
-
-
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -83,7 +84,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async (idToken: string): Promise<User> => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/google/', { id_token: idToken });
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+
+      const response = await publicApi.post('/auth/google/', { id_token: idToken });
       const { access, refresh, user: userData } = response.data;
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
@@ -100,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const sendOtp = async (email: string, purpose: 'login' | 'forgot_password'): Promise<void> => {
     setLoading(true);
     try {
-      await api.post('/auth/otp/send/', { email, purpose });
+      await publicApi.post('/auth/otp/send/', { email, purpose });
     } finally {
       setLoading(false);
     }
@@ -109,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const sendRegisterOtp = async (email: string): Promise<void> => {
     setLoading(true);
     try {
-      await api.post('/auth/register/send-otp/', { email });
+      await publicApi.post('/auth/register/send-otp/', { email });
     } finally {
       setLoading(false);
     }
@@ -118,7 +122,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyRegisterOtp = async (email: string, otp: string, fullName: string, password: string): Promise<User> => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/register/verify/', { email, otp, full_name: fullName, password });
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+
+      const response = await publicApi.post('/auth/register/verify/', { email, otp, full_name: fullName, password });
       const { access, refresh, user: userData } = response.data;
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
@@ -135,11 +142,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetPassword = async (email: string, otp: string, password: string): Promise<void> => {
     setLoading(true);
     try {
-      await api.post('/auth/forgot-password/reset/', { email, otp, password });
+      await publicApi.post('/auth/forgot-password/reset/', { email, otp, password });
     } finally {
       setLoading(false);
     }
   };
+
 
   const isAdmin = user?.role === 'admin';
 

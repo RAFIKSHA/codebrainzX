@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Code, Brain, ArrowLeft, Trophy, Clock, ArrowRight, Layers } from 'lucide-react';
 import testSeriesService from '../../services/testSeries';
-import { setSEOMetadata } from '../../utils/seo';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 const CompanySelection: React.FC = () => {
   const { companySlug } = useParams<{ companySlug: string }>();
@@ -21,10 +21,16 @@ const CompanySelection: React.FC = () => {
     if (company) {
       setSEOMetadata({
         title: `${company.name} Placement Test Series | CodexPetra`,
-        description: `Practice curated coding and aptitude tests designed for ${company.name} placement preparation.`,
+        description: `Practice curated coding and aptitude test series designed for ${company.name} placement preparation. Real exam simulation and performance analytics.`,
+        canonicalUrl: `https://codexpetra.com/test-series/${companySlug}`,
+        structuredData: getBreadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'Test Series', url: '/test-series' },
+          { name: company.name, url: `/test-series/${companySlug}` },
+        ]),
       });
     }
-  }, [company]);
+  }, [company, companySlug]);
 
   const { data: seriesList, isLoading } = useQuery({
     queryKey: ['testSeriesList', companySlug],
@@ -169,10 +175,10 @@ const CompanySelection: React.FC = () => {
         ) : displayedSeries.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">
             {displayedSeries.map((series) => (
-              <div
+              <Link
                 key={series.id}
-                onClick={() => navigate(`/test-series/${companySlug}/${series.slug}`)}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-850/80 bg-white dark:bg-slate-900/60 p-6 transition-all hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4"
+                to={`/test-series/${companySlug}/${series.slug}`}
+                className="group relative block overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-850/80 bg-white dark:bg-slate-900/60 p-6 transition-all hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 {/* Left Side Info */}
                 <div className="space-y-2">
@@ -218,17 +224,12 @@ const CompanySelection: React.FC = () => {
                     )}
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/test-series/${companySlug}/${series.slug}`);
-                    }}
-                    className="px-4 py-2 bg-slate-50 hover:bg-purple-600 hover:text-white dark:bg-slate-850 dark:hover:bg-purple-600 text-slate-750 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-750 transition-all flex items-center gap-1 shrink-0"
-                  >
-                    Start Series <ArrowRight size={13} />
-                  </button>
+                  <div className="px-4 py-2 bg-slate-50 group-hover:bg-purple-600 group-hover:text-white dark:bg-slate-850 dark:group-hover:bg-purple-600 text-slate-750 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-750 transition-all flex items-center gap-1 shrink-0">
+                    <span>View Series</span>
+                    <ArrowRight size={13} />
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (

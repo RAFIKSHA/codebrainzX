@@ -145,8 +145,13 @@ class AptitudeTrainerViewSet(viewsets.ModelViewSet):
         
         path = default_storage.save(f'trainers/{file_obj.name}', file_obj)
         media_url = getattr(settings, 'MEDIA_URL', '/media/')
+        if not media_url.endswith('/'):
+            media_url += '/'
         url = request.build_absolute_uri(media_url + path)
+        if (request.is_secure() or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https') and url.startswith('http://'):
+            url = 'https://' + url[7:]
         return Response({'url': url, 'name': file_obj.name})
+
 
 
 class AptitudeCategoryViewSet(viewsets.ModelViewSet):

@@ -11,6 +11,7 @@ class AptitudeTrainerSerializer(serializers.ModelSerializer):
     question_count = serializers.SerializerMethodField()
     topic_count = serializers.SerializerMethodField()
     category_count = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = AptitudeTrainer
@@ -20,6 +21,38 @@ class AptitudeTrainerSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         )
 
+    def get_profile_image(self, obj):
+        img = obj.profile_image
+        if not img:
+            return None
+        img_str = str(img).strip()
+        # Handle localhost/local IP media URLs from local database seeds or test uploads
+        if 'localhost:8000' in img_str or '127.0.0.1:8000' in img_str:
+            idx = img_str.find('/media/')
+            if idx != -1:
+                media_path = img_str[idx:]
+                request = self.context.get('request')
+                if request:
+                    uri = request.build_absolute_uri(media_path)
+                    if (request.is_secure() or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https') and uri.startswith('http://'):
+                        uri = 'https://' + uri[7:]
+                    return uri
+                return f"https://codebrainzx.onrender.com{media_path}"
+            return None
+        # Handle relative /media/ paths
+        if img_str.startswith('/media/'):
+            request = self.context.get('request')
+            if request:
+                uri = request.build_absolute_uri(img_str)
+                if (request.is_secure() or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https') and uri.startswith('http://'):
+                    uri = 'https://' + uri[7:]
+                return uri
+            return f"https://codebrainzx.onrender.com{img_str}"
+        # Upgrade http to https for non-localhost remote URLs (avoid mixed content)
+        if img_str.startswith('http://') and not ('localhost' in img_str or '127.0.0.1' in img_str):
+            return 'https://' + img_str[7:]
+        return img_str
+
     def get_question_count(self, obj):
         return obj.questions.filter(status='active', visibility='public').count()
 
@@ -28,6 +61,7 @@ class AptitudeTrainerSerializer(serializers.ModelSerializer):
 
     def get_category_count(self, obj):
         return obj.questions.filter(status='active', visibility='public').values('topic__category').distinct().count()
+
 
 
 class AptitudeTrainerDetailSerializer(AptitudeTrainerSerializer):

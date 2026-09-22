@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { BookOpen, Search, ChevronRight, LayoutGrid, Loader2 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
 import type { AptitudeCategory } from '../../services/aptitude';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 const AptitudeTopicsPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -19,6 +20,17 @@ const AptitudeTopicsPage: React.FC = () => {
         const found = data.find(c => c.id === Number(categoryId));
         if (found) {
           setCategory(found);
+          setSEOMetadata({
+            title: `${found.name} Practice Questions & Topics | CodexPetra`,
+            description: `Practice ${found.name} topics and questions with solved explanations, formula sheets, and timed quizzes for campus placement exams.`,
+            canonicalUrl: `https://codexpetra.com/dashboard/aptitude/category/${categoryId}`,
+            structuredData: getBreadcrumbSchema([
+              { name: 'Home', url: '/' },
+              { name: 'Aptitude Practice', url: '/dashboard/aptitude' },
+              { name: 'Categories', url: '/dashboard/aptitude/categories' },
+              { name: found.name, url: `/dashboard/aptitude/category/${categoryId}` },
+            ]),
+          });
         }
       } catch (err) {
         console.error(err);

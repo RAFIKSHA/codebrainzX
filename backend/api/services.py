@@ -6,8 +6,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Judge0Service:
-    @staticmethod
-    def get_config():
+    _cached_mock_status = None
+
+    @classmethod
+    def get_config(cls):
         """
         Reads Judge0 credentials from the environment.
         """
@@ -15,8 +17,20 @@ class Judge0Service:
         api_key = os.environ.get('JUDGE0_API_KEY', '')
         
         # Determine if we should run in Mock mode
-        is_mock = not api_key and ('rapidapi' in api_url)
-        return api_url, api_key, is_mock
+        if not api_url or (not api_key and 'rapidapi' in api_url):
+            return api_url, api_key, True
+
+        if 'localhost' in api_url or '127.0.0.1' in api_url:
+            if cls._cached_mock_status is not None:
+                return api_url, api_key, cls._cached_mock_status
+            try:
+                r = requests.get(f"{api_url}/about", timeout=0.8)
+                cls._cached_mock_status = (r.status_code != 200)
+            except Exception:
+                cls._cached_mock_status = True
+            return api_url, api_key, cls._cached_mock_status
+
+        return api_url, api_key, False
 
     @classmethod
     def execute_code_batch(cls, source_code, language_id, test_cases, time_limit=2.0, memory_limit=256.0):
@@ -278,10 +292,15 @@ class Judge0Service:
                         
                         stdout = proc.stdout
                         stderr = proc.stderr
+                        if temp_file_path in stderr:
+                            stderr = stderr.replace(temp_file_path, "solution.py")
                         
                         if proc.returncode != 0:
-                            tc_status = 'Runtime Error'
-                            error_message = stderr or f"Process exited with code {proc.returncode}"
+                            if "SyntaxError" in stderr or "IndentationError" in stderr:
+                                tc_status = 'Compile Error'
+                            else:
+                                tc_status = 'Runtime Error'
+                            error_message = stderr.strip() or f"Process exited with code {proc.returncode}"
                         else:
                             clean_stdout = "\n".join(line.strip() for line in stdout.strip().splitlines())
                             clean_expected = "\n".join(line.strip() for line in tc.expected_output.strip().splitlines())

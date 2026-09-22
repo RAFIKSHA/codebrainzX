@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Trophy, MapPin, Users, ArrowRight, Search, Clock, BadgeCheck, XCircle, AlertCircle, FileText, Mail, Award, CheckCircle, Download } from 'lucide-react';
 import api from '../../services/api';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 interface Hackathon {
   id: number;
@@ -106,6 +107,15 @@ const HackathonDashboard: React.FC = () => {
   const [viewingCert, setViewingCert] = useState<Certificate | null>(null);
 
   useEffect(() => {
+    setSEOMetadata({
+      title: 'Hackathons | Coding Competitions & Challenges | CodexPetra',
+      description: 'Participate in live coding hackathons, build innovative software projects with developer teams, win cash prizes, and earn verified credentials.',
+      canonicalUrl: 'https://codexpetra.com/dashboard/hackathons',
+      structuredData: getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Hackathons', url: '/dashboard/hackathons' },
+      ]),
+    });
     fetchBrowseData();
   }, []);
 

@@ -225,6 +225,14 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { theme } = useTheme();
+
+  useEffect(() => {
+    setSEOMetadata({
+      title: 'Admin Management Console | CodexPetra',
+      description: 'CodexPetra administrative dashboard for course curation, questions, hackathons, and user management.',
+      noindex: true,
+    });
+  }, []);
   
   // CMS Sidebar and view states
   const [activeMenu, setActiveMenu] = useState<'dashboard' | 'create-content' | 'aptitude' | 'categories' | 'topics' | 'levels' | 'users' | 'contests' | 'courses' | 'test-series' | 'analytics' | 'settings' | 'hackathons'>('dashboard');

@@ -52,7 +52,8 @@ const InternshipStudentDashboard: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Internship Application Dashboard | CodexPetra',
-      description: 'Track your CodexPetra Internship recruitment journey, test score, concession status, and interview schedule.'
+      description: 'Track your CodexPetra Internship recruitment journey, test score, concession status, and interview schedule.',
+      noindex: true,
     });
 
     fetchDashboard(searchCode);

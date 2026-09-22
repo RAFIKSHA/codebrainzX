@@ -9,6 +9,7 @@ import {
   Mail, Phone, HelpCircle, Download, ExternalLink, Flame, Award, Sparkles
 } from 'lucide-react';
 import api from '../../services/api';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 interface Hackathon {
@@ -212,6 +213,23 @@ const HackathonDetails: React.FC = () => {
     };
     fetchDetails();
   }, [slug]);
+
+  useEffect(() => {
+    if (hackathon) {
+      setSEOMetadata({
+        title: `${hackathon.title} | Hackathon on CodexPetra`,
+        description: hackathon.description 
+          ? (hackathon.description.slice(0, 155) + (hackathon.description.length > 155 ? '...' : '')) 
+          : `Participate in ${hackathon.title} on CodexPetra. Win grand prizes, collaborate in teams, and build impactful software.`,
+        canonicalUrl: `https://codexpetra.com/dashboard/hackathons/${slug}`,
+        structuredData: getBreadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'Hackathons', url: '/dashboard/hackathons' },
+          { name: hackathon.title, url: `/dashboard/hackathons/${slug}` },
+        ]),
+      });
+    }
+  }, [hackathon, slug]);
 
   const checkIfRegistered = async (id: number) => {
     if (!user) return;

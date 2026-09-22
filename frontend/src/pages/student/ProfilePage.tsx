@@ -77,12 +77,13 @@ const ProfilePage: React.FC = () => {
     }
   });
 
-  // Set premium SEO metadata dynamically
+  // Set premium SEO metadata dynamically (noindex private profile)
   useEffect(() => {
     if (profileUser) {
       setSEOMetadata({
         title: `${profileUser.full_name || profileUser.username} - CodexPetra Profile`,
         description: 'Review achievements, solved distributions, activity reports, and interview readiness reports on CodexPetra.',
+        noindex: true,
       });
     }
   }, [profileUser]);

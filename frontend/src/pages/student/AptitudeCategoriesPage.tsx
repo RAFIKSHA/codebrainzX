@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Brain, Compass, BookOpen, ChevronRight, Search, Loader2 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
 import type { AptitudeCategory } from '../../services/aptitude';
+import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 
 const AptitudeCategoriesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +12,17 @@ const AptitudeCategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    setSEOMetadata({
+      title: 'Aptitude Categories & Topics | Quantitative, Reasoning & Verbal | CodexPetra',
+      description: 'Explore topic-wise aptitude preparation including Quantitative Aptitude, Logical Reasoning, and Verbal Ability with structured practice sets and solved examples.',
+      canonicalUrl: 'https://codexpetra.com/dashboard/aptitude/categories',
+      structuredData: getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Aptitude Practice', url: '/dashboard/aptitude' },
+        { name: 'Categories', url: '/dashboard/aptitude/categories' },
+      ]),
+    });
+
     const fetchCats = async () => {
       try {
         setLoading(true);

@@ -638,42 +638,51 @@ const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Hub Links */}
-          <div className="space-y-1">
+          {/* User Account Links (if logged in) */}
+          {user && (
+            <div className="space-y-1 pb-2 border-b border-slate-100 dark:border-slate-850">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 block mb-1">
+                My Account
+              </span>
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+              >
+                <LayoutDashboard size={16} className="text-purple-600 dark:text-purple-400" />
+                <span>Dashboard Hub</span>
+              </Link>
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+              >
+                <User size={16} className="text-blue-600 dark:text-blue-400" />
+                <span>My Profile & Stats</span>
+              </Link>
+            </div>
+          )}
+
+          {/* Primary Public Navigation Links */}
+          <div className="space-y-1 pt-1">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 block mb-1">
-              Main Menu
+              Explore Platform
             </span>
             <Link
-              to="/dashboard"
+              to="/tutorials"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
-              <LayoutDashboard size={16} className="text-purple-600 dark:text-purple-400" />
-              <span>Dashboard Hub</span>
+              <BookOpen size={16} className="text-purple-600 dark:text-purple-400" />
+              <span>Programming Tutorials</span>
             </Link>
             <Link
-              to="/profile"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-            >
-              <User size={16} className="text-blue-600 dark:text-blue-400" />
-              <span>My Profile & Stats</span>
-            </Link>
-            <Link
-              to="/dashboard/coding/dsa"
+              to="/dashboard/coding"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
               <Code size={16} className="text-indigo-600 dark:text-indigo-400" />
-              <span>DSA Learning Roadmap</span>
-            </Link>
-            <Link
-              to="/dashboard/coding/problems"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-            >
-              <Code size={16} className="text-emerald-600 dark:text-emerald-400" />
-              <span>Practice Playground</span>
+              <span>Practice Coding & DSA</span>
             </Link>
             <Link
               to="/dashboard/aptitude"
@@ -684,12 +693,12 @@ const Navbar: React.FC = () => {
               <span>Aptitude Practice</span>
             </Link>
             <Link
-              to="/tutorials"
+              to="/test-series"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
-              <BookOpen size={16} className="text-purple-600 dark:text-purple-400" />
-              <span>Programming Tutorials</span>
+              <Sparkles size={16} className="text-teal-600 dark:text-teal-400" />
+              <span>Company Test Series</span>
             </Link>
             <Link
               to="/dashboard/hackathons"
@@ -697,15 +706,7 @@ const Navbar: React.FC = () => {
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
               <Users size={16} className="text-pink-600 dark:text-pink-400" />
-              <span>Hackathons</span>
-            </Link>
-            <Link
-              to="/test-series"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-            >
-              <Sparkles size={16} className="text-teal-600 dark:text-teal-400" />
-              <span>Test Series</span>
+              <span>Mega Hackathons</span>
             </Link>
             <Link
               to="/internships"
@@ -714,10 +715,10 @@ const Navbar: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <Sparkles size={16} />
-                <span>Internships 2026</span>
+                <span>Virtual Internships</span>
               </div>
               <span className="text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase bg-blue-600 text-white">
-                New
+                2026
               </span>
             </Link>
           </div>

@@ -174,9 +174,8 @@ const QuestionPage: React.FC = () => {
     },
     onSuccess: (data) => {
       setConsoleLog({
-        type: data.overall_status === 'passed' ? 'success' : 'error',
-        message: data.overall_status === 'passed' ? 'All public test cases passed successfully!' : 'Code execution failed or produced mismatched output.',
-        details: data
+        type: 'run',
+        ...data
       });
       setActiveConsoleTab('results');
     },
@@ -197,9 +196,8 @@ const QuestionPage: React.FC = () => {
     },
     onSuccess: (data) => {
       setConsoleLog({
-        type: data.overall_status === 'accepted' ? 'success' : 'error',
-        message: data.overall_status === 'accepted' ? '🎉 Accepted! Solution verified across full test case suite.' : 'Wrong Answer or Runtime Error during evaluation.',
-        details: data
+        type: 'submit',
+        ...data
       });
       setActiveConsoleTab('results');
       queryClient.invalidateQueries({ queryKey: ['question', questionId] });

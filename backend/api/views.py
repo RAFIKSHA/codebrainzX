@@ -9,8 +9,12 @@ from django.utils import timezone
 from datetime import timedelta
 import random
 import os
+import json
+import logging
 import requests
 from django.core.mail import send_mail
+
+logger = logging.getLogger(__name__)
 
 from .models import Profile, EmailOTP, Topic, QuestionLevel, Question, TestCase, Language, Submission, UserProgress, Section, ContentItem
 from .serializers import (
@@ -138,6 +142,7 @@ def send_otp_email(email, otp, purpose_text="Verify your sign-in"):
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
@@ -161,6 +166,7 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
 
     def post(self, request):
         username = request.data.get('username')
@@ -209,7 +215,9 @@ class LoginView(generics.GenericAPIView):
 
 class GoogleLoginView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = GoogleAuthSerializer
+
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -285,6 +293,7 @@ class GoogleLoginView(generics.GenericAPIView):
 
 class EmailOTPSendView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = EmailOTPSendSerializer
 
     def post(self, request):
@@ -339,6 +348,7 @@ class EmailOTPSendView(generics.GenericAPIView):
 
 class RegisterSendOTPView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = RegisterSendOTPSerializer
 
     def post(self, request):
@@ -387,6 +397,7 @@ class RegisterSendOTPView(generics.GenericAPIView):
 
 class RegisterVerifyView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = RegisterVerifySerializer
 
     def post(self, request):
@@ -454,7 +465,9 @@ class RegisterVerifyView(generics.GenericAPIView):
 
 class ForgotPasswordVerifyView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
     serializer_class = ForgotPasswordVerifySerializer
+
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -588,6 +601,22 @@ class QuestionViewSet(viewsets.ModelViewSet):
             
         return queryset
 
+    def _prepare_execution_code(self, question, code, language_slug):
+        """
+        Wraps the student code with internal protected driver code if defined.
+        """
+        if not question.driver_code:
+            return code
+        try:
+            driver_map = json.loads(question.driver_code) if isinstance(question.driver_code, str) else question.driver_code
+            if isinstance(driver_map, dict) and language_slug in driver_map:
+                driver = driver_map[language_slug].strip()
+                if driver:
+                    return f"{code}\n\n{driver}\n"
+        except Exception as e:
+            logger.warning(f"Error parsing driver_code for question {question.id}: {e}")
+        return code
+
     @action(detail=True, methods=['post'], url_path='run')
     def run_code(self, request, pk=None):
         """
@@ -611,8 +640,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if not test_cases.exists():
             return Response({'error': 'No visible test cases available for execution'}, status=status.HTTP_400_BAD_REQUEST)
 
+        execution_source = self._prepare_execution_code(question, code, language_slug)
+
         result = Judge0Service.execute_code_batch(
-            source_code=code,
+            source_code=execution_source,
             language_id=language.judge0_id,
             test_cases=test_cases,
             time_limit=question.time_limit,
@@ -643,9 +674,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if not test_cases.exists():
             return Response({'error': 'No test cases available for this question'}, status=status.HTTP_400_BAD_REQUEST)
 
+        execution_source = self._prepare_execution_code(question, code, language_slug)
+
         # Run compilation batch
         result = Judge0Service.execute_code_batch(
-            source_code=code,
+            source_code=execution_source,
             language_id=language.judge0_id,
             test_cases=test_cases,
             time_limit=question.time_limit,

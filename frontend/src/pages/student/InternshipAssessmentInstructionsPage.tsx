@@ -27,7 +27,8 @@ const InternshipAssessmentInstructionsPage: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Assessment Briefing & Rules | CodexPetra Career Portal',
-      description: 'Review rules and instructions before starting your CodexPetra Internship entrance and scholarship assessment.'
+      description: 'Review rules and instructions before starting your CodexPetra Internship entrance and scholarship assessment.',
+      noindex: true,
     });
 
     const fetchApp = async () => {

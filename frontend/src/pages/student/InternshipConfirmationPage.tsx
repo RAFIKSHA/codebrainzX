@@ -21,7 +21,8 @@ const InternshipConfirmationPage: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Application Submitted | CodexPetra Career Portal',
-      description: 'Your application for the CodexPetra Internship Program has been received. Proceed to the entrance assessment.'
+      description: 'Your application for the CodexPetra Internship Program has been received. Proceed to the entrance assessment.',
+      noindex: true,
     });
 
     const fetchApp = async () => {

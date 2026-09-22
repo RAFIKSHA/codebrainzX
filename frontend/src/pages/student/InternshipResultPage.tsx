@@ -19,7 +19,8 @@ const InternshipResultPage: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
       title: 'Assessment Score Card | CodexPetra Internship',
-      description: 'Your verified score card and scholarship eligibility result for the CodexPetra Internship Program.'
+      description: 'Your verified score card and scholarship eligibility result for the CodexPetra Internship Program.',
+      noindex: true,
     });
 
     const fetchResult = async () => {

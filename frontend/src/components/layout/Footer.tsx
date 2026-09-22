@@ -51,16 +51,19 @@ const Footer: React.FC = () => {
                 <Link to="/tutorials" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Programming Tutorials</Link>
               </li>
               <li>
-                <Link to="/dashboard/coding" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Coding Practice</Link>
+                <Link to="/dashboard/coding" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Practice Coding & DSA</Link>
               </li>
               <li>
                 <Link to="/dashboard/aptitude" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Aptitude & Reasoning</Link>
               </li>
               <li>
-                <Link to="/test-series" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Test Series</Link>
+                <Link to="/test-series" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Company Test Series</Link>
               </li>
               <li>
-                <Link to="/internships" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Internships 2026</Link>
+                <Link to="/dashboard/hackathons" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Mega Hackathons</Link>
+              </li>
+              <li>
+                <Link to="/internships" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Virtual Internships 2026</Link>
               </li>
             </ul>
           </div>

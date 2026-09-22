@@ -6,8 +6,10 @@ import {
 } from 'lucide-react';
 import aptitudeService from '../../services/aptitude';
 import type { AptitudeTrainerDetail } from '../../services/aptitude';
+import { TrainerAvatar } from './AptitudeDashboard';
 
 const AptitudeTrainerProfilePage: React.FC = () => {
+
   const { trainerId } = useParams<{ trainerId: string }>();
   const navigate = useNavigate();
 
@@ -89,21 +91,9 @@ const AptitudeTrainerProfilePage: React.FC = () => {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-start sm:items-center gap-5">
-            {trainer.profile_image ? (
-              <img
-                src={trainer.profile_image}
-                alt={trainer.name}
-                className="w-20 h-20 rounded-2xl object-cover border-2 border-blue-100 dark:border-blue-900 shadow-md shrink-0"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                }}
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold flex items-center justify-center text-2xl shadow-md shrink-0">
-                {trainer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-              </div>
-            )}
+            <TrainerAvatar name={trainer.name} image={trainer.profile_image} size="lg" />
             <div>
+
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-2xl font-black text-slate-900 dark:text-white">{trainer.name}</h1>
                 <span className="text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-2.5 py-0.5 rounded-full">

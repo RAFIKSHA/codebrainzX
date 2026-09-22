@@ -59,6 +59,14 @@ const InternshipAssessmentEngine: React.FC = () => {
   const timerRef = useRef<any>(null);
   const startTimeRef = useRef<number>(Date.now());
 
+  useEffect(() => {
+    setSEOMetadata({
+      title: 'Internship Assessment Engine | CodexPetra',
+      description: 'CodexPetra online proctored entrance and scholarship assessment.',
+      noindex: true,
+    });
+  }, []);
+
   // Listen to browser fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {

@@ -141,6 +141,7 @@ class Question(models.Model):
     official_solution = models.TextField(blank=True, default='')
     examples = models.TextField(default='[]', help_text="JSON list of examples: [{'input': '...', 'output': '...', 'explanation': '...'}]")
     starter_code = models.TextField(help_text="JSON mapping language slugs to starter templates")
+    driver_code = models.TextField(blank=True, default='', help_text="JSON mapping language slugs to internal driver code")
     time_limit = models.FloatField(default=2.0, help_text="In seconds")
     memory_limit = models.FloatField(default=256.0, help_text="In Megabytes")
     is_published = models.BooleanField(default=True)
