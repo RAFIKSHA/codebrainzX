@@ -2,8 +2,9 @@ export type ConceptStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'LOCKE
 
 export type CategoryKey = 
   | 'foundation' 
-  | 'logic' 
-  | 'core' 
+  | 'control-flow'
+  | 'data-structures' 
+  | 'functions' 
   | 'oop' 
   | 'advanced' 
   | 'dsa';
@@ -11,107 +12,147 @@ export type CategoryKey =
 export interface ConceptCategory {
   id: CategoryKey;
   number: string; // e.g. "01"
-  name: string; // e.g. "FOUNDATION"
-  title: string; // e.g. "Build the basics of Python"
-  color: string; // Hex or Tailwind color
+  name: string; // e.g. "LEVEL 1 — Python Foundations"
+  title: string; // e.g. "Build the core foundation of Python"
+  color: string;
   bgColor: string;
   borderColor: string;
   iconName: string;
 }
 
-export type VisualType = 
-  | 'variable' 
-  | 'data-type' 
-  | 'condition' 
-  | 'loop' 
-  | 'function' 
-  | 'list' 
-  | 'dict' 
-  | 'oop' 
-  | 'dsa-stack' 
-  | 'dsa-pointer'
-  | 'general';
-
-export interface RealWorldDomain {
-  domain: string; // e.g. "E-commerce", "Banking", "Streaming", "SaaS"
-  icon: string;
-  description: string;
-  mappings: Array<{
-    key: string;
-    typeOrValue: string;
-    explanation: string;
+export interface LessonSection {
+  id: string; // Anchor ID for table of contents
+  title: string;
+  subtitle?: string;
+  content: string; // Markdown or rich HTML text
+  callout?: {
+    type: 'analogy' | 'tip' | 'note' | 'warning' | 'info';
+    title: string;
+    text: string;
+  };
+  comparisonTable?: {
+    headers: string[];
+    rows: string[][];
+  };
+  cards?: Array<{
+    title: string;
+    description: string;
+    tag?: string;
+    icon?: string;
   }>;
 }
 
-export interface PracticeQuestion {
+export interface CodeBlockExample {
+  language: string;
+  code: string;
+  output: string;
+  explanation?: string;
+  howItWorks?: string[];
+}
+
+export interface CommonMistakeItem {
+  mistake: string;
+  badCode?: string;
+  goodCode?: string;
+  explanation: string;
+}
+
+export interface PracticeProblem {
   id: string;
-  difficulty: 'easy' | 'medium' | 'interview';
+  order: number;
   title: string;
+  subtopic: string;
+  difficulty: 'Basic' | 'Easy' | 'Medium';
+  statement: string;
+  inputFormat: string;
+  outputFormat: string;
+  constraints?: string;
+  examples: Array<{
+    input: string;
+    output: string;
+    explanation?: string;
+  }>;
+  approach?: string;
+  starterCode: {
+    python: string;
+  };
+  solutionCode?: string;
+  testCases: Array<{
+    input_data: string;
+    expected_output: string;
+    is_hidden?: boolean;
+  }>;
+}
+
+export interface QuizQuestion {
+  id: string;
+  type: 'mcq' | 'output_prediction' | 'find_error' | 'true_false';
   question: string;
   codeSnippet?: string;
   options: string[];
   correctIndex: number;
   explanation: string;
-  hints?: string[];
 }
 
-export interface DSAConnectionStep {
+export interface MiniProject {
+  id: string;
   title: string;
+  level: string;
   description: string;
-  tag?: string;
+  inputs: string[];
+  outputFormat: string;
+  starterCode: string;
+  solutionCode: string;
+  keyConcepts: string[];
 }
 
-export interface DSAConnectionData {
+export interface FinalAssessment {
+  id: string;
   title: string;
-  summary: string;
-  whyItMatters: string;
-  steps: DSAConnectionStep[];
-  recommendedProblems: Array<{
-    title: string;
-    difficulty: 'Easy' | 'Medium' | 'Hard';
-    pattern: string;
-  }>;
+  level: string;
+  totalQuestions: number;
+  timeLimitMinutes: number;
+  questions: QuizQuestion[];
 }
 
-export interface PythonConcept {
-  id: string; // slug e.g. 'data-types'
-  order: number;
-  title: string; // e.g. "Data Types"
+export interface PythonLesson {
+  id: string; // slug e.g. 'introduction-to-python', 'variables'
+  lessonNumber: string; // e.g. '1.1', '1.2'
+  title: string; // e.g. "Introduction to Python"
+  chapterName: string; // e.g. "Level 1 — Python Foundations"
+  chapterNumber: number; // 1
   category: CategoryKey;
-  shortDefinition: string; // Short 1-liner for graph node / tooltip
-  definition: string; // Full professional definition
-  simpleExplanation: string; // "In simple words" metaphor
-  visualType: VisualType;
-  visualData?: Record<string, any>;
-  whyItMatters: {
-    description: string;
-    connectedChips: string[]; // e.g. ["Variables", "Operators", "Conditions", "Functions", "DSA"]
-  };
-  realWorld: {
-    primaryDomain: RealWorldDomain;
-    otherDomains?: RealWorldDomain[];
-  };
-  code: {
-    snippet: string;
-    expectedOutput: string;
-    explanation?: string;
-  };
-  practice: {
-    easyCount: number;
-    mediumCount: number;
-    interviewCount: number;
-    questions: PracticeQuestion[];
-  };
-  dsaConnection: DSAConnectionData;
-  prerequisites: string[]; // IDs of previous concepts
-  nextConceptId: string; // ID of next concept in progression
-  nextConceptReason: string; // "Now learn how Python makes decisions."
-  relatedConceptIds: string[]; // Nearby graph connections
+  readingTime: string; // e.g. "10 min read"
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  introduction: string; // Short intro paragraph
+  learningObjectives: string[]; // List of bullet points
+  sections: LessonSection[];
+  codeExample: CodeBlockExample;
+  commonMistakes?: CommonMistakeItem[];
+  keyPoints: string[];
+  practiceProblems: PracticeProblem[];
+  quizzes: QuizQuestion[];
+  miniProject?: MiniProject;
+  relatedTopics: Array<{
+    id: string;
+    title: string;
+    chapterName: string;
+    readingTime: string;
+  }>;
+  prevLessonId?: string;
+  nextLessonId?: string;
 }
 
-export interface LearningProgress {
-  completedConceptIds: string[];
-  activeConceptId: string;
-  bookmarkedConceptIds: string[];
-  completedPracticeIds: string[];
+export interface CourseCurriculumLevel {
+  levelNumber: number;
+  name: string;
+  slug: string;
+  description: string;
+  lessons: Array<{
+    id: string;
+    lessonNumber: string;
+    title: string;
+    readingTime: string;
+    difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  }>;
 }
