@@ -1,120 +1,140 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Homepage -->
+  <!-- 1. Homepage -->
   <url>
-    <loc>https://codexpetra.com/</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Tutorials & Programming Learning -->
+  <!-- 2. Interactive Tutorials & Language Learning -->
   <url>
-    <loc>https://codexpetra.com/tutorials</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://codexpetra.com/tutorials/python</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://codexpetra.com/tutorials/java</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://codexpetra.com/tutorials/cpp</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://codexpetra.com/tutorials/javascript</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <!-- Aptitude & Reasoning -->
-  <url>
-    <loc>https://codexpetra.com/dashboard/aptitude</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://codexpetra.com/dashboard/aptitude/categories</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <!-- Coding Practice & DSA Roadmap -->
-  <url>
-    <loc>https://codexpetra.com/dashboard/coding</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/tutorials</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://codexpetra.com/dashboard/coding/problems</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/tutorials/python</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.codexpetra.com/tutorials/java</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.codexpetra.com/tutorials/cpp</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.codexpetra.com/tutorials/javascript</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 3. DSA Roadmap & Coding Practice Playground -->
+  <url>
+    <loc>https://www.codexpetra.com/dsa</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://www.codexpetra.com/dsa/roadmap</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://www.codexpetra.com/dsa/problems</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
 
-  <!-- Mega Hackathons & Contests -->
+  <!-- 4. Aptitude & Logical Reasoning Hub -->
   <url>
-    <loc>https://codexpetra.com/dashboard/hackathons</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/aptitude</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://www.codexpetra.com/aptitude/categories</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 5. Company-Specific Placement Test Series -->
+  <url>
+    <loc>https://www.codexpetra.com/placement-tests</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://www.codexpetra.com/test-series</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- 6. Live Hackathons & Competitive Coding Contests -->
+  <url>
+    <loc>https://www.codexpetra.com/hackathons</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
 
-  <!-- Company Test Series -->
+  <!-- 7. Internship Portal & Skill Assessments -->
   <url>
-    <loc>https://codexpetra.com/test-series</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/internships</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
 
-  <!-- Internships -->
+  <!-- 8. Company Selection & Interview Preparation Tracks -->
   <url>
-    <loc>https://codexpetra.com/internships</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/interview-preparation</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
 
-  <!-- Trust & Company Pages -->
+  <!-- 9. Platform & Policy Pages -->
   <url>
-    <loc>https://codexpetra.com/about</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/about</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.70</priority>
   </url>
   <url>
-    <loc>https://codexpetra.com/contact</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/contact</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.70</priority>
   </url>
   <url>
-    <loc>https://codexpetra.com/privacy-policy</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/privacy-policy</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.50</priority>
   </url>
   <url>
-    <loc>https://codexpetra.com/terms-conditions</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.codexpetra.com/terms-conditions</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.50</priority>
   </url>
 </urlset>

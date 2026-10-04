@@ -167,13 +167,13 @@ const TutorialsHomePage: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Programming Tutorials & Documentation | CodexPetra',
+      title: 'Interactive Coding Tutorials | Python, Java, C++ & JavaScript | CodexPetra',
       description:
-        'Explore comprehensive programming tutorials in Python, Java, C++, JavaScript and more. Well-structured tutorials, hands-on coding practice, and interactive compilers.',
-      canonicalUrl: 'https://codexpetra.com/tutorials',
+        'Master Python, Java, C++, and JavaScript with step-by-step interactive coding tutorials, syntax walkthroughs, and in-browser execution on CodexPetra.',
+      canonicalUrl: 'https://www.codexpetra.com/tutorials',
       structuredData: getBreadcrumbSchema([
         { name: 'Home', url: '/' },
-        { name: 'Programming Tutorials', url: '/tutorials' },
+        { name: 'Interactive Tutorials', url: '/tutorials' },
       ]),
     });
   }, []);

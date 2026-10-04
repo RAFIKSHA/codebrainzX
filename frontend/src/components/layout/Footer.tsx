@@ -44,26 +44,29 @@ const Footer: React.FC = () => {
           {/* Quick Links Column */}
           <div className="col-span-1 md:col-span-4 space-y-3">
             <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest">
-              Platform
+              Core Platform
             </h4>
             <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
               <li>
-                <Link to="/tutorials" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Programming Tutorials</Link>
+                <Link to="/tutorials" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Interactive Tutorials (Python, Java, C++, JS)</Link>
               </li>
               <li>
-                <Link to="/dashboard/coding" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Practice Coding & DSA</Link>
+                <Link to="/dsa" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">DSA Roadmap & Coding Practice</Link>
               </li>
               <li>
-                <Link to="/dashboard/aptitude" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Aptitude & Reasoning</Link>
+                <Link to="/aptitude" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Aptitude & Logical Reasoning Hub</Link>
               </li>
               <li>
-                <Link to="/test-series" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Company Test Series</Link>
+                <Link to="/placement-tests" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Company-Specific Placement Test Series</Link>
               </li>
               <li>
-                <Link to="/dashboard/hackathons" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Mega Hackathons</Link>
+                <Link to="/hackathons" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Live Hackathons & Coding Contests</Link>
               </li>
               <li>
-                <Link to="/internships" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Virtual Internships 2026</Link>
+                <Link to="/internships" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Internship Portal & Skill Assessments</Link>
+              </li>
+              <li>
+                <Link to="/interview-preparation" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Company Interview Preparation Tracks</Link>
               </li>
             </ul>
           </div>
@@ -71,17 +74,14 @@ const Footer: React.FC = () => {
           {/* Resources & Company Column */}
           <div className="col-span-1 md:col-span-4 space-y-3">
             <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest">
-              Company & Help
+              Platform & Legal
             </h4>
             <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
               <li>
                 <Link to="/about" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">About CodexPetra</Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Contact Us</Link>
-              </li>
-              <li>
-                <Link to="/tutorials" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Developer Documentation</Link>
+                <Link to="/contact" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Contact Support & Developer Relations</Link>
               </li>
               <li>
                 <Link to="/privacy-policy" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Privacy Policy</Link>

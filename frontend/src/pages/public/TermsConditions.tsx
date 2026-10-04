@@ -7,7 +7,7 @@ const TermsConditions: React.FC = () => {
     setSEOMetadata({
       title: 'Terms & Conditions | CodexPetra',
       description: 'Read the terms of service governing user accounts, coding sandbox execution, test series participation, and fair usage policies on CodexPetra.',
-      canonicalUrl: 'https://codexpetra.com/terms-conditions',
+      canonicalUrl: 'https://www.codexpetra.com/terms-conditions',
       structuredData: getBreadcrumbSchema([
         { name: 'Home', url: '/' },
         { name: 'Terms & Conditions', url: '/terms-conditions' },

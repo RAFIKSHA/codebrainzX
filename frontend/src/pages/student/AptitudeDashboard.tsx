@@ -43,12 +43,12 @@ const AptitudeDashboard: React.FC = () => {
   useEffect(() => { 
     fetch(); 
     setSEOMetadata({
-      title: 'Aptitude & Reasoning Practice | CodexPetra',
-      description: 'Master quantitative aptitude, logical reasoning, and verbal ability with categorized practice questions, mock tests, and company placement papers.',
-      canonicalUrl: 'https://codexpetra.com/dashboard/aptitude',
+      title: 'Aptitude & Logical Reasoning Practice | CodexPetra',
+      description: 'Practice quantitative aptitude, logical reasoning, and verbal ability with categorized practice questions, mock tests, and company placement papers on CodexPetra.',
+      canonicalUrl: 'https://www.codexpetra.com/aptitude',
       structuredData: getBreadcrumbSchema([
         { name: 'Home', url: '/' },
-        { name: 'Aptitude Practice', url: '/dashboard/aptitude' },
+        { name: 'Aptitude & Logical Reasoning', url: '/aptitude' },
       ]),
     });
   }, []);

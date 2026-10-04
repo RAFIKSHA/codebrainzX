@@ -8,7 +8,7 @@ const About: React.FC = () => {
     setSEOMetadata({
       title: 'About CodexPetra | Developer Learning & Assessment Ecosystem',
       description: 'Learn about CodexPetra, our mission to democratize technical interview prep, high-performance online compilers, aptitude test engines, and developer hiring solutions.',
-      canonicalUrl: 'https://codexpetra.com/about',
+      canonicalUrl: 'https://www.codexpetra.com/about',
       structuredData: [
         getOrganizationSchema(),
         getBreadcrumbSchema([

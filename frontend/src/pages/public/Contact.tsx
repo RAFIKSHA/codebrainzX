@@ -16,7 +16,7 @@ const Contact: React.FC = () => {
     setSEOMetadata({
       title: 'Contact CodexPetra | Support & Developer Assistance',
       description: 'Get in touch with the CodexPetra support team for inquiries, bug reports, campus hackathons, corporate partnerships, and technical feedback.',
-      canonicalUrl: 'https://codexpetra.com/contact',
+      canonicalUrl: 'https://www.codexpetra.com/contact',
       structuredData: [
         getContactPageSchema(),
         getBreadcrumbSchema([

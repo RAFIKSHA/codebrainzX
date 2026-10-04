@@ -20,13 +20,23 @@ const CompanySelection: React.FC = () => {
   useEffect(() => {
     if (company) {
       setSEOMetadata({
-        title: `${company.name} Placement Test Series | CodexPetra`,
-        description: `Practice curated coding and aptitude test series designed for ${company.name} placement preparation. Real exam simulation and performance analytics.`,
-        canonicalUrl: `https://codexpetra.com/test-series/${companySlug}`,
+        title: `${company.name} Interview Preparation & Placement Tests | CodexPetra`,
+        description: `Practice curated coding and aptitude test series designed for ${company.name} placement preparation. Real exam simulation and performance analytics on CodexPetra.`,
+        canonicalUrl: `https://www.codexpetra.com/placement-tests/${companySlug}`,
         structuredData: getBreadcrumbSchema([
           { name: 'Home', url: '/' },
-          { name: 'Test Series', url: '/test-series' },
-          { name: company.name, url: `/test-series/${companySlug}` },
+          { name: 'Placement Tests', url: '/placement-tests' },
+          { name: `${company.name} Preparation`, url: `/placement-tests/${companySlug}` },
+        ]),
+      });
+    } else {
+      setSEOMetadata({
+        title: 'Company Interview Preparation & Placement Tracks | CodexPetra',
+        description: 'Target company-wise interview preparation, problem archives, and placement hiring patterns on CodexPetra.',
+        canonicalUrl: 'https://www.codexpetra.com/interview-preparation',
+        structuredData: getBreadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'Interview Preparation', url: '/interview-preparation' },
         ]),
       });
     }

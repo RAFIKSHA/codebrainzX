@@ -7,7 +7,7 @@ const PrivacyPolicy: React.FC = () => {
     setSEOMetadata({
       title: 'Privacy Policy | CodexPetra',
       description: 'Learn how CodexPetra collects, protects, and manages your personal data, code submissions, assessment records, and account information.',
-      canonicalUrl: 'https://codexpetra.com/privacy-policy',
+      canonicalUrl: 'https://www.codexpetra.com/privacy-policy',
       structuredData: getBreadcrumbSchema([
         { name: 'Home', url: '/' },
         { name: 'Privacy Policy', url: '/privacy-policy' },

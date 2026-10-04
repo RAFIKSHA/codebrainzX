@@ -108,12 +108,12 @@ const HackathonDashboard: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Hackathons | Coding Competitions & Challenges | CodexPetra',
-      description: 'Participate in live coding hackathons, build innovative software projects with developer teams, win cash prizes, and earn verified credentials.',
-      canonicalUrl: 'https://codexpetra.com/dashboard/hackathons',
+      title: 'Live Hackathons & Competitive Coding Contests | CodexPetra',
+      description: 'Participate in live coding hackathons, solve engineering challenges with developer teams, climb leaderboards, win cash prizes, and earn verified credentials.',
+      canonicalUrl: 'https://www.codexpetra.com/hackathons',
       structuredData: getBreadcrumbSchema([
         { name: 'Home', url: '/' },
-        { name: 'Hackathons', url: '/dashboard/hackathons' },
+        { name: 'Live Hackathons & Coding Contests', url: '/hackathons' },
       ]),
     });
     fetchBrowseData();

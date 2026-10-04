@@ -191,10 +191,19 @@ const App: React.FC = () => {
               />
               <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
               <Route path="/terms" element={<Navigate to="/terms-conditions" replace />} />
+              <Route path="/terms-and-conditions" element={<Navigate to="/terms-conditions" replace />} />
 
               {/* Internship Program Funnel Routes */}
               <Route
                 path="/internships"
+                element={
+                  <Layout>
+                    <InternshipLandingPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/assessments"
                 element={
                   <Layout>
                     <InternshipLandingPage />
@@ -273,6 +282,30 @@ const App: React.FC = () => {
               />
               {/* Coding & DSA Public/Student Accessible Routes */}
               <Route
+                path="/dsa"
+                element={
+                  <DashboardLayout>
+                    <DsaRoadmap />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/dsa/roadmap"
+                element={
+                  <DashboardLayout>
+                    <DsaRoadmap />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/dsa/problems"
+                element={
+                  <DashboardLayout>
+                    <PracticePlayground />
+                  </DashboardLayout>
+                }
+              />
+              <Route
                 path="/dashboard/coding"
                 element={
                   <DashboardLayout>
@@ -280,9 +313,9 @@ const App: React.FC = () => {
                   </DashboardLayout>
                 }
               />
-              <Route path="/coding" element={<Navigate to="/dashboard/coding" replace />} />
-              <Route path="/practice" element={<Navigate to="/dashboard/coding/problems" replace />} />
-              <Route path="/roadmap" element={<Navigate to="/dashboard/coding" replace />} />
+              <Route path="/coding" element={<Navigate to="/dsa" replace />} />
+              <Route path="/practice" element={<Navigate to="/dsa/problems" replace />} />
+              <Route path="/roadmap" element={<Navigate to="/dsa/roadmap" replace />} />
               <Route
                 path="/dashboard/coding/dsa"
                 element={
@@ -327,11 +360,95 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Aptitude Public/Student Accessible Routes */}
+              <Route
+                path="/aptitude"
+                element={
+                  <DashboardLayout>
+                    <AptitudeDashboard />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/aptitude/categories"
+                element={
+                  <DashboardLayout>
+                    <AptitudeCategoriesPage />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/aptitude/category/:categoryId"
+                element={
+                  <DashboardLayout>
+                    <AptitudeTopicsPage />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/aptitude/topic/:topicId"
+                element={
+                  <DashboardLayout>
+                    <AptitudeSubTopicsPage />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/aptitude/practice"
+                element={
+                  <DashboardLayout>
+                    <AptitudePracticeSelection />
+                  </DashboardLayout>
+                }
+              />
               <Route
                 path="/dashboard/aptitude"
                 element={
                   <DashboardLayout>
                     <AptitudeDashboard />
+                  </DashboardLayout>
+                }
+              />
+
+              {/* Company-Specific Placement Test Series Routes */}
+              <Route
+                path="/placement-tests"
+                element={
+                  <DashboardLayout>
+                    <TestSeriesHub />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/placement-tests/:companySlug"
+                element={
+                  <DashboardLayout>
+                    <CompanySelection />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/placement-tests/:companySlug/:seriesSlug"
+                element={
+                  <DashboardLayout>
+                    <SeriesDetailPage />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/interview-preparation"
+                element={
+                  <DashboardLayout>
+                    <CompanySelection />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/interview-preparation/:companySlug"
+                element={
+                  <DashboardLayout>
+                    <CompanySelection />
                   </DashboardLayout>
                 }
               />
@@ -459,11 +576,19 @@ const App: React.FC = () => {
               />
               <Route
                 path="/dashboard/mcq"
-                element={<Navigate to="/dashboard/aptitude/categories" replace />}
+                element={<Navigate to="/aptitude/categories" replace />}
               />
               <Route
                 path="/dashboard/contests"
-                element={<Navigate to="/dashboard/coding/tests" replace />}
+                element={<Navigate to="/hackathons" replace />}
+              />
+              <Route
+                path="/contests"
+                element={
+                  <DashboardLayout>
+                    <HackathonDashboard />
+                  </DashboardLayout>
+                }
               />
               <Route
                 path="/dashboard/courses"
@@ -485,8 +610,22 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/hackathons" element={<Navigate to="/dashboard/hackathons" replace />} />
-              <Route path="/hackathons/:slug" element={<Navigate to="/dashboard/hackathons/:slug" replace />} />
+              <Route
+                path="/hackathons"
+                element={
+                  <DashboardLayout>
+                    <HackathonDashboard />
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/hackathons/:slug"
+                element={
+                  <DashboardLayout>
+                    <HackathonDetails />
+                  </DashboardLayout>
+                }
+              />
               <Route
                 path="/dashboard/hackathons"
                 element={

@@ -17,7 +17,7 @@ interface SEOProps {
   structuredData?: Record<string, any> | Array<Record<string, any>>;
 }
 
-const CANONICAL_DOMAIN = 'https://codexpetra.com';
+const CANONICAL_DOMAIN = 'https://www.codexpetra.com';
 
 export const setSEOMetadata = ({
   title,

@@ -1,30 +1,43 @@
 User-agent: *
 Allow: /
-Allow: /tutorials/
 Allow: /tutorials
-Allow: /dashboard/coding
-Allow: /dashboard/hackathons
+Allow: /tutorials/
+Allow: /dsa
+Allow: /dsa/
+Allow: /aptitude
+Allow: /aptitude/
+Allow: /placement-tests
+Allow: /placement-tests/
 Allow: /test-series
-Allow: /questions/
-Allow: /dashboard/aptitude
+Allow: /test-series/
+Allow: /hackathons
+Allow: /hackathons/
 Allow: /internships
+Allow: /internships/
+Allow: /interview-preparation
+Allow: /interview-preparation/
+Allow: /dashboard/coding
+Allow: /dashboard/aptitude
+Allow: /dashboard/hackathons
+Allow: /questions/
 Allow: /about
 Allow: /contact
 Allow: /privacy-policy
 Allow: /terms-conditions
 
-# Disallow private and utility auth/payment paths
+# Disallow private, utility, payment, and admin paths
 Disallow: /admin/
 Disallow: /api/
 Disallow: /profile
+Disallow: /login
+Disallow: /signup
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /dashboard/hackathons/*/payment
 Disallow: /dashboard/hackathons/*/register
 Disallow: /test-series/*/test/
-Disallow: /dashboard/interview
+Disallow: /dashboard/aptitude/test/
 Disallow: /internships/assessment/
+Disallow: /dashboard/coding/test/
 
-Sitemap: https://codexpetra.com/sitemap.xml
-
-
+Sitemap: https://www.codexpetra.com/sitemap.xml

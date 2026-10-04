@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme, THEME_OPTIONS } from '../../context/ThemeContext';
-import { Sun, Moon, Menu, X, LogOut, LayoutDashboard, Bell, User, Sparkles, Code, BookOpen, Users, Palette, Check } from 'lucide-react';
+import { Sun, Moon, Menu, X, LogOut, LayoutDashboard, Bell, User, Sparkles, Code, BookOpen, Users, Palette, Check, Brain, Layers, Trophy } from 'lucide-react';
 import api from '../../services/api';
 import Logo from '../brand/Logo';
 
@@ -121,7 +121,7 @@ const Navbar: React.FC = () => {
                 Tutorials
               </NavLink>
               <NavLink 
-                to="/dashboard/coding" 
+                to="/dsa" 
                 className={({ isActive }) => 
                   `relative h-full flex items-center text-[13px] font-semibold transition-colors ${
                     isActive 
@@ -130,10 +130,10 @@ const Navbar: React.FC = () => {
                   }`
                 }
               >
-                Practice
+                DSA & Practice
               </NavLink>
               <NavLink 
-                to="/dashboard/aptitude" 
+                to="/aptitude" 
                 className={({ isActive }) => 
                   `relative h-full flex items-center text-[13px] font-semibold transition-colors ${
                     isActive 
@@ -145,7 +145,19 @@ const Navbar: React.FC = () => {
                 Aptitude
               </NavLink>
               <NavLink 
-                to="/dashboard/hackathons" 
+                to="/placement-tests" 
+                className={({ isActive }) => 
+                  `relative h-full flex items-center text-[13px] font-semibold transition-colors ${
+                    isActive 
+                      ? 'text-purple-600 dark:text-purple-400 font-bold after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-purple-600 dark:after:bg-purple-400 after:rounded-full' 
+                      : 'text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400'
+                  }`
+                }
+              >
+                Placement Tests
+              </NavLink>
+              <NavLink 
+                to="/hackathons" 
                 className={({ isActive }) => 
                   `relative h-full flex items-center text-[13px] font-semibold transition-colors ${
                     isActive 
@@ -155,18 +167,6 @@ const Navbar: React.FC = () => {
                 }
               >
                 Hackathons
-              </NavLink>
-              <NavLink 
-                to="/test-series" 
-                className={({ isActive }) => 
-                  `relative h-full flex items-center text-[13px] font-semibold transition-colors ${
-                    isActive 
-                      ? 'text-purple-600 dark:text-purple-400 font-bold after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-purple-600 dark:after:bg-purple-400 after:rounded-full' 
-                      : 'text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400'
-                  }`
-                }
-              >
-                Test Series
               </NavLink>
               <NavLink 
                 to="/internships" 
@@ -666,7 +666,7 @@ const Navbar: React.FC = () => {
           {/* Primary Public Navigation Links */}
           <div className="space-y-1 pt-1">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 block mb-1">
-              Explore Platform
+              Explore Platform Ecosystem
             </span>
             <Link
               to="/tutorials"
@@ -677,36 +677,36 @@ const Navbar: React.FC = () => {
               <span>Programming Tutorials</span>
             </Link>
             <Link
-              to="/dashboard/coding"
+              to="/dsa"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
               <Code size={16} className="text-indigo-600 dark:text-indigo-400" />
-              <span>Practice Coding & DSA</span>
+              <span>DSA & Coding Practice</span>
             </Link>
             <Link
-              to="/dashboard/aptitude"
+              to="/aptitude"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
-              <Sparkles size={16} className="text-amber-600 dark:text-amber-400" />
-              <span>Aptitude Practice</span>
+              <Brain size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <span>Aptitude & Reasoning</span>
             </Link>
             <Link
-              to="/test-series"
+              to="/placement-tests"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
-              <Sparkles size={16} className="text-teal-600 dark:text-teal-400" />
-              <span>Company Test Series</span>
+              <Layers size={16} className="text-teal-600 dark:text-teal-400" />
+              <span>Company Placement Tests</span>
             </Link>
             <Link
-              to="/dashboard/hackathons"
+              to="/hackathons"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-750 dark:text-slate-250 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
             >
-              <Users size={16} className="text-pink-600 dark:text-pink-400" />
-              <span>Mega Hackathons</span>
+              <Trophy size={16} className="text-amber-500 dark:text-amber-400" />
+              <span>Live Hackathons</span>
             </Link>
             <Link
               to="/internships"

@@ -8,12 +8,12 @@ import { setSEOMetadata, getBreadcrumbSchema } from '../../utils/seo';
 const TestSeriesHub: React.FC = () => {
   useEffect(() => {
     setSEOMetadata({
-      title: 'Test Series | Placement & Competitive Exam Preparation | CodexPetra',
-      description: 'Practice company-specific mock test series for TCS, Infosys, Wipro, Amazon, and top tech companies with timed simulations and in-depth performance analytics.',
-      canonicalUrl: 'https://codexpetra.com/test-series',
+      title: 'Company Placement Test Series | CodexPetra',
+      description: 'Practice company-specific mock placement test series for TCS, Infosys, Wipro, Amazon, and top tech companies with timed exam simulations and diagnostics.',
+      canonicalUrl: 'https://www.codexpetra.com/placement-tests',
       structuredData: getBreadcrumbSchema([
         { name: 'Home', url: '/' },
-        { name: 'Test Series', url: '/test-series' },
+        { name: 'Company Placement Test Series', url: '/placement-tests' },
       ]),
     });
   }, []);

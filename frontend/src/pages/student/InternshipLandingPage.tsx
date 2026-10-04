@@ -18,12 +18,12 @@ const InternshipLandingPage: React.FC = () => {
 
   useEffect(() => {
     setSEOMetadata({
-      title: 'Internship Program 2026 | CodexPetra',
-      description: 'Build real-world developer solutions, solve challenging technical problems, and gain hands-on engineering experience with the CodexPetra Internship Program.',
-      canonicalUrl: 'https://codexpetra.com/internships',
+      title: 'Internship Portal & Skill Assessments | CodexPetra',
+      description: 'Build real-world developer solutions, solve challenging technical assessments, and gain hands-on engineering experience with the CodexPetra Internship Program.',
+      canonicalUrl: 'https://www.codexpetra.com/internships',
       structuredData: getBreadcrumbSchema([
         { name: 'Home', url: '/' },
-        { name: 'Internships 2026', url: '/internships' },
+        { name: 'Internship Portal & Skill Assessments', url: '/internships' },
       ]),
     });
 

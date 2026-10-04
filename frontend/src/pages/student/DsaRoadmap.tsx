@@ -87,8 +87,17 @@ const DsaRoadmap: React.FC = () => {
   // Set SEO metadata
   useEffect(() => {
     setSEOMetadata({
-      title: 'Data Structures & Algorithms Roadmap | CodexPetra',
-      description: 'Master algorithm patterns and crack coding interviews with our structured 19-step DSA roadmap curriculum.',
+      title: 'DSA Roadmap & Coding Practice | CodexPetra',
+      description: 'Master Data Structures & Algorithms with structured roadmaps, topic-wise practice sheets, difficulty-wise challenges, and interactive coding on CodexPetra.',
+      canonicalUrl: 'https://www.codexpetra.com/dsa',
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+          { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://www.codexpetra.com/' },
+          { '@type': 'ListItem', 'position': 2, 'name': 'DSA Roadmap & Coding Practice', 'item': 'https://www.codexpetra.com/dsa' },
+        ],
+      },
     });
   }, []);
 
