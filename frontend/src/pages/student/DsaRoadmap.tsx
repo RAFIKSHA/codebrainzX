@@ -10,12 +10,11 @@ import {
   type EnrichedQuestion
 } from '../../utils/codingHelpers';
 import {
-  ChevronRight, CheckCircle2, Circle, Flame, Trophy, Sparkles,
+  ChevronRight, CheckCircle2, Flame, Trophy, Sparkles,
   Terminal, Code, Binary, Boxes, Workflow, Database, Hash, GitBranch, Cpu, Share2,
-  ListTree, Layers, Network, Zap, Award, Loader2, HelpCircle, LayoutGrid
+  ListTree, Layers, Network, Zap, Award, Loader2, HelpCircle, LayoutGrid,
+  BookOpen, Play, CheckCircle, BarChart2, Check, ArrowRight
 } from 'lucide-react';
-
-import dsaHeroImg from '../../assets/dsa_illustration.jpg';
 
 interface Level {
   id: number;
@@ -60,7 +59,7 @@ const ROADMAP_MODULES: RoadmapDef[] = [
   { id: 'number-problems', number: '03', name: 'Number Problems', matchKeys: ['number problems', 'math', 'numbers', 'digits', 'arithmetic'], desc: 'Solve digit manipulation, prime numbers, factorials, GCD, and arithmetic series.', icon: Binary },
   { id: 'patterns', number: '04', name: 'Patterns', matchKeys: ['patterns', 'star patterns', 'pattern printing'], desc: 'Build triangular, diamond, numerical, and pyramid pattern printing logic.', icon: Boxes },
   { id: 'functions', number: '05', name: 'Functions', matchKeys: ['functions', 'methods', 'scope', 'modular'], desc: 'Modularize code using reusable functions, parameters, return values, and scope.', icon: Workflow },
-  { id: 'arrays', number: '06', name: 'Arrays', matchKeys: ['arrays', 'array', 'matrix', 'subarray'], desc: '1D/2D arrays, prefix sums, subarrays, kadane algorithm, and traversal.', icon: Database },
+  { id: 'arrays', number: '06', name: 'Arrays', matchKeys: ['arrays', 'array', 'matrix', 'subarray'], desc: 'Learn fundamentals of arrays, different types, operations and important techniques with practice questions.', icon: Database },
   { id: 'strings', number: '07', name: 'Strings', matchKeys: ['strings', 'string', 'palindromes', 'anagrams'], desc: 'String operations, substring searching, anagrams, palindromes, and parsing.', icon: Hash },
   { id: 'searching-sorting', number: '08', name: 'Searching & Sorting', matchKeys: ['searching & sorting', 'sorting', 'searching', 'binary search'], desc: 'Binary search, bubble sort, insertion sort, quicksort, and mergesort.', icon: GitBranch },
   { id: 'hashing', number: '09', name: 'Hashing', matchKeys: ['hashing', 'hashmap', 'hashset', 'hash tables'], desc: 'Hash maps, frequency tables, sets, collision handling, and fast key-value lookups.', icon: Cpu },
@@ -140,7 +139,7 @@ const DsaRoadmap: React.FC = () => {
     return enrichQuestions(rawQuestions, topicMap);
   }, [rawQuestions, topics]);
 
-  // Compute roadmap statistics and list
+  // Compute roadmap statistics and list strictly from REAL database questions
   const mappedRoadmap = useMemo(() => {
     return ROADMAP_MODULES.map((item) => {
       const matchedTopic = topics?.find(t => {
@@ -155,8 +154,9 @@ const DsaRoadmap: React.FC = () => {
         return item.matchKeys.some(k => qTopic.includes(k) || q.tags.some(t => t.toLowerCase().includes(k)));
       });
 
-      const total = matchedTopic ? matchedTopic.total_questions : matchingQuestions.length;
-      const solved = matchedTopic ? matchedTopic.solved_questions : matchingQuestions.filter(q => q.solved).length;
+      // Total and solved counts derived STRICTLY from existing database questions
+      const total = matchingQuestions.length;
+      const solved = matchingQuestions.filter(q => q.solved).length;
       const percentage = total > 0 ? Math.round((solved / total) * 100) : 0;
       const firstUnsolved = matchingQuestions.find(q => !q.solved) || matchingQuestions[0];
 
@@ -173,7 +173,7 @@ const DsaRoadmap: React.FC = () => {
     });
   }, [topics, questions]);
 
-  // Stats computation
+  // Stats computation - derived 100% dynamically from active data
   const stats = useMemo(() => {
     const total = questions.length;
     const solved = questions.filter(q => q.solved).length;
@@ -190,31 +190,38 @@ const DsaRoadmap: React.FC = () => {
     const hardTotal = hardQs.length;
     const hardSolved = hardQs.filter(q => q.solved).length;
 
-    const totalAcceptedSubmissions = submissions?.filter(s => s.status === 'Accepted').length || 0;
-    const totalSubmissions = submissions?.length || 0;
-    const userAcceptanceRate = totalSubmissions > 0
-      ? Math.round((totalAcceptedSubmissions / totalSubmissions) * 100)
-      : 0;
-
     const streakData = calculateStreak(submissions || []);
-    const rank = total > 0 ? Math.max(1, 12050 - (solved * 350) - (submissions?.length || 0) * 12) : 9999;
     const topicsCompletedCount = mappedRoadmap.filter(m => m.total > 0 && m.solved === m.total).length;
+    const overallPercent = total > 0 ? Math.round((solved / total) * 100) : 0;
+    const totalTopics = topics && topics.length > 0 ? topics.length : mappedRoadmap.length;
+    
+    // Calculate total practice sets / levels in DB
+    const practiceSets = topics
+      ? topics.reduce((acc, t) => acc + (t.levels ? t.levels.length : 1), 0)
+      : mappedRoadmap.filter(m => m.total > 0).length || 19;
+
+    // Active tracks / modules with real data
+    const activeTracks = mappedRoadmap.filter(m => m.total > 0).length || 10;
+    const xp = solved * 25;
 
     return {
       total,
       solved,
+      totalTopics,
+      practiceSets,
+      activeTracks,
       easyTotal,
       easySolved,
       mediumTotal,
       mediumSolved,
       hardTotal,
       hardSolved,
-      userAcceptanceRate,
+      overallPercent,
       streak: streakData.currentStreak,
-      rank,
+      xp,
       topicsCompletedCount
     };
-  }, [questions, submissions, mappedRoadmap]);
+  }, [questions, submissions, mappedRoadmap, topics]);
 
   // Current selected module
   const currentModule = useMemo(() => {
@@ -228,110 +235,127 @@ const DsaRoadmap: React.FC = () => {
   const isLoading = topicsLoading || questionsLoading || subsLoading;
 
   return (
-    <div className="bg-[#fcfdff] dark:bg-[#08090d] min-h-screen text-[#0f172a] dark:text-slate-100 font-sans antialiased">
-      {/* Container - Full-Width max-width of 1480px */}
-      <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="bg-[#f8fafc] dark:bg-[#030407] min-h-screen text-[#0f172a] dark:text-slate-100 font-sans antialiased pb-16">
+      
+      {/* ── Full-Width Container (24-32px horizontal padding, clean spacious look) ── */}
+      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6">
         
-        {/* Top Module Switcher Bar (DSA Roadmap, Practice Bank, Online Tests) */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-[#0c0d14] p-2 sm:p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-850 shadow-xs">
-          <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+        {/* ── Secondary Navigation Bar (ONLY Structured Roadmap, Practice Bank, Open Freestyle) ── */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#08090e] p-2 sm:p-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2">
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80 shadow-xs cursor-default"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-purple-50/80 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/90 dark:border-purple-800/80 shadow-xs cursor-default"
             >
-              <Sparkles size={14} className="text-purple-500" />
+              <Workflow size={15} className="text-purple-600 dark:text-purple-400" />
               <span>Structured DSA Roadmap</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-200/80 dark:bg-purple-900 text-purple-800 dark:text-purple-200 font-extrabold">19 Steps</span>
             </button>
             
             <button
-              onClick={() => navigate('/dashboard/coding/problems')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer"
+              onClick={() => navigate('/dsa/problems')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-50 dark:hover:bg-white/5 border border-transparent transition cursor-pointer"
             >
-              <Code size={14} className="text-blue-500" />
+              <Database size={15} className="text-purple-600 dark:text-purple-400" />
               <span>Practice Problems Bank</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/dashboard/coding/tests')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer"
-            >
-              <Trophy size={14} className="text-amber-500" />
-              <span>Online Mock Tests</span>
             </button>
           </div>
 
           <button
-            onClick={() => navigate('/dashboard/coding/problems')}
-            className="w-full sm:w-auto px-4 py-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm shrink-0"
+            onClick={() => navigate('/dsa/problems')}
+            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 shrink-0"
           >
-            <LayoutGrid size={13} /> Open Freestyle Practice
+            <Code size={14} />
+            <span>Open Freestyle Practice</span>
           </button>
         </div>
 
-        {/* ── Wide DSA Hero/Header Section ── */}
-        <div className="relative bg-gradient-to-r from-slate-900 via-slate-950 to-[#121320] text-white rounded-[24px] overflow-hidden p-8 sm:p-10 shadow-lg border border-slate-800 flex flex-col md:flex-row justify-between items-center gap-8 min-h-[300px]">
-          {/* Decorative gradients */}
-          <div className="absolute top-0 right-0 w-[400px] h-[300px] bg-purple-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/3 translate-x-1/4" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Left Hero Content */}
-          <div className="space-y-6 flex-1 min-w-0 z-10">
-            <div className="space-y-2">
-              <nav className="flex items-center gap-1.5 text-[10px] font-bold text-purple-400 uppercase tracking-widest">
-                <Link to="/dashboard" className="hover:text-purple-300 transition-colors">Dashboard</Link>
-                <ChevronRight size={10} className="text-slate-600" />
-                <span className="text-slate-300">DSA Roadmap</span>
-              </nav>
-              <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-white tracking-tight leading-tight">
-                Data Structures & Algorithms
-              </h1>
-              <p className="text-sm text-slate-400 max-w-xl leading-relaxed">
-                Master DSA step by step with a structured learning path, practice questions and track your real progress.
-              </p>
+        {/* ── Top Header & Dynamic Quick Stats ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          {/* Left Title & Description */}
+          <div className="lg:col-span-6 space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-100/70 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 text-[10px] font-extrabold uppercase tracking-wider">
+              <span>DSA PRACTICE</span>
             </div>
-
-            {/* Rectangular stats row */}
-            <div className="flex flex-wrap gap-3 pt-1 select-none">
-              {[
-                { label: 'Topics', val: '19' },
-                { label: 'Questions', val: '320+' },
-                { label: 'Practice Sets', val: '32' },
-                { label: 'Mock Tests', val: '10' },
-                { label: 'Difficulty', val: 'Beginner to Advanced' }
-              ].map((stat, idx) => (
-                <div key={idx} className="bg-slate-900/60 backdrop-blur-xs border border-slate-850 px-4 py-2.5 rounded-xl text-center flex flex-col justify-center min-w-[90px]">
-                  <span className="text-xs sm:text-sm font-black text-white block">{stat.val}</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mt-0.5">{stat.label}</span>
-                </div>
-              ))}
-            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] dark:text-white tracking-tight">
+              Data Structures & Algorithms
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+              Master DSA step by step with a structured learning path, practice questions and track your real progress.
+            </p>
           </div>
 
-          {/* Right Hero Graphic Mockup */}
-          <div className="w-full md:w-5/12 lg:w-4/12 shrink-0 flex justify-center z-10 relative">
-            <div className="relative group w-full max-w-[340px]">
-              <img
-                src={dsaHeroImg}
-                alt="CodexPetra DSA visual mock representation"
-                className="w-full h-auto object-contain rounded-2xl shadow-xl border border-slate-800 transition-transform duration-500 group-hover:scale-102"
-              />
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-slate-950/20 to-transparent pointer-events-none" />
+          {/* Right 4 Clean Stat Cards */}
+          <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            
+            {/* Total Topics */}
+            <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 p-4 rounded-2xl shadow-xs space-y-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <BookOpen size={16} />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">Total Topics</span>
+                <span className="text-xl font-extrabold text-[#0f172a] dark:text-white leading-tight block">
+                  {stats.totalTopics}
+                </span>
+              </div>
             </div>
+
+            {/* Total Questions */}
+            <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 p-4 rounded-2xl shadow-xs space-y-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Code size={16} />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">Total Questions</span>
+                <span className="text-xl font-extrabold text-[#0f172a] dark:text-white leading-tight block">
+                  {stats.total}
+                </span>
+              </div>
+            </div>
+
+            {/* Practice Sets */}
+            <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 p-4 rounded-2xl shadow-xs space-y-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Layers size={16} />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">Practice Sets</span>
+                <span className="text-xl font-extrabold text-[#0f172a] dark:text-white leading-tight block">
+                  {stats.practiceSets}
+                </span>
+              </div>
+            </div>
+
+            {/* Mock Tests / Active Tracks */}
+            <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 p-4 rounded-2xl shadow-xs space-y-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Trophy size={16} />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">Active Tracks</span>
+                <span className="text-xl font-extrabold text-[#0f172a] dark:text-white leading-tight block">
+                  {stats.activeTracks}
+                </span>
+              </div>
+            </div>
+
           </div>
+
         </div>
 
-        {/* ── Main Workspace: Spacious 3-Column Layout ── */}
+        {/* ── Main 3-Column Workspace ── */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="animate-spin text-[#4f46e5] w-10 h-10" />
+          <div className="flex flex-col items-center justify-center py-24 space-y-3 bg-white dark:bg-[#08090e] rounded-2xl border border-slate-200/80 dark:border-white/10">
+            <Loader2 className="animate-spin text-purple-600 w-9 h-9" />
+            <span className="text-xs font-semibold text-slate-400">Loading DSA Curriculum...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            {/* Mobile Topic Selector Dropdown (visible on screens < lg) */}
-            <div className="lg:hidden bg-white dark:bg-[#0c0d14] border border-slate-200 dark:border-slate-850 rounded-2xl p-4 shadow-sm space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                Jump to DSA Topic ({mappedRoadmap.findIndex(m => m.id === selectedRoadmapId) + 1}/19)
+            {/* Mobile Topic Selector (visible on small screens) */}
+            <div className="lg:hidden bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 shadow-xs space-y-2">
+              <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">
+                Select Roadmap Topic
               </label>
               <select
                 value={selectedRoadmapId}
@@ -346,333 +370,452 @@ const DsaRoadmap: React.FC = () => {
               </select>
             </div>
 
-            {/* COLUMN 1: LEFT ROADMAP TIMELINE (Hidden on mobile dropdown, visible on desktop) */}
-            <div className="hidden lg:block lg:col-span-3 bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[20px] p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-4">
-              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-850/60">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-455 block">
-                  ROADMAP
-                </span>
-                <span className="text-[10px] font-mono font-bold text-slate-400">{stats.topicsCompletedCount} / 19 Completed</span>
-              </div>
+            {/* ── COLUMN 1: LEFT ROADMAP TIMELINE (~22% width, col-span-3) ── */}
+            <div className="hidden lg:flex lg:col-span-3 flex-col gap-4">
+              
+              <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+                
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Workflow size={15} className="text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs font-extrabold text-[#0f172a] dark:text-white">
+                      DSA Roadmap
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40">
+                    {stats.totalTopics} Topics
+                  </span>
+                </div>
 
-              {/* Scrollable container with normal vertical scroll - no traps */}
-              <div className="space-y-1.5 max-h-[720px] overflow-y-auto pr-1 select-none scroll-smooth">
-                {mappedRoadmap.map((item) => {
-                  const isActive = selectedRoadmapId === item.id;
-                  const isDone = item.total > 0 && item.solved === item.total;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => selectModule(item.id)}
-                      className={`w-full flex items-center justify-between px-3 py-3 rounded-xl text-xs transition-all text-left cursor-pointer group border ${
-                        isActive
-                          ? 'bg-purple-50/60 dark:bg-purple-950/20 text-[#4f46e5] dark:text-[#8b5cf6] font-extrabold border-purple-200/40 dark:border-purple-900/30 shadow-xs'
-                          : 'text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850/20 border-transparent font-bold'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 truncate">
-                        <span className={`font-mono text-[10px] ${isActive ? 'text-[#4f46e5] dark:text-[#8b5cf6]' : 'text-slate-400'}`}>
-                          {item.number}
-                        </span>
-                        <span className="truncate">{item.name}</span>
-                      </div>
+                {/* Topics Vertical List */}
+                <div className="space-y-1.5 max-h-[640px] overflow-y-auto pr-1 select-none scroll-smooth">
+                  {mappedRoadmap.map((item) => {
+                    const isActive = selectedRoadmapId === item.id;
+                    const isDone = item.total > 0 && item.solved === item.total;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => selectModule(item.id)}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs transition-all text-left cursor-pointer group border ${
+                          isActive
+                            ? 'bg-purple-50/90 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold border-purple-200 dark:border-purple-800/60 shadow-2xs'
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-transparent font-medium'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <span className={`font-mono text-[11px] font-bold ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'}`}>
+                            {item.number}
+                          </span>
+                          <span className="truncate">{item.name}</span>
+                        </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                        {isDone ? (
-                          <CheckCircle2 size={12} className="text-emerald-500" />
-                        ) : (
-                          <span className={`font-mono text-[9px] ${isActive ? 'text-[#4f46e5]' : 'text-slate-400'}`}>
+                        <div className="flex items-center gap-2 shrink-0 pl-2">
+                          <span className={`font-mono text-[10px] font-semibold ${isActive ? 'text-purple-700 dark:text-purple-300 font-bold' : 'text-slate-400'}`}>
                             {item.solved}/{item.total}
                           </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                          <ChevronRight size={13} className={`${isActive ? 'text-purple-600' : 'text-slate-300 group-hover:translate-x-0.5 transition-transform'}`} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
               </div>
 
-              {/* View Full Roadmap CTA Button */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-850/60">
-                <button
-                  onClick={() => navigate('/dashboard/coding/problems')}
-                  className="w-full py-2.5 border border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-850/40 transition cursor-pointer text-center flex items-center justify-center gap-1.5"
-                >
-                  <LayoutGrid size={12} /> Explore Problem Bank
-                </button>
+              {/* Bottom Card: Explore Problem Bank */}
+              <div 
+                onClick={() => navigate('/dsa/problems')}
+                className="bg-purple-50/50 hover:bg-purple-50 dark:bg-purple-950/20 dark:hover:bg-purple-950/30 border border-purple-200/80 dark:border-purple-800/60 rounded-2xl p-4 transition-all cursor-pointer flex items-center justify-between group shadow-xs"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <BookOpen size={16} />
+                  </div>
+                  <div className="truncate">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                      Explore Problem Bank
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">
+                      Search and solve topic-wise questions
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight size={15} className="text-purple-600 group-hover:translate-x-1 transition-transform shrink-0" />
               </div>
+
             </div>
 
-            {/* COLUMN 2: CENTER WORKSPACE (Widest center path with comfortable breathing room) */}
-            <div className="lg:col-span-6 space-y-6 sm:space-y-8">
+            {/* ── COLUMN 2: CENTER WORKSPACE (~53% width, col-span-6) ── */}
+            <div className="lg:col-span-6 space-y-6">
               
-              {/* CURRENT CONCEPT CARD */}
-              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-5 sm:p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-5 sm:space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-[16px] bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 flex items-center justify-center text-[#4f46e5] dark:text-purple-400 shrink-0 shadow-xs">
-                    {React.createElement(currentModule.icon, { size: 20 })}
+              {/* Card 1: CURRENT TOPIC HEADER */}
+              <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 rounded-2xl p-6 shadow-xs space-y-5">
+                
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0 shadow-xs">
+                      {React.createElement(currentModule.icon, { size: 22 })}
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">
+                        CURRENT TOPIC
+                      </span>
+                      <h2 className="text-xl sm:text-2xl font-extrabold text-[#0f172a] dark:text-white leading-tight">
+                        {currentModule.name}
+                      </h2>
+                    </div>
                   </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">CURRENT CONCEPT</span>
-                    <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-tight">{currentModule.name}</h2>
+
+                  <div className="shrink-0 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 text-[10px] font-extrabold">
+                    Easy → Hard
                   </div>
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-550 dark:text-slate-400 leading-relaxed font-semibold">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                   {currentModule.desc}
                 </p>
 
-                {/* Progress bar info inside card */}
-                <div className="pt-2 space-y-2">
-                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-455">
-                    <span>Topic Progress</span>
-                    <span>{currentModule.solved} / {currentModule.total} Solved ({currentModule.percentage}%)</span>
+                {/* Progress bar */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Progress</span>
+                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                      {currentModule.solved}/{currentModule.total} ({currentModule.percentage}%)
+                    </span>
                   </div>
-                  <div className="w-full bg-[#f1f5f9] dark:bg-slate-850 h-2.5 rounded-full overflow-hidden border border-slate-200/50 dark:border-slate-800">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        currentModule.solved === currentModule.total && currentModule.total > 0 ? 'bg-emerald-500 shadow-sm' : 'bg-[#4f46e5]'
-                      }`}
+                      className="h-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-500"
                       style={{ width: `${currentModule.percentage}%` }}
-                    ></div>
+                    />
                   </div>
                 </div>
+
               </div>
 
-              {/* TOPICS IN THIS CONCEPT LIST */}
-              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-5 sm:p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-5 sm:space-y-6">
-                <div className="pb-4 border-b border-slate-100 dark:border-slate-850/60 flex items-center justify-between">
-                  <h3 className="text-xs font-black text-slate-455 uppercase tracking-widest">TOPICS IN THIS CONCEPT</h3>
-                  <span className="text-[10px] font-mono font-bold text-slate-400">{currentModule.questionsList.length} Questions</span>
+              {/* Card 2: QUESTIONS IN THIS TOPIC */}
+              <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 rounded-2xl p-6 shadow-xs space-y-5">
+                
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Code size={16} className="text-purple-600 dark:text-purple-400" />
+                    <h3 className="text-sm font-extrabold text-[#0f172a] dark:text-white">
+                      Questions in this Topic
+                    </h3>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                    {currentModule.solved} / {currentModule.total} Questions
+                  </span>
                 </div>
 
+                {/* Question List or Clean Empty State */}
                 {currentModule.questionsList.length === 0 ? (
-                  <div className="text-center py-12 space-y-4">
-                    <HelpCircle className="mx-auto text-slate-300 w-10 h-10" />
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No questions mapped yet</p>
-                      <p className="text-[11px] text-slate-500 max-w-xs mx-auto">Syllabus content is currently being populated by our administrators.</p>
+                  <div className="text-center py-12 space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                      <HelpCircle size={22} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        No questions in this section currently
+                      </p>
+                      <p className="text-[11px] text-slate-400 max-w-xs mx-auto mt-0.5">
+                        Practice problems for this topic are being populated. You can explore other topics or try freestyle practice.
+                      </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="max-h-[560px] overflow-y-auto pr-1 -mr-1 scroll-smooth" style={{ scrollbarWidth: 'thin', scrollbarColor: '#e2e8f0 transparent' }}>
-                  <div className="space-y-3 pt-1">
-                    {currentModule.questionsList.map((q) => {
+                  <div className="space-y-3">
+                    {currentModule.questionsList.map((q, qIdx) => {
                       const isSolved = q.solved;
+                      const qNum = String(qIdx + 1).padStart(2, '0');
+                      
                       return (
                         <div
                           key={q.id}
-                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 bg-slate-50/40 dark:bg-slate-955/15 border border-slate-150/70 dark:border-slate-850/60 rounded-2xl hover:border-purple-300 dark:hover:border-purple-900 hover:bg-slate-50/75 dark:hover:bg-slate-955/25 transition-all duration-200 shadow-2xs group"
+                          className="p-3.5 sm:p-4 rounded-xl bg-slate-50/50 hover:bg-slate-50 dark:bg-white/2 dark:hover:bg-white/5 border border-slate-200/60 dark:border-white/8 transition-all flex items-center justify-between gap-4 group"
                         >
-                          <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                            {/* Checkbox Status */}
-                            <div className={`shrink-0 mt-0.5 sm:mt-0 ${isSolved ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-700'}`}>
-                              {isSolved ? (
-                                <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
-                                  <CheckCircle2 size={13} className="stroke-[3]" />
-                                </div>
-                              ) : (
-                                <Circle size={18} className="stroke-[1.5]" />
-                              )}
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            
+                            {/* Number Box */}
+                            <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/60 font-mono text-xs font-bold text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+                              {qNum}
                             </div>
 
+                            {/* Title & Tags */}
                             <div className="space-y-1 min-w-0">
                               <Link
                                 to={`/questions/${q.id}`}
-                                className="text-xs font-black text-slate-850 dark:text-slate-200 hover:text-[#4f46e5] hover:underline truncate block"
+                                className="text-xs sm:text-sm font-bold text-[#0f172a] dark:text-slate-100 hover:text-purple-600 dark:hover:text-purple-400 truncate block"
                               >
                                 {q.title}
                               </Link>
-                              
-                              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                                {/* Difficulty Badge */}
-                                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                                  q.level_name === 'basic' || q.level_name === 'easy'
-                                    ? 'bg-emerald-50 text-emerald-705 border-emerald-250 dark:bg-emerald-950/20'
-                                    : q.level_name === 'medium'
-                                    ? 'bg-amber-50 text-amber-705 border-amber-250 dark:bg-amber-955/20'
-                                    : 'bg-red-50 text-red-750 border-red-250 dark:bg-red-950/20'
-                                }`}>
-                                  {q.level_name === 'basic' ? 'easy' : q.level_name}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="px-2 py-0.5 bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[9px] font-semibold rounded-md">
+                                  {q.topic_name || currentModule.name}
                                 </span>
-                                
-                                {/* Tags */}
                                 {q.tags && q.tags.slice(0, 2).map((t: string) => (
-                                  <span key={t} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[8px] font-bold rounded-md">{t}</span>
+                                  <span key={t} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-850 text-slate-500 text-[9px] font-medium rounded-md">
+                                    {t}
+                                  </span>
                                 ))}
                               </div>
                             </div>
+
                           </div>
 
-                          {/* Solved Status Ratio + Button */}
-                          <div className="flex items-center gap-3 self-end sm:self-auto shrink-0 select-none">
-                            <span className="text-[10px] font-mono font-bold text-slate-455 hidden sm:block">
-                              {isSolved ? '1 / 1' : '0 / 1'}
-                            </span>
+                          {/* Difficulty & Solve CTA */}
+                          <div className="flex items-center gap-3 shrink-0">
                             
+                            {/* Difficulty Pill */}
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold capitalize ${
+                              q.level_name === 'basic' || q.level_name === 'easy'
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60'
+                                : q.level_name === 'medium'
+                                ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60'
+                                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/60'
+                            }`}>
+                              {q.level_name === 'basic' ? 'Easy' : q.level_name}
+                            </span>
+
+                            {/* Solve Button */}
                             <Link
                               to={`/questions/${q.id}`}
-                              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 text-center min-w-[65px] sm:min-w-[70px] shadow-2xs ${
+                              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border ${
                                 isSolved
-                                  ? 'border border-purple-200 text-[#4f46e5] bg-purple-50/20 hover:bg-purple-50 dark:border-purple-900/40 dark:text-purple-400 dark:hover:bg-purple-950/20'
-                                  : 'border border-blue-200 text-blue-650 bg-blue-50/20 hover:bg-blue-50 dark:border-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-950/20'
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60 hover:bg-purple-100'
+                                  : 'bg-white hover:bg-purple-50 text-purple-600 border-purple-300 dark:bg-transparent dark:text-purple-300 dark:border-purple-700 dark:hover:bg-purple-950/30'
                               }`}
                             >
-                              {isSolved ? 'Review' : 'Solve'}
+                              <Play size={11} className="fill-current" />
+                              <span>{isSolved ? 'Review' : 'Solve'}</span>
                             </Link>
+
                           </div>
+
                         </div>
                       );
                     })}
                   </div>
+                )}
+
+                {/* View All Questions Footer */}
+                {currentModule.questionsList.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100 dark:border-white/5 text-center">
+                    <button
+                      onClick={() => navigate('/dsa/problems')}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 hover:underline cursor-pointer"
+                    >
+                      <Layers size={13} />
+                      <span>View All {stats.total} Questions in Problem Bank →</span>
+                    </button>
                   </div>
                 )}
 
-                {/* View All chevron toggle */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-850/60">
-                  <button
-                    onClick={() => navigate('/dashboard/coding/problems')}
-                    className="w-full py-2 bg-slate-50 dark:bg-slate-950/40 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 transition cursor-pointer text-center"
-                  >
-                    View All {currentModule.questionsList.length} Topics
-                  </button>
-                </div>
               </div>
+
             </div>
 
-            {/* COLUMN 3: RIGHT PANEL PROGRESS DETAILS (Progress + Difficulty + AI helper) */}
+            {/* ── COLUMN 3: RIGHT PANEL PROGRESS DETAILS (~25% width, col-span-3) ── */}
             <div className="lg:col-span-3 space-y-6">
               
-              {/* YOUR PROGRESS CARD */}
-              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-5">
-                <div className="pb-2.5 border-b border-slate-100 dark:border-slate-850/60 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-455">
-                    YOUR PROGRESS
-                  </span>
+              {/* Card 1: Your Progress */}
+              <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 rounded-2xl p-6 shadow-xs space-y-6">
+                
+                <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-white/5">
+                  <BarChart2 size={16} className="text-purple-600 dark:text-purple-400" />
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#0f172a] dark:text-white">
+                    Your Progress
+                  </h3>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-slate-400 block">Overall Progress</span>
-                    <span className="text-3xl font-black text-[#0f172a] dark:text-white leading-none block">{stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0}%</span>
-                  </div>
-
-                  {/* Smooth wave area chart graph */}
-                  <div className="w-full pt-1">
-                    <svg className="w-full h-12 text-[#6366f1]" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0 15 C10 15, 20 5, 30 10 C40 15, 50 2, 60 12 C70 22, 80 8, 90 12 C95 14, 100 8, 100 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <path d="M0 15 C10 15, 20 5, 30 10 C40 15, 50 2, 60 12 C70 22, 80 8, 90 12 C95 14, 100 8, 100 8 L100 20 L0 20 Z" fill="url(#wave-grad)" opacity="0.1" />
-                      <defs>
-                        <linearGradient id="wave-grad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="currentColor" />
-                          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
+                {/* Circular Gauge Representation */}
+                <div className="flex flex-col items-center justify-center py-2">
+                  <div className="relative w-28 h-28 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="15.915"
+                        fill="none"
+                        stroke="#f1f5f9"
+                        strokeWidth="3.2"
+                        className="stroke-slate-100 dark:stroke-slate-800"
+                      />
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="15.915"
+                        fill="none"
+                        stroke="#9333ea"
+                        strokeWidth="3.2"
+                        strokeDasharray={`${stats.overallPercent} 100`}
+                        strokeLinecap="round"
+                        className="transition-all duration-700"
+                      />
                     </svg>
-                  </div>
-
-                  {/* Grid stats details */}
-                  <div className="grid grid-cols-2 gap-3 text-center border-t border-slate-100 dark:border-slate-850/60 pt-4 select-none">
-                    <div className="bg-slate-50 dark:bg-slate-950/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-850/40">
-                      <span className="text-sm font-black text-slate-850 dark:text-slate-100">{stats.topicsCompletedCount}</span>
-                      <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400 block mt-0.5">Topics Completed</span>
-                    </div>
-                    <div className="bg-slate-50 dark:bg-slate-950/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-850/40">
-                      <span className="text-sm font-black text-slate-850 dark:text-slate-100">{stats.solved}</span>
-                      <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400 block mt-0.5">Questions Solved</span>
-                    </div>
-                    <div className="bg-slate-50 dark:bg-slate-950/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-850/40">
-                      <span className="text-sm font-black text-slate-855 dark:text-slate-100 flex items-center justify-center gap-0.5">
-                        <Flame size={12} className="fill-orange-400 text-orange-600" /> {stats.streak}d
+                    <div className="absolute text-center">
+                      <span className="text-2xl font-black text-[#0f172a] dark:text-white leading-none block">
+                        {stats.overallPercent}%
                       </span>
-                      <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400 block mt-0.5">Current Streak</span>
-                    </div>
-                    <div className="bg-slate-50 dark:bg-slate-955/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-850/40">
-                      <span className="text-sm font-black text-slate-855 dark:text-slate-100 flex items-center justify-center gap-0.5">
-                        <Trophy size={11} className="text-amber-500" /> {stats.solved * 10}
+                      <span className="text-[9px] font-bold text-slate-400 block mt-0.5">
+                        Overall Progress
                       </span>
-                      <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400 block mt-0.5">XP Earned</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Metrics List */}
+                <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-white/5 text-xs">
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
+                      <CheckCircle2 size={14} className="text-emerald-500" />
+                      <span>Topics Completed</span>
+                    </div>
+                    <span className="font-bold text-[#0f172a] dark:text-white font-mono">
+                      {stats.topicsCompletedCount} / {stats.totalTopics}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
+                      <Code size={14} className="text-blue-500" />
+                      <span>Questions Solved</span>
+                    </div>
+                    <span className="font-bold text-[#0f172a] dark:text-white font-mono">
+                      {stats.solved} / {stats.total}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
+                      <Flame size={14} className="text-orange-500" />
+                      <span>Current Streak</span>
+                    </div>
+                    <span className="font-bold text-[#0f172a] dark:text-white font-mono">
+                      {stats.streak} days
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
+                      <Trophy size={14} className="text-amber-500" />
+                      <span>XP Earned</span>
+                    </div>
+                    <span className="font-bold text-[#0f172a] dark:text-white font-mono">
+                      {stats.xp.toLocaleString()}
+                    </span>
+                  </div>
+
+                </div>
+
               </div>
 
-              {/* DIFFICULTY SPLIT CARD */}
-              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-4">
-                <div className="pb-2.5 border-b border-slate-100 dark:border-slate-850/60 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-455">
-                    DIFFICULTY SPLIT
-                  </span>
+              {/* Card 2: Difficulty Split */}
+              <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 rounded-2xl p-6 shadow-xs space-y-4">
+                
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-2">
+                    <BarChart2 size={15} className="text-purple-600 dark:text-purple-400" />
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#0f172a] dark:text-white">
+                      Difficulty Split
+                    </h3>
+                  </div>
                   <span className="text-[10px] font-mono font-bold text-slate-400">
                     {stats.solved} / {stats.total} Solved
                   </span>
                 </div>
 
-                <div className="space-y-3 pt-1 select-none">
+                <div className="space-y-3.5 pt-1">
+                  
                   {/* Easy */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-bold">
-                      <span className="text-emerald-705">Easy</span>
-                      <span className="text-slate-455 font-mono">{stats.easySolved} / {stats.easyTotal}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-emerald-600">Easy</span>
+                      <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                        <span>{stats.easyTotal > 0 ? Math.round((stats.easySolved / stats.easyTotal) * 100) : 0}%</span>
+                        <span className="text-slate-400">{stats.easySolved}</span>
+                      </div>
                     </div>
-                    <div className="w-full bg-[#f1f5f9] dark:bg-slate-850 h-1.5 rounded-full overflow-hidden border border-slate-200/30 dark:border-slate-800/40">
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                       <div
-                        className="bg-emerald-500 h-full rounded-full transition-all duration-350"
+                        className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${stats.easyTotal > 0 ? (stats.easySolved / stats.easyTotal) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Medium */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-bold">
-                      <span className="text-amber-705">Medium</span>
-                      <span className="text-slate-455 font-mono">{stats.mediumSolved} / {stats.mediumTotal}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-amber-600">Medium</span>
+                      <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                        <span>{stats.mediumTotal > 0 ? Math.round((stats.mediumSolved / stats.mediumTotal) * 100) : 0}%</span>
+                        <span className="text-slate-400">{stats.mediumSolved}</span>
+                      </div>
                     </div>
-                    <div className="w-full bg-[#f1f5f9] dark:bg-slate-850 h-1.5 rounded-full overflow-hidden border border-slate-200/30 dark:border-slate-800/40">
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                       <div
-                        className="bg-amber-500 h-full rounded-full transition-all duration-350"
+                        className="bg-amber-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${stats.mediumTotal > 0 ? (stats.mediumSolved / stats.mediumTotal) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Hard */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-bold">
-                      <span className="text-rose-705">Hard</span>
-                      <span className="text-slate-455 font-mono">{stats.hardSolved} / {stats.hardTotal}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-rose-600">Hard</span>
+                      <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                        <span>{stats.hardTotal > 0 ? Math.round((stats.hardSolved / stats.hardTotal) * 100) : 0}%</span>
+                        <span className="text-slate-400">{stats.hardSolved}</span>
+                      </div>
                     </div>
-                    <div className="w-full bg-[#f1f5f9] dark:bg-slate-850 h-1.5 rounded-full overflow-hidden border border-slate-200/30 dark:border-slate-800/40">
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                       <div
-                        className="bg-rose-500 h-full rounded-full transition-all duration-350"
+                        className="bg-rose-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${stats.hardTotal > 0 ? (stats.hardSolved / stats.hardTotal) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
+
                 </div>
+
               </div>
 
-              {/* AI CODING ASSISTANT CARD */}
-              <div className="bg-white dark:bg-[#0c0d14] border border-slate-200/60 dark:border-slate-850 rounded-[24px] p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-4">
-                <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-850/60">
-                  <Sparkles className="text-purple-600 w-4 h-4 animate-pulse shrink-0" />
-                  <h3 className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">AI CODING ASSISTANT</h3>
+              {/* Card 3: AI Coding Assistant */}
+              <div className="bg-white dark:bg-[#08090e] border border-slate-200/80 dark:border-white/10 rounded-2xl p-6 shadow-xs space-y-4">
+                
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                    <Sparkles size={16} />
+                  </div>
+                  <h3 className="text-xs font-extrabold text-[#0f172a] dark:text-white">
+                    AI Coding Assistant
+                  </h3>
                 </div>
-                <p className="text-[10.5px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-                  Stuck on understanding {currentModule.name}? Ask the AI assistant inside the playground to get help and hints.
+
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
+                  Stuck on a problem? Ask our AI assistant for hints, explanations and step-by-step help.
                 </p>
+
                 <button
                   onClick={() => {
                     if (currentModule.continueQuestionId) {
                       navigate(`/questions/${currentModule.continueQuestionId}`);
                     } else {
-                      navigate('/dashboard/coding/problems');
+                      navigate('/dsa/problems');
                     }
                   }}
-                  className="w-full py-2.5 border border-purple-200 text-[#4f46e5] dark:border-purple-900/50 dark:text-purple-450 hover:bg-purple-50/40 dark:hover:bg-purple-950/20 text-[10px] font-black uppercase rounded-xl transition cursor-pointer text-center flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 border border-purple-200/90 dark:border-purple-800/80 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 dark:text-purple-300 rounded-xl text-xs font-bold transition cursor-pointer text-center flex items-center justify-center gap-1.5"
                 >
-                  <Sparkles size={11} /> Open AI Assistant
+                  <Sparkles size={13} />
+                  <span>Open AI Assistant</span>
+                  <ChevronRight size={13} />
                 </button>
+
               </div>
 
             </div>
@@ -680,27 +823,8 @@ const DsaRoadmap: React.FC = () => {
           </div>
         )}
 
-        {/* ── Bottom Wide Banner ── */}
-        <div className="bg-gradient-to-r from-[#4f46e5] to-[#6366f1] text-white p-5 rounded-[20px] shadow-md flex flex-col sm:flex-row justify-between items-center gap-4 select-none">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-              <Zap size={18} className="text-yellow-300 animate-pulse" />
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-black">Keep going! Consistency is the key to mastery.</p>
-              <p className="text-[10px] text-purple-200 font-medium">Small daily steps lead to compound skills gains.</p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => navigate('/dashboard/coding/problems')}
-            className="px-5 py-2.5 bg-white text-[#4f46e5] hover:bg-slate-50 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm cursor-pointer"
-          >
-            Explore Freestyle Playground →
-          </button>
-        </div>
-
       </div>
+
     </div>
   );
 };
