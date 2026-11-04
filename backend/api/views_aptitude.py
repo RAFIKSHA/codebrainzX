@@ -189,8 +189,21 @@ class AptitudeQuestionViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]
         return [IsAdminUser()]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        user = self.request.user
+        if user and user.is_authenticated:
+            context['user_bookmark_ids'] = set(
+                AptitudeBookmark.objects.filter(user=user).values_list('question_id', flat=True)
+            )
+        else:
+            context['user_bookmark_ids'] = set()
+        return context
+
     def get_queryset(self):
-        qs = AptitudeQuestion.objects.filter(parent=None)
+        qs = AptitudeQuestion.objects.filter(parent=None).select_related(
+            'topic', 'topic__category', 'sub_topic', 'trainer'
+        ).prefetch_related('sub_questions')
         
         # Filters
         trainer_id = self.request.query_params.get('trainer') or self.request.query_params.get('trainer_id')

@@ -85,6 +85,8 @@ const PageLoadingSpinner: React.FC = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 1000 * 60 * 5, // Keep cached data fresh for 5 minutes (instant on-click page switches)
+      gcTime: 1000 * 60 * 30, // Retain inactive queries in cache memory for 30 minutes
       refetchOnWindowFocus: false,
       retry: 1,
     },

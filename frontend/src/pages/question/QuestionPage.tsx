@@ -43,6 +43,7 @@ interface Question {
   solved: boolean;
   level_name: string;
   topic_slug: string;
+  updated_at?: string;
 }
 
 interface Submission {
@@ -95,12 +96,15 @@ const QuestionPage: React.FC = () => {
   });
 
   // Fetch question details
-  const { data: question, isLoading: qLoading, isError: qError } = useQuery<Question>({
+  const { data: question, isLoading: qLoading, isError: qError, refetch: refetchQuestion } = useQuery<Question>({
     queryKey: ['question', questionId],
     queryFn: async () => {
       const response = await api.get(`/questions/${questionId}/`);
       return response.data;
-    }
+    },
+    enabled: !!questionId,
+    retry: 2,
+    staleTime: 0,
   });
 
   // Fetch submissions history for this question
@@ -120,15 +124,27 @@ const QuestionPage: React.FC = () => {
       try {
         const parsedStarters = JSON.parse(question.starter_code);
         
-        // Try loading from localStorage
-        const savedCode = localStorage.getItem(`code_${questionId}`);
+        // Cache invalidation: Compare version against stored version in localStorage
+        const versionKey = `starter_ver_${questionId}`;
+        const currentVersion = question.updated_at || question.starter_code;
+        const savedVersion = localStorage.getItem(versionKey);
+
         let finalCodeMap = parsedStarters;
-        if (savedCode) {
-          try {
-            const parsedSaved = JSON.parse(savedCode);
-            finalCodeMap = { ...parsedStarters, ...parsedSaved };
-          } catch (e) {
-            console.error('Error parsing saved code:', e);
+        if (savedVersion !== currentVersion) {
+          // Starter code was updated or not yet synced, discard stale cached code
+          localStorage.removeItem(`code_${questionId}`);
+          localStorage.setItem(versionKey, currentVersion);
+          finalCodeMap = parsedStarters;
+        } else {
+          // Try loading from localStorage
+          const savedCode = localStorage.getItem(`code_${questionId}`);
+          if (savedCode) {
+            try {
+              const parsedSaved = JSON.parse(savedCode);
+              finalCodeMap = { ...parsedStarters, ...parsedSaved };
+            } catch (e) {
+              console.error('Error parsing saved code:', e);
+            }
           }
         }
         setCodeMap(finalCodeMap);
@@ -243,10 +259,13 @@ const QuestionPage: React.FC = () => {
     if (!question || !selectedLang) return;
     try {
       const originalStarters = JSON.parse(question.starter_code);
-      setCodeMap(prev => ({
-        ...prev,
+      const newMap = {
+        ...codeMap,
         [selectedLang.slug]: originalStarters[selectedLang.slug] || ''
-      }));
+      };
+      setCodeMap(newMap);
+      localStorage.setItem(`code_${questionId}`, JSON.stringify(newMap));
+      localStorage.setItem(`starter_ver_${questionId}`, question.updated_at || question.starter_code);
     } catch (err) {
       console.error(err);
     }
@@ -287,9 +306,17 @@ const QuestionPage: React.FC = () => {
         <ShieldAlert size={44} className="text-red-550 animate-bounce" />
         <h3 className="font-extrabold text-lg">IDE Session Terminated</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Could not load the problem variables from the compilation database. Ensure APIs are active.</p>
-        <Link to="/dashboard/coding" className="mt-2 px-5 py-2.5 bg-red-600 hover:bg-red-750 text-white rounded-xl text-xs font-bold transition-all shadow-md">
-          Return to Coding Hub
-        </Link>
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+          <button
+            onClick={() => refetchQuestion()}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+          >
+            Retry Connection
+          </button>
+          <Link to="/dashboard/coding" className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl text-xs font-bold transition-all">
+            Return to Coding Hub
+          </Link>
+        </div>
       </div>
     );
   }

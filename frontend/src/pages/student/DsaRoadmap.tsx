@@ -56,7 +56,7 @@ interface RoadmapDef {
 const ROADMAP_MODULES: RoadmapDef[] = [
   { id: 'prog-basics', number: '01', name: 'Programming Basics', matchKeys: ['programming basics', 'basics', 'intro', 'fundamentals', 'basic'], desc: 'Learn fundamentals: input/output, variables, data types, operators and syntax.', icon: Terminal },
   { id: 'conditions-loops', number: '02', name: 'Conditions & Loops', matchKeys: ['conditions & loops', 'conditions', 'loops', 'conditional', 'control flow'], desc: 'Master if-else statements, while/for loops, break, and nested iteration.', icon: Code },
-  { id: 'number-problems', number: '03', name: 'Number Problems', matchKeys: ['number problems', 'math', 'numbers', 'digits', 'arithmetic'], desc: 'Solve digit manipulation, prime numbers, factorials, GCD, and arithmetic series.', icon: Binary },
+  { id: 'number-problems', number: '03', name: 'Number Problems', matchKeys: ['number problems', 'number system', 'number-problems', 'number-system'], desc: 'Practice number-based programming problems to develop strong logic-building and digit-manipulation skills, from beginner to advanced levels.', icon: Binary },
   { id: 'patterns', number: '04', name: 'Patterns', matchKeys: ['patterns', 'star patterns', 'pattern printing'], desc: 'Build triangular, diamond, numerical, and pyramid pattern printing logic.', icon: Boxes },
   { id: 'functions', number: '05', name: 'Functions', matchKeys: ['functions', 'methods', 'scope', 'modular'], desc: 'Modularize code using reusable functions, parameters, return values, and scope.', icon: Workflow },
   { id: 'arrays', number: '06', name: 'Arrays', matchKeys: ['arrays', 'array', 'matrix', 'subarray'], desc: 'Learn fundamentals of arrays, different types, operations and important techniques with practice questions.', icon: Database },
@@ -149,10 +149,11 @@ const DsaRoadmap: React.FC = () => {
       });
 
       const matchingQuestions = questions.filter(q => {
-        if (matchedTopic && q.topic === matchedTopic.id) return true;
-        const qTopic = (q.topic_name || '').toLowerCase();
-        return item.matchKeys.some(k => qTopic.includes(k) || q.tags.some(t => t.toLowerCase().includes(k)));
-      });
+        if (matchedTopic) {
+          return q.topic === matchedTopic.id;
+        }
+        return false;
+      }).sort((a, b) => (a.order || 0) - (b.order || 0));
 
       // Total and solved counts derived STRICTLY from existing database questions
       const total = matchingQuestions.length;

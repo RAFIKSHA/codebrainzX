@@ -115,8 +115,6 @@ class QuestionLevelSerializer(serializers.ModelSerializer):
             return False
 
         level_type = obj.level
-        topic = obj.topic
-
         if level_type == 'basic':
             return False
 
@@ -127,28 +125,52 @@ class QuestionLevelSerializer(serializers.ModelSerializer):
         except (ValueError, IndexError):
             return False
 
-        try:
-            prev_level = QuestionLevel.objects.get(topic=topic, level=prev_level_type)
-        except QuestionLevel.DoesNotExist:
+        topic = obj.topic
+        user_solved_ids = self.context.get('user_solved_ids')
+
+        # Check if topic levels are prefetched in memory to avoid extra database round trips
+        prev_level = None
+        if hasattr(topic, '_prefetched_objects_cache') and 'levels' in topic._prefetched_objects_cache:
+            for lvl in topic.levels.all():
+                if lvl.level == prev_level_type:
+                    prev_level = lvl
+                    break
+        if not prev_level:
+            try:
+                prev_level = QuestionLevel.objects.get(topic=topic, level=prev_level_type)
+            except QuestionLevel.DoesNotExist:
+                return False
+
+        if hasattr(prev_level, '_prefetched_objects_cache') and 'questions' in prev_level._prefetched_objects_cache:
+            prev_questions = [q for q in prev_level.questions.all() if q.is_published]
+        else:
+            prev_questions = list(prev_level.questions.filter(is_published=True))
+
+        if not prev_questions:
             return False
 
-        prev_questions = prev_level.questions.filter(is_published=True)
-        if not prev_questions.exists():
-            return False
-
-        solved_count = UserProgress.objects.filter(
-            user=request.user,
-            question__in=prev_questions,
-            solved=True
-        ).count()
+        if user_solved_ids is not None:
+            solved_count = sum(1 for q in prev_questions if q.id in user_solved_ids)
+        else:
+            solved_count = UserProgress.objects.filter(
+                user=request.user,
+                question__in=prev_questions,
+                solved=True
+            ).count()
 
         # If not all questions are solved, lock the next level
-        return solved_count < prev_questions.count()
+        return solved_count < len(prev_questions)
 
     def get_total_questions(self, obj):
+        if hasattr(obj, '_prefetched_objects_cache') and 'questions' in obj._prefetched_objects_cache:
+            return sum(1 for q in obj.questions.all() if q.is_published)
         return obj.questions.filter(is_published=True).count()
 
     def get_solved_questions(self, obj):
+        user_solved_ids = self.context.get('user_solved_ids')
+        if user_solved_ids is not None and hasattr(obj, '_prefetched_objects_cache') and 'questions' in obj._prefetched_objects_cache:
+            return sum(1 for q in obj.questions.all() if q.is_published and q.id in user_solved_ids)
+
         request = self.context.get('request')
         if not request or not request.user or not request.user.is_authenticated:
             return 0
@@ -174,15 +196,22 @@ class QuestionListSerializer(serializers.ModelSerializer):
         )
 
     def get_solved(self, obj):
+        user_solved_ids = self.context.get('user_solved_ids')
+        if user_solved_ids is not None:
+            return obj.id in user_solved_ids
         request = self.context.get('request')
         if not request or not request.user or not request.user.is_authenticated:
             return False
         return UserProgress.objects.filter(user=request.user, question=obj, solved=True).exists()
 
     def get_test_cases_count(self, obj):
+        if hasattr(obj, 'annotated_test_cases_count'):
+            return obj.annotated_test_cases_count
         return obj.test_cases.count()
 
     def get_submissions_count(self, obj):
+        if hasattr(obj, 'annotated_submissions_count'):
+            return obj.annotated_submissions_count
         return obj.submissions.count()
 
 class QuestionDetailSerializer(serializers.ModelSerializer):
@@ -194,7 +223,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
     editorial = serializers.CharField(required=False, allow_blank=True)
     hints = serializers.CharField(required=False, allow_blank=True)
     tags = serializers.CharField(required=False, allow_blank=True)
-    driver_code = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    driver_code = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Question
@@ -319,9 +348,29 @@ class TopicSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'slug', 'description', 'order', 'levels', 'total_questions', 'solved_questions')
 
     def get_total_questions(self, obj):
+        if hasattr(obj, '_prefetched_objects_cache') and 'levels' in obj._prefetched_objects_cache:
+            total = 0
+            for lvl in obj.levels.all():
+                if hasattr(lvl, '_prefetched_objects_cache') and 'questions' in lvl._prefetched_objects_cache:
+                    total += sum(1 for q in lvl.questions.all() if q.is_published)
+                else:
+                    total += lvl.questions.filter(is_published=True).count()
+            return total
         return Question.objects.filter(topic=obj, is_published=True).count()
 
     def get_solved_questions(self, obj):
+        user_solved_ids = self.context.get('user_solved_ids')
+        if user_solved_ids is not None and hasattr(obj, '_prefetched_objects_cache') and 'levels' in obj._prefetched_objects_cache:
+            solved = 0
+            for lvl in obj.levels.all():
+                if hasattr(lvl, '_prefetched_objects_cache') and 'questions' in lvl._prefetched_objects_cache:
+                    solved += sum(1 for q in lvl.questions.all() if q.is_published and q.id in user_solved_ids)
+                else:
+                    request = self.context.get('request')
+                    if request and request.user and request.user.is_authenticated:
+                        solved += UserProgress.objects.filter(user=request.user, question__in=lvl.questions.filter(is_published=True), solved=True).count()
+            return solved
+
         request = self.context.get('request')
         if not request or not request.user or not request.user.is_authenticated:
             return 0

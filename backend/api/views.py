@@ -523,13 +523,24 @@ class UserMeView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 class TopicViewSet(viewsets.ModelViewSet):
-    queryset = Topic.objects.all().order_by('order', 'id')
+    queryset = Topic.objects.prefetch_related('levels', 'levels__questions').all().order_by('order', 'id')
     serializer_class = TopicSerializer
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
         return [IsAdminUser()]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        user = self.request.user
+        if user and user.is_authenticated:
+            context['user_solved_ids'] = set(
+                UserProgress.objects.filter(user=user, solved=True).values_list('question_id', flat=True)
+            )
+        else:
+            context['user_solved_ids'] = set()
+        return context
 
     def create(self, request, *args, **kwargs):
         # Create Topic
@@ -579,8 +590,19 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]
         return [IsAdminUser()]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        user = self.request.user
+        if user and user.is_authenticated:
+            context['user_solved_ids'] = set(
+                UserProgress.objects.filter(user=user, solved=True).values_list('question_id', flat=True)
+            )
+        else:
+            context['user_solved_ids'] = set()
+        return context
+
     def get_queryset(self):
-        queryset = Question.objects.all()
+        queryset = Question.objects.select_related('topic', 'level')
         # Filter by published unless Admin
         is_admin = False
         user = self.request.user
@@ -595,15 +617,49 @@ class QuestionViewSet(viewsets.ModelViewSet):
         level_id = self.request.query_params.get('level')
         
         if topic_id:
-            queryset = queryset.filter(topic_id=topic_id)
+            if str(topic_id).isdigit():
+                queryset = queryset.filter(topic_id=int(topic_id))
+            else:
+                queryset = queryset.filter(topic__slug=topic_id)
         if level_id:
             queryset = queryset.filter(level__level=level_id)
+
+        if self.action == 'list':
+            queryset = queryset.annotate(
+                annotated_test_cases_count=Count('test_cases', distinct=True),
+                annotated_submissions_count=Count('submissions', distinct=True)
+            )
             
         return queryset
+
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = str(self.kwargs[lookup_url_kwarg])
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        if lookup_value.isdigit():
+            obj = queryset.filter(pk=int(lookup_value)).first()
+        else:
+            obj = queryset.filter(slug=lookup_value).first()
+            
+        if not obj:
+            # Fallback lookup in all questions (handles direct ID or slug access)
+            if lookup_value.isdigit():
+                obj = Question.objects.filter(pk=int(lookup_value)).first()
+            else:
+                obj = Question.objects.filter(slug=lookup_value).first()
+                  
+        if not obj:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Question not found.")
+            
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def _prepare_execution_code(self, question, code, language_slug):
         """
         Wraps the student code with internal protected driver code if defined.
+        If driver code or a main entry point is already present in student code, avoids duplication.
         """
         if not question.driver_code:
             return code
@@ -612,6 +668,14 @@ class QuestionViewSet(viewsets.ModelViewSet):
             if isinstance(driver_map, dict) and language_slug in driver_map:
                 driver = driver_map[language_slug].strip()
                 if driver:
+                    if driver in code:
+                        return code
+                    if language_slug == 'python' and '__main__' in code:
+                        return code
+                    if language_slug in ['c', 'cpp'] and 'main(' in code:
+                        return code
+                    if language_slug == 'java' and 'public static void main' in code:
+                        return code
                     return f"{code}\n\n{driver}\n"
         except Exception as e:
             logger.warning(f"Error parsing driver_code for question {question.id}: {e}")

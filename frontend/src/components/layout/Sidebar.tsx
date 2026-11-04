@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { tutorialsService } from '../../services/tutorials';
 import type { TutorialLanguage } from '../../services/tutorials';
+import { prefetchSectionData } from '../../utils/prefetchRoutes';
 import { 
   LayoutDashboard, CodeXml, Brain, Users, FileText, Trophy, 
   BookOpen, Bot, User, LogOut, ChevronLeft, ChevronRight, GraduationCap, Briefcase
@@ -15,6 +17,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const { logout, user } = useAuth();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -134,6 +137,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
               <NavLink
                 key={item.name}
                 to={item.path}
+                onMouseEnter={() => prefetchSectionData(item.path, queryClient, user?.id)}
+                onFocus={() => prefetchSectionData(item.path, queryClient, user?.id)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group relative cursor-pointer ${
                   active 
                     ? 'bg-blue-50/80 text-blue-650 dark:bg-indigo-950/40 dark:text-indigo-300 border-l-4 border-blue-600 dark:border-indigo-400 shadow-sm'

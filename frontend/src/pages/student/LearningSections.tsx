@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { setSEOMetadata } from '../../utils/seo';
 import { tutorialsService } from '../../services/tutorials';
+import { prefetchSectionData } from '../../utils/prefetchRoutes';
 import {
   CodeXml,
   Brain,
@@ -40,6 +41,7 @@ interface Hackathon {
 const LearningSections: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Set SEO Metadata (noindex private student hub)
   useEffect(() => {
@@ -173,6 +175,7 @@ const LearningSections: React.FC = () => {
           <div className="flex flex-wrap gap-3 pt-1">
             <button
               onClick={() => navigate('/dashboard/coding')}
+              onMouseEnter={() => prefetchSectionData('/dashboard/coding', queryClient, user?.id)}
               className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Start Practicing</span>
@@ -368,6 +371,7 @@ const LearningSections: React.FC = () => {
                 <div
                   key={idx}
                   onClick={() => navigate(card.path)}
+                  onMouseEnter={() => prefetchSectionData(card.path, queryClient, user?.id)}
                   className={`bg-white dark:bg-[#0c0d14] border border-[#e2e8f0] dark:border-slate-850 rounded-2xl p-5 flex flex-col justify-between min-h-[220px] shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] hover:shadow-md transition-all duration-200 cursor-pointer group ${card.hoverBorder}`}
                 >
                   <div className="space-y-4">
@@ -403,6 +407,7 @@ const LearningSections: React.FC = () => {
           </div>
           <Link
             to="/dashboard/hackathons"
+            onMouseEnter={() => prefetchSectionData('/dashboard/hackathons', queryClient, user?.id)}
             className="text-xs font-bold text-[#4f46e5] hover:underline flex items-center gap-0.5"
           >
             <span>View All Hackathons</span>

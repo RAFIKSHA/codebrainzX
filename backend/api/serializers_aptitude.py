@@ -212,6 +212,9 @@ class StudentAptitudeQuestionSerializer(serializers.ModelSerializer):
         return []
 
     def get_is_bookmarked(self, obj):
+        user_bookmark_ids = self.context.get('user_bookmark_ids')
+        if user_bookmark_ids is not None:
+            return obj.id in user_bookmark_ids
         request = self.context.get('request')
         if request and request.user and request.user.is_authenticated:
             return AptitudeBookmark.objects.filter(user=request.user, question=obj).exists()
@@ -246,6 +249,9 @@ class StudentPracticeQuestionSerializer(serializers.ModelSerializer):
         return []
 
     def get_is_bookmarked(self, obj):
+        user_bookmark_ids = self.context.get('user_bookmark_ids')
+        if user_bookmark_ids is not None:
+            return obj.id in user_bookmark_ids
         request = self.context.get('request')
         if request and request.user and request.user.is_authenticated:
             return AptitudeBookmark.objects.filter(user=request.user, question=obj).exists()
