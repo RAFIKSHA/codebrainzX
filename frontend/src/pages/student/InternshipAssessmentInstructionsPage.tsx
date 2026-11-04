@@ -201,7 +201,7 @@ const InternshipAssessmentInstructionsPage: React.FC = () => {
                 <span>Technical issues during test?</span>
               </div>
               <a
-                href="https://wa.me/919999999999?text=Hi%20CodexPetra,%20I%20am%20facing%20an%20issue%20in%20the%20Internship%20Assessment"
+                href="https://wa.me/917028352298?text=Hi%20CodexPetra,%20I%20am%20facing%20an%20issue%20in%20the%20Internship%20Assessment"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0"

@@ -195,7 +195,7 @@ const InternshipLandingPage: React.FC = () => {
 
             {/* Chat on WhatsApp */}
             <a
-              href="https://wa.me/919876543210?text=Hi%20CodexPetra%2C%20I%20have%20a%20query%20regarding%20the%20Internship%202026%20Program."
+              href="https://wa.me/917028352298?text=Hi%20CodexPetra%2C%20I%20have%20a%20query%20regarding%20the%20Internship%202026%20Program."
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3.5 group cursor-pointer"
@@ -211,7 +211,7 @@ const InternshipLandingPage: React.FC = () => {
                   Get instant response
                 </div>
                 <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5 group-hover:underline">
-                  <span>+91 98765 43210</span>
+                  <span>+91 70283 52298</span>
                   <ArrowUpRight size={12} />
                 </div>
               </div>
@@ -219,7 +219,7 @@ const InternshipLandingPage: React.FC = () => {
 
             {/* Call Us */}
             <a
-              href="tel:+919876543210"
+              href="tel:+917028352298"
               className="flex items-center gap-3.5 group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
@@ -233,14 +233,14 @@ const InternshipLandingPage: React.FC = () => {
                   Mon – Sat, 10 AM – 7 PM
                 </div>
                 <div className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-0.5 group-hover:underline">
-                  +91 98765 43210
+                  +91 70283 52298
                 </div>
               </div>
             </a>
 
             {/* Email Us */}
             <a
-              href="mailto:support@codexpetra.com?subject=Internship%202026%20Query"
+              href="mailto:codexpetra01@gmail.com?subject=Internship%202026%20Query"
               className="flex items-center gap-3.5 group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
@@ -254,7 +254,7 @@ const InternshipLandingPage: React.FC = () => {
                   We'll reply within 24 hrs
                 </div>
                 <div className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-0.5 group-hover:underline">
-                  support@codexpetra.com
+                  codexpetra01@gmail.com
                 </div>
               </div>
             </a>

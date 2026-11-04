@@ -193,7 +193,7 @@ const InternshipConfirmationPage: React.FC = () => {
                   <span>Queries regarding test schedule?</span>
                 </div>
                 <a
-                  href="https://wa.me/919999999999?text=Hi%20CodexPetra,%20I%20have%20submitted%20my%20application"
+                  href="https://wa.me/917028352298?text=Hi%20CodexPetra,%20I%20have%20submitted%20my%20application"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline shrink-0"

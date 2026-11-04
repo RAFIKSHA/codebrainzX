@@ -407,7 +407,7 @@ const InternshipApplicationPage: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-2 pt-1">
                 <a
-                  href="https://wa.me/919999999999?text=Hi%20CodexPetra%20Team,%20I%20have%20a%20question%20regarding%20the%20Internship%20Application"
+                  href="https://wa.me/917028352298?text=Hi%20CodexPetra%20Team,%20I%20have%20a%20question%20regarding%20the%20Internship%20Application"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors"
@@ -416,7 +416,7 @@ const InternshipApplicationPage: React.FC = () => {
                   <span>Chat on WhatsApp</span>
                 </a>
                 <a
-                  href="tel:+918001234567"
+                  href="tel:+917028352298"
                   className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:border-slate-300 transition-colors"
                 >
                   <Phone size={13} />
