@@ -670,12 +670,23 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 if driver:
                     if driver in code:
                         return code
-                    if language_slug == 'python' and '__main__' in code:
-                        return code
-                    if language_slug in ['c', 'cpp'] and 'main(' in code:
-                        return code
-                    if language_slug == 'java' and 'public static void main' in code:
-                        return code
+                    if language_slug == 'c' or language_slug == 'cpp':
+                        if 'main(' in code:
+                            return code
+                        return f"{code}\n\n{driver}\n"
+                    if language_slug == 'java':
+                        if 'public static void main' in code:
+                            return code
+                        if '// DRIVER_PLACEHOLDER' in driver:
+                            return driver.replace('// DRIVER_PLACEHOLDER', code)
+                        if 'class Main' in driver and '{' in driver:
+                            idx = driver.find('{')
+                            return driver[:idx+1] + "\n    " + code + "\n" + driver[idx+1:]
+                        return f"{code}\n\n{driver}\n"
+                    if language_slug == 'python':
+                        if '__main__' in code:
+                            return code
+                        return f"{code}\n\n{driver}\n"
                     return f"{code}\n\n{driver}\n"
         except Exception as e:
             logger.warning(f"Error parsing driver_code for question {question.id}: {e}")

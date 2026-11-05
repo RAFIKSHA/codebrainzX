@@ -302,8 +302,8 @@ class Judge0Service:
                                 tc_status = 'Runtime Error'
                             error_message = stderr.strip() or f"Process exited with code {proc.returncode}"
                         else:
-                            clean_stdout = "\n".join(line.strip() for line in stdout.strip().splitlines())
-                            clean_expected = "\n".join(line.strip() for line in tc.expected_output.strip().splitlines())
+                            clean_stdout = "\n".join(line.rstrip() for line in stdout.rstrip().splitlines())
+                            clean_expected = "\n".join(line.rstrip() for line in tc.expected_output.rstrip().splitlines())
                             
                             if clean_stdout == clean_expected:
                                 tc_status = 'Accepted'
@@ -393,8 +393,8 @@ class Judge0Service:
                             tc_status = 'Runtime Error'
                             error_message = stderr or f"Process exited with code {proc.returncode}"
                         else:
-                            clean_stdout = "\n".join(line.strip() for line in stdout.strip().splitlines())
-                            clean_expected = "\n".join(line.strip() for line in tc.expected_output.strip().splitlines())
+                            clean_stdout = "\n".join(line.rstrip() for line in stdout.rstrip().splitlines())
+                            clean_expected = "\n".join(line.rstrip() for line in tc.expected_output.rstrip().splitlines())
                             
                             if clean_stdout == clean_expected:
                                 tc_status = 'Accepted'

@@ -8,7 +8,7 @@ An online learning, coding practice, aptitude assessment, and contest platform.
 
 ```text
 CodeBrainzx/
-├── backend/       # Django REST Framework backend API
+├── backend/       # Django chREST Framework backend API
 ├── frontend/      # React 19 + TypeScript + Vite + Tailwind CSS frontend
 ├── judge0/        # Local Judge0 compiler engine (Docker-based, optional)
 └── README.md

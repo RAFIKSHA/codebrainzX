@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   ArrowLeft, Terminal, Play, CheckCircle2, AlertTriangle, HelpCircle,
   RefreshCw, FileCode, Clock, HardDrive, History, Loader2, Maximize2, Minimize2,
-  Settings, Check, X, ShieldAlert, Cpu, Sparkles, BookOpen, LogIn
+  Settings, Check, X, ShieldAlert, Cpu, Sparkles, BookOpen, LogIn, Lock
 } from 'lucide-react';
 
 interface Language {
@@ -37,6 +37,7 @@ interface Question {
   notes?: string;
   examples?: string;
   starter_code: string; // JSON string
+  driver_code?: string;
   time_limit: number;
   memory_limit: number;
   test_cases: TestCase[];
@@ -80,6 +81,7 @@ const QuestionPage: React.FC = () => {
   const [fontSize, setFontSize] = useState(14);
   const [activePanel, setActivePanel] = useState<'description' | 'hints' | 'submissions' | 'editorial'>('description');
   const [activeTestCaseIdx, setActiveTestCaseIdx] = useState(0);
+  const [showDriverModal, setShowDriverModal] = useState(false);
 
   // Sync editor theme with global theme
   useEffect(() => {
@@ -181,6 +183,18 @@ const QuestionPage: React.FC = () => {
       localStorage.setItem(`lang_${questionId}`, selectedLang.slug);
     }
   }, [selectedLang, questionId]);
+
+  const currentDriverCode = useMemo(() => {
+    if (!question?.driver_code || !selectedLang) return null;
+    try {
+      const parsed = typeof question.driver_code === 'string'
+        ? JSON.parse(question.driver_code)
+        : question.driver_code;
+      return parsed[selectedLang.slug] || null;
+    } catch {
+      return null;
+    }
+  }, [question?.driver_code, selectedLang]);
 
   // Run Code mutation
   const runMutation = useMutation({
@@ -558,6 +572,21 @@ const QuestionPage: React.FC = () => {
                 {isEditorFullscreen ? 'Exit Full' : 'Fullscreen'}
               </button>
 
+              {currentDriverCode && (
+                <button
+                  onClick={() => setShowDriverModal(!showDriverModal)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                    showDriverModal
+                      ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-800'
+                      : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                  }`}
+                  title="View platform driver code (Locked)"
+                >
+                  <Lock size={10} />
+                  {showDriverModal ? 'Hide Driver' : 'Driver Code'}
+                </button>
+              )}
+
               <button
                 onClick={handleReset}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all cursor-pointer"
@@ -568,6 +597,27 @@ const QuestionPage: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* Locked Driver Code Drawer (Read Only) */}
+          {showDriverModal && currentDriverCode && (
+            <div className="bg-[#181926] border-b border-slate-800 px-4 py-2.5 text-xs font-mono shrink-0 transition-all">
+              <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-800/80">
+                <div className="flex items-center gap-2 text-purple-400 font-bold text-[11px]">
+                  <Lock size={12} />
+                  <span>Platform Driver Code ({selectedLang?.name}) — Read Only (Auto-injected by compiler)</span>
+                </div>
+                <button
+                  onClick={() => setShowDriverModal(false)}
+                  className="text-slate-400 hover:text-white text-[11px] font-bold cursor-pointer"
+                >
+                  ✕ Close
+                </button>
+              </div>
+              <pre className="max-h-40 overflow-y-auto text-[11px] leading-relaxed text-slate-300 font-mono select-all scrollbar-thin">
+                {currentDriverCode}
+              </pre>
+            </div>
+          )}
 
           {/* Monaco Editor Canvas */}
           <div className={`flex-grow relative bg-[#1e1e1e] ${isConsoleExpanded ? 'hidden' : 'block'}`}>
