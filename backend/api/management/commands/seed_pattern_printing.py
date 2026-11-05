@@ -24,12 +24,12 @@ class Command(BaseCommand):
         lvl_med, _ = QuestionLevel.objects.get_or_create(topic=topic, level='medium')
         lvl_hard, _ = QuestionLevel.objects.get_or_create(topic=topic, level='hard')
 
-        # Standard starter codes
+        # Standard starter codes with driver code directly visible in editor
         starter_code_dict = {
-            "c": "void printPattern(int n) {\n    // Write your code here\n}\n",
-            "cpp": "void printPattern(int n) {\n    // Write your code here\n}\n",
-            "java": "static void printPattern(int n) {\n    // Write your code here\n}\n",
-            "python": "def printPattern(n):\n    # Write your code here\n    pass\n"
+            "python": "def printPattern(n):\n    # Write your code here\n    pass\n\nif __name__ == '__main__':\n    n = int(input().strip())\n    printPattern(n)\n",
+            "c": "#include <stdio.h>\n\nvoid printPattern(int n) {\n    // Write your code here\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) == 1) {\n        printPattern(n);\n    }\n    return 0;\n}\n",
+            "cpp": "#include <iostream>\nusing namespace std;\n\nvoid printPattern(int n) {\n    // Write your code here\n}\n\nint main() {\n    int n;\n    if (cin >> n) {\n        printPattern(n);\n    }\n    return 0;\n}\n",
+            "java": "import java.util.Scanner;\n\npublic class Main {\n    public static void printPattern(int n) {\n        // Write your code here\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n            printPattern(n);\n        }\n    }\n}\n"
         }
 
         # Standard driver codes
