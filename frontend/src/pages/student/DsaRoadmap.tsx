@@ -13,7 +13,7 @@ import {
   ChevronRight, CheckCircle2, Flame, Trophy, Sparkles,
   Terminal, Code, Binary, Boxes, Workflow, Database, Hash, GitBranch, Cpu, Share2,
   ListTree, Layers, Network, Zap, Award, Loader2, HelpCircle, LayoutGrid,
-  BookOpen, Play, CheckCircle, BarChart2, Check, ArrowRight
+  BookOpen, Play, CheckCircle, BarChart2, Check, ArrowRight, Repeat
 } from 'lucide-react';
 
 interface Level {
@@ -55,24 +55,25 @@ interface RoadmapDef {
 
 const ROADMAP_MODULES: RoadmapDef[] = [
   { id: 'prog-basics', number: '01', name: 'Programming Basics', matchKeys: ['programming basics', 'basics', 'intro', 'fundamentals', 'basic'], desc: 'Learn fundamentals: input/output, variables, data types, operators and syntax.', icon: Terminal },
-  { id: 'conditions-loops', number: '02', name: 'Conditions & Loops', matchKeys: ['conditions & loops', 'conditions', 'loops', 'conditional', 'control flow'], desc: 'Master if-else statements, while/for loops, break, and nested iteration.', icon: Code },
-  { id: 'number-problems', number: '03', name: 'Number Problems', matchKeys: ['number problems', 'number system', 'number-problems', 'number-system'], desc: 'Practice number-based programming problems to develop strong logic-building and digit-manipulation skills, from beginner to advanced levels.', icon: Binary },
-  { id: 'patterns', number: '04', name: 'Pattern Printing', matchKeys: ['pattern printing', 'pattern-printing', 'patterns', 'star patterns'], desc: 'Build triangular, diamond, numerical, and pyramid pattern printing logic.', icon: Boxes },
-  { id: 'functions', number: '05', name: 'Functions', matchKeys: ['functions', 'methods', 'scope', 'modular'], desc: 'Modularize code using reusable functions, parameters, return values, and scope.', icon: Workflow },
-  { id: 'arrays', number: '06', name: 'Arrays', matchKeys: ['arrays', 'array', 'matrix', 'subarray'], desc: 'Learn fundamentals of arrays, different types, operations and important techniques with practice questions.', icon: Database },
-  { id: 'strings', number: '07', name: 'Strings', matchKeys: ['strings', 'string', 'palindromes', 'anagrams'], desc: 'String operations, substring searching, anagrams, palindromes, and parsing.', icon: Hash },
-  { id: 'searching-sorting', number: '08', name: 'Searching & Sorting', matchKeys: ['searching & sorting', 'sorting', 'searching', 'binary search'], desc: 'Binary search, bubble sort, insertion sort, quicksort, and mergesort.', icon: GitBranch },
-  { id: 'hashing', number: '09', name: 'Hashing', matchKeys: ['hashing', 'hashmap', 'hashset', 'hash tables'], desc: 'Hash maps, frequency tables, sets, collision handling, and fast key-value lookups.', icon: Cpu },
-  { id: 'two-pointers', number: '10', name: 'Two Pointers', matchKeys: ['two pointers', 'pointers', 'two pointer'], desc: 'Left-right pointer convergence, fast-slow pointers, and sorted pair optimization.', icon: Share2 },
-  { id: 'sliding-window', number: '11', name: 'Sliding Window', matchKeys: ['sliding window', 'window'], desc: 'Fixed and dynamic sliding windows for maximum subarrays and substring problems.', icon: Boxes },
-  { id: 'linked-list', number: '12', name: 'Linked List', matchKeys: ['linked list', 'singly linked list', 'doubly linked list', 'linked lists'], desc: 'Singly & doubly linked lists, reversal, cycle detection, and merge operations.', icon: ListTree },
-  { id: 'stack-queue', number: '13', name: 'Stack & Queue', matchKeys: ['stack & queue', 'stack', 'queue', 'deque', 'stacks'], desc: 'LIFO & FIFO data structures, monotonic stacks, and parenthesis balancing.', icon: Layers },
-  { id: 'recursion', number: '14', name: 'Recursion', matchKeys: ['recursion', 'backtracking', 'recursive'], desc: 'Base cases, call stack unwinding, recursive branching, and backtracking.', icon: Workflow },
-  { id: 'trees', number: '15', name: 'Trees', matchKeys: ['trees', 'binary tree', 'bst', 'tree traversal'], desc: 'Binary trees, BST, BFS level-order, DFS in-order/pre-order traversals.', icon: Network },
-  { id: 'graphs', number: '16', name: 'Graphs', matchKeys: ['graphs', 'graph', 'dfs', 'bfs', 'dijkstra'], desc: 'Adjacency lists, BFS/DFS pathfinding, topological sort, and cycle detection.', icon: Share2 },
-  { id: 'greedy', number: '17', name: 'Greedy', matchKeys: ['greedy', 'greedy algorithms'], desc: 'Locally optimal choice strategies, interval scheduling, and knapsack variants.', icon: Zap },
-  { id: 'dynamic-programming', number: '18', name: 'Dynamic Programming', matchKeys: ['dynamic programming', 'dp', 'memoization'], desc: 'Overlapping subproblems, memoization, 1D/2D tabulation, and optimization.', icon: Database },
-  { id: 'interview-problems', number: '19', name: 'Interview Problems', matchKeys: ['interview problems', 'faang', 'blind 75', 'top interview', 'interview'], desc: 'Real assessment questions asked in top tier engineering technical rounds.', icon: Award },
+  { id: 'conditional-statements', number: '02', name: 'Conditional Statements', matchKeys: ['conditional statements', 'conditions & loops', 'conditions', 'conditional', 'control flow'], desc: 'Master if-else statements, nested conditions, and switch-case decision logic.', icon: Code },
+  { id: 'loops', number: '03', name: 'Loops', matchKeys: ['loops', 'looping', 'iteration', 'for loop', 'while loop'], desc: 'Master while loops, for loops, nested loops, break, continue, and repetition logic.', icon: Repeat },
+  { id: 'number-problems', number: '04', name: 'Number Problems', matchKeys: ['number problems', 'number system', 'number-problems', 'number-system'], desc: 'Practice number-based programming problems to develop strong logic-building and digit-manipulation skills, from beginner to advanced levels.', icon: Binary },
+  { id: 'patterns', number: '05', name: 'Pattern Printing', matchKeys: ['pattern printing', 'pattern-printing', 'patterns', 'star patterns'], desc: 'Build triangular, diamond, numerical, and pyramid pattern printing logic.', icon: Boxes },
+  { id: 'functions', number: '06', name: 'Functions', matchKeys: ['functions', 'methods', 'scope', 'modular'], desc: 'Modularize code using reusable functions, parameters, return values, and scope.', icon: Workflow },
+  { id: 'arrays', number: '07', name: 'Arrays', matchKeys: ['arrays', 'array', 'matrix', 'subarray'], desc: 'Learn fundamentals of arrays, different types, operations and important techniques with practice questions.', icon: Database },
+  { id: 'strings', number: '08', name: 'Strings', matchKeys: ['strings', 'string', 'palindromes', 'anagrams'], desc: 'String operations, substring searching, anagrams, palindromes, and parsing.', icon: Hash },
+  { id: 'searching-sorting', number: '09', name: 'Searching & Sorting', matchKeys: ['searching & sorting', 'sorting', 'searching', 'binary search'], desc: 'Binary search, bubble sort, insertion sort, quicksort, and mergesort.', icon: GitBranch },
+  { id: 'hashing', number: '10', name: 'Hashing', matchKeys: ['hashing', 'hashmap', 'hashset', 'hash tables'], desc: 'Hash maps, frequency tables, sets, collision handling, and fast key-value lookups.', icon: Cpu },
+  { id: 'two-pointers', number: '11', name: 'Two Pointers', matchKeys: ['two pointers', 'pointers', 'two pointer'], desc: 'Left-right pointer convergence, fast-slow pointers, and sorted pair optimization.', icon: Share2 },
+  { id: 'sliding-window', number: '12', name: 'Sliding Window', matchKeys: ['sliding window', 'window'], desc: 'Fixed and dynamic sliding windows for maximum subarrays and substring problems.', icon: Boxes },
+  { id: 'linked-list', number: '13', name: 'Linked List', matchKeys: ['linked list', 'singly linked list', 'doubly linked list', 'linked lists'], desc: 'Singly & doubly linked lists, reversal, cycle detection, and merge operations.', icon: ListTree },
+  { id: 'stack-queue', number: '14', name: 'Stack & Queue', matchKeys: ['stack & queue', 'stack', 'queue', 'deque', 'stacks'], desc: 'LIFO & FIFO data structures, monotonic stacks, and parenthesis balancing.', icon: Layers },
+  { id: 'recursion', number: '15', name: 'Recursion', matchKeys: ['recursion', 'backtracking', 'recursive'], desc: 'Base cases, call stack unwinding, recursive branching, and backtracking.', icon: Workflow },
+  { id: 'trees', number: '16', name: 'Trees', matchKeys: ['trees', 'binary tree', 'bst', 'tree traversal'], desc: 'Binary trees, BST, BFS level-order, DFS in-order/pre-order traversals.', icon: Network },
+  { id: 'graphs', number: '17', name: 'Graphs', matchKeys: ['graphs', 'graph', 'dfs', 'bfs', 'dijkstra'], desc: 'Adjacency lists, BFS/DFS pathfinding, topological sort, and cycle detection.', icon: Share2 },
+  { id: 'greedy', number: '18', name: 'Greedy', matchKeys: ['greedy', 'greedy algorithms'], desc: 'Locally optimal choice strategies, interval scheduling, and knapsack variants.', icon: Zap },
+  { id: 'dynamic-programming', number: '19', name: 'Dynamic Programming', matchKeys: ['dynamic programming', 'dp', 'memoization'], desc: 'Overlapping subproblems, memoization, 1D/2D tabulation, and optimization.', icon: Database },
+  { id: 'interview-problems', number: '20', name: 'Interview Problems', matchKeys: ['interview problems', 'faang', 'blind 75', 'top interview', 'interview'], desc: 'Real assessment questions asked in top tier engineering technical rounds.', icon: Award },
 ];
 
 const DsaRoadmap: React.FC = () => {
